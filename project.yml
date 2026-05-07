@@ -1,0 +1,30 @@
+name: SFlow
+options:
+  bundleIdPrefix: com.filip
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+targets:
+  SFlow:
+    type: application
+    platform: macOS
+    sources: [SFlow]
+    info:
+      path: SFlow/Info.plist
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.filip.sflow
+      SWIFT_VERSION: "5.9"
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_HARDENED_RUNTIME: NO
+      ENABLE_TESTABILITY: YES
+  SFlowTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [SFlowTests]
+    dependencies:
+      - target: SFlow
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.filip.sflow-tests
+      TEST_HOST: $(BUILT_PRODUCTS_DIR)/SFlow.app/Contents/MacOS/SFlow
+      BUNDLE_LOADER: $(TEST_HOST)
+      SWIFT_VERSION: "5.9"
