@@ -11,12 +11,21 @@ targets:
     sources: [SFlow]
     info:
       path: SFlow/Info.plist
+      properties:
+        LSUIElement: true
+        LSMinimumSystemVersion: "13.0"
+        NSPrincipalClass: NSApplication
+        NSAccessibilityUsageDescription: SFlow reads UI element names to detect when you click something that has a keyboard shortcut.
+        NSInputMonitoringUsageDescription: SFlow monitors mouse clicks to detect when you click instead of using a keyboard shortcut.
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.filip.sflow
-      SWIFT_VERSION: "5.9"
-      CODE_SIGN_STYLE: Automatic
-      ENABLE_HARDENED_RUNTIME: NO
-      ENABLE_TESTABILITY: YES
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.filip.sflow
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: NO
+      configs:
+        Debug:
+          ENABLE_TESTABILITY: YES
   SFlowTests:
     type: bundle.unit-test
     platform: macOS

@@ -18,5 +18,15 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>SFlow reads UI element names to detect when you click something that has a keyboard shortcut.</string>
+	<key>NSInputMonitoringUsageDescription</key>
+	<string>SFlow monitors mouse clicks to detect when you click instead of using a keyboard shortcut.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 </dict>
 </plist>
