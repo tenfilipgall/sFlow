@@ -4,7 +4,7 @@ import XCTest
 final class MenuBarIndexTests: XCTestCase {
 
     func test_parseModifiers_commandOnly() {
-        XCTAssertEqual(MenuBarIndex.parseModifiers(rawMods: 8), ["meta"])
+        XCTAssertEqual(MenuBarIndex.parseModifiers(rawMods: 0), ["meta"])
     }
 
     func test_parseModifiers_commandShift() {

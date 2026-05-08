@@ -79,7 +79,7 @@ enum BundleStringsScanner {
         return nil
     }
 
-    private static func parseElectronAccelerator(_ acc: String) -> [String] {
+    static func parseElectronAccelerator(_ acc: String) -> [String] {
         let parts = acc.components(separatedBy: "+")
         return parts.compactMap { part in
             switch part.lowercased() {
