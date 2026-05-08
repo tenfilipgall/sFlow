@@ -72,7 +72,8 @@ final class ClickWatcher {
                     let isClickable = ["AXButton","AXMenuItem","AXCell","AXTextField",
                                        "AXCheckBox","AXRadioButton"].contains(role(current))
                     if help.count > 1 || isClickable,
-                       let keys = ShortcutRules.parseShortcut(from: help) {
+                       let keys = ShortcutRules.parseShortcut(from: help),
+                       MatchConfidence.medium >= .threshold {
                         let autoId = "auto:\(bundleId):\(keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
                              keys: keys, hint: help, loc: nsLoc)
@@ -93,9 +94,12 @@ final class ClickWatcher {
                 if let rule = ShortcutRules.universalRules.first(where: {
                     matchUniversal(current, rule: $0)
                 }) {
-                    emit(bundleId: bundleId, shortcutId: rule.shortcutId,
-                         keys: rule.keys, hint: rule.hint, loc: nsLoc)
-                    return
+                    let confidence = MatchConfidence.low
+                    if confidence >= .threshold {
+                        emit(bundleId: bundleId, shortcutId: rule.shortcutId,
+                             keys: rule.keys, hint: rule.hint, loc: nsLoc)
+                        return
+                    }
                 }
 
                 var parentRef: AnyObject?
