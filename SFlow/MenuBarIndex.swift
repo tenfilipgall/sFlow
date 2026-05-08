@@ -65,11 +65,14 @@ struct MenuBarIndex {
 
     // MARK: - Lookup
 
-    func lookup(query: String) -> MenuBarEntry? {
+    func lookup(query: String) -> (entry: MenuBarEntry, confidence: MatchConfidence)? {
         guard query.count >= 3 else { return nil }
         let q = query.lowercased()
-        if let entry = titleMap[q] { return entry }
-        return titleMap.first(where: { $0.key.contains(q) })?.value
+        if let entry = titleMap[q] { return (entry: entry, confidence: .medium) }
+        if let pair = titleMap.first(where: { $0.key.contains(q) }) {
+            return (entry: pair.value, confidence: .medium)
+        }
+        return nil
     }
 
     // MARK: - Mutation helpers

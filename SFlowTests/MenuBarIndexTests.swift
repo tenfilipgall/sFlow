@@ -29,14 +29,16 @@ final class MenuBarIndexTests: XCTestCase {
         var index = MenuBarIndex()
         index.insert(title: "New Message", keys: ["meta", "n"])
         let result = index.lookup(query: "new message")
-        XCTAssertEqual(result?.keys, ["meta", "n"])
+        XCTAssertEqual(result?.entry.keys, ["meta", "n"])
+        XCTAssertEqual(result?.confidence, .medium)
     }
 
     func test_lookup_partialTitle() {
         var index = MenuBarIndex()
         index.insert(title: "Find in Files", keys: ["meta", "shift", "f"])
         let result = index.lookup(query: "find")
-        XCTAssertEqual(result?.keys, ["meta", "shift", "f"])
+        XCTAssertEqual(result?.entry.keys, ["meta", "shift", "f"])
+        XCTAssertEqual(result?.confidence, .medium)
     }
 
     func test_lookup_noMatch_returnsNil() {

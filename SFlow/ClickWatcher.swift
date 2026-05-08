@@ -81,7 +81,9 @@ final class ClickWatcher {
                 }
                 // Layer 3: MenuBarIndex fuzzy match on desc/title/placeholder/identifier
                 let query = elementQuery(current)
-                if !query.isEmpty, let entry = menuBarWatcher.currentIndex.lookup(query: query) {
+                if !query.isEmpty,
+                   let (entry, confidence) = menuBarWatcher.currentIndex.lookup(query: query),
+                   confidence >= .threshold {
                     let autoId = "menuindex:\(bundleId):\(entry.keys.joined(separator: "+"))"
                     emit(bundleId: bundleId, shortcutId: autoId,
                          keys: entry.keys, hint: entry.hint, loc: nsLoc)
