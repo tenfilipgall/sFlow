@@ -83,4 +83,65 @@ final class ElectronShortcutScannerTests: XCTestCase {
         ElectronShortcutScanner.extractShortcuts(from: js, into: &result)
         XCTAssertEqual(result["search"]?.keys, ["meta", "f"])
     }
+
+    // MARK: - isElectronBundle tests
+
+    func test_isElectronBundle_withAsarFile_returnsTrue() {
+        let tmpBundle = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+        let resourcesDir = tmpBundle.appendingPathComponent("Contents/Resources")
+        try! FileManager.default.createDirectory(at: resourcesDir, withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: resourcesDir.appendingPathComponent("app.asar").path,
+                                       contents: Data())
+        defer { try? FileManager.default.removeItem(at: tmpBundle) }
+
+        XCTAssertTrue(ElectronShortcutScanner.isElectronBundle(at: tmpBundle))
+    }
+
+    func test_isElectronBundle_withoutAsarFile_returnsFalse() {
+        let tmpBundle = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: tmpBundle) }
+        XCTAssertFalse(ElectronShortcutScanner.isElectronBundle(at: tmpBundle))
+    }
+
+    // MARK: - scanASAR tests
+
+    func test_scanASAR_targetedFile_findsShortcuts() {
+        let js = "{label: 'Quick Switcher', accelerator: 'CmdOrCtrl+K'}"
+        let url = writeAsar(files: [("keyboard-shortcuts.js", js)])
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let result = ElectronShortcutScanner.scanASAR(at: url)
+        XCTAssertEqual(result["quick switcher"]?.keys, ["meta", "k"])
+        XCTAssertEqual(result["quick switcher"]?.hint, "Quick Switcher")
+    }
+
+    func test_scanASAR_broadFallback_findsShortcuts() {
+        // File name doesn't match targeted keywords → broad fallback
+        let js = "{label: 'New Message', accelerator: 'CmdOrCtrl+N'}"
+        let url = writeAsar(files: [("bundle.js", js)])
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let result = ElectronShortcutScanner.scanASAR(at: url)
+        XCTAssertEqual(result["new message"]?.keys, ["meta", "n"])
+    }
+
+    func test_scanASAR_nodeModulesFile_isSkipped() {
+        // node_modules files must be excluded from both passes
+        let js = "{label: 'Inject', accelerator: 'CmdOrCtrl+I'}"
+        let url = writeAsar(files: [("node_modules/evil/index.js", js)])
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let result = ElectronShortcutScanner.scanASAR(at: url)
+        XCTAssertTrue(result.isEmpty)
+    }
+
+    func test_scanASAR_missingFile_returnsEmpty() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString + ".asar")
+        // file doesn't exist
+        let result = ElectronShortcutScanner.scanASAR(at: url)
+        XCTAssertTrue(result.isEmpty)
+    }
 }

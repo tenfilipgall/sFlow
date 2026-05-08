@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 enum ElectronShortcutScanner {
@@ -41,5 +42,62 @@ enum ElectronShortcutScanner {
                 }
             }
         }
+    }
+
+    // MARK: - Electron detection
+
+    static func isElectronApp(_ app: NSRunningApplication) -> Bool {
+        guard let url = app.bundleURL else { return false }
+        return isElectronBundle(at: url)
+    }
+
+    static func isElectronBundle(at bundleURL: URL) -> Bool {
+        FileManager.default.fileExists(
+            atPath: bundleURL.appendingPathComponent("Contents/Resources/app.asar").path)
+    }
+
+    // MARK: - Scan entry points
+
+    static func scan(app: NSRunningApplication) -> [String: MenuBarEntry] {
+        guard let bundleURL = app.bundleURL else { return [:] }
+        return scanASAR(at: bundleURL.appendingPathComponent("Contents/Resources/app.asar"))
+    }
+
+    static func scanASAR(at url: URL) -> [String: MenuBarEntry] {
+        guard let (allFiles, dataOffset) = AsarReader.readHeader(from: url) else { return [:] }
+
+        let jsFiles = allFiles.filter {
+            $0.path.hasSuffix(".js") && !$0.path.hasPrefix("node_modules/")
+        }
+
+        // Targeted pass: files whose path contains shortcut-related keywords
+        let keywords = ["shortcut", "keyboard", "keybind", "hotkey", "accelerator", "keymap"]
+        let targeted = jsFiles.filter { file in
+            let lower = file.path.lowercased()
+            return keywords.contains(where: { lower.contains($0) })
+        }
+
+        var result: [String: MenuBarEntry] = [:]
+        for file in targeted {
+            if let data = AsarReader.readFile(file, in: url, dataOffset: dataOffset),
+               let text = String(data: data, encoding: .utf8) {
+                extractShortcuts(from: text, into: &result)
+            }
+        }
+        if !result.isEmpty { return result }
+
+        // Broad fallback: largest JS files up to 500KB, max 30
+        let broad = jsFiles
+            .filter { $0.size <= 500_000 }
+            .sorted { $0.size > $1.size }
+            .prefix(30)
+
+        for file in broad {
+            if let data = AsarReader.readFile(file, in: url, dataOffset: dataOffset),
+               let text = String(data: data, encoding: .utf8) {
+                extractShortcuts(from: text, into: &result)
+            }
+        }
+        return result
     }
 }
