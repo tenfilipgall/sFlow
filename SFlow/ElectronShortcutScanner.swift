@@ -25,7 +25,8 @@ enum ElectronShortcutScanner {
                 guard let accelRange = Range(match.range(at: 1), in: text) else { continue }
                 let accelerator = String(text[accelRange])
                 let keys = BundleStringsScanner.parseElectronAccelerator(accelerator)
-                guard !keys.isEmpty else { continue }
+                let modifiers: Set<String> = ["meta", "ctrl", "shift", "alt"]
+                guard keys.contains(where: { !modifiers.contains($0) }) else { continue }
 
                 // Search backwards up to 200 chars for label:/title:
                 let matchStart = match.range.location

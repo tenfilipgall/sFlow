@@ -83,6 +83,13 @@ final class ElectronShortcutScannerTests: XCTestCase {
         XCTAssertFalse(ElectronShortcutScanner.isElectronBundle(at: tmpBundle))
     }
 
+    func test_extractShortcuts_modifierOnlyAccelerator_isSkipped() {
+        var result: [String: MenuBarEntry] = [:]
+        let js = "{label: 'Zoom In', accelerator: 'CmdOrCtrl+Plus'}"
+        ElectronShortcutScanner.extractShortcuts(from: js, into: &result)
+        XCTAssertTrue(result.isEmpty)
+    }
+
     // MARK: - scanASAR tests
 
     func test_scanASAR_targetedFile_findsShortcuts() {
