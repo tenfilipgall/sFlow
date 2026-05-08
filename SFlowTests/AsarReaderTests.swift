@@ -115,4 +115,25 @@ final class AsarReaderTests: XCTestCase {
             XCTAssertEqual(data, Data("hello".utf8))
         }
     }
+
+    func test_readFile_returnsCorrectBytes() {
+        let url = writeAsar(files: [("test.js", "hello world")])
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        guard let (files, dataOffset) = AsarReader.readHeader(from: url),
+              let first = files.first else { XCTFail(); return }
+
+        let data = AsarReader.readFile(first, in: url, dataOffset: dataOffset)
+        XCTAssertEqual(data, Data("hello world".utf8))
+    }
+
+    func test_readFile_secondFile_correctOffset() {
+        let url = writeAsar(files: [("a.js", "AAAA"), ("b.js", "BBBB")])
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        guard let (files, dataOffset) = AsarReader.readHeader(from: url) else { XCTFail(); return }
+        guard let bFile = files.first(where: { $0.path == "b.js" }) else { XCTFail(); return }
+        let data = AsarReader.readFile(bFile, in: url, dataOffset: dataOffset)
+        XCTAssertEqual(data, Data("BBBB".utf8))
+    }
 }
