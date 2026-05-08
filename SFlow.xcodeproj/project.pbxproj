@@ -8,9 +8,27 @@
 
 /* Begin PBXBuildFile section */
 		0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */; };
+		0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */; };
+		2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */; };
 		32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */; };
+		3870CDD92A623CCC38212BBD /* MenuBarCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */; };
+		60D4BD4F03942A723818EB31 /* ToastWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8EBF6FD9A5AC7536364EAA /* ToastWindow.swift */; };
+		66AEDAB8D6B27AC0FB7D50E7 /* ElectronShortcutScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3395093F311A70AC8B902D /* ElectronShortcutScannerTests.swift */; };
+		7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */; };
+		8DA7A33D1FEEFF27C202486F /* AsarReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4927B1309184521DF315A53 /* AsarReaderTests.swift */; };
+		9D0515F424679C978B7CB4FE /* MenuBarIndexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929AD545A5C8B883B67B8DF1 /* MenuBarIndexTests.swift */; };
+		A376260BDFF9C683712A75D2 /* MenuBarIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */; };
+		ABF500139EEDDCECFD6387DF /* AsarTestFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE98E7B09E56ECD2733A8701 /* AsarTestFixture.swift */; };
+		B0CB749EB83B777278EF3108 /* ElectronShortcutScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */; };
+		B387629ECE75EB4A9EC78312 /* ShortcutRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = D05919D511DAC8124C848B31 /* ShortcutRules.swift */; };
+		B3F450355F09FDAD04F0AA40 /* AsarReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE99A377EF3A592EEB73BC6 /* AsarReader.swift */; };
 		C934D80ECE34114EC3F593FC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F2522A34A64845E2F1A827 /* main.swift */; };
+		D1A81ABC8DBA974581664E6A /* Untitled.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE6DD35A8575881A2D64BA5 /* Untitled.swift */; };
+		D8B1CF34485FD3D6842055D5 /* MatchConfidenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */; };
+		E6062D3A5D10E29C58E2669D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AB6406FDB65C7366C483F8 /* AppDelegate.swift */; };
+		F2E728B4C8579C70488B1007 /* MatchConfidence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F05A8D6CB7773DA43E1B8E7 /* MatchConfidence.swift */; };
 		F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */; };
+		FBFAD138C297F1EC3CCECE4C /* BundleStringsScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,23 +43,52 @@
 
 /* Begin PBXFileReference section */
 		0AF326EDB03BF5D0178EF185 /* SFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C3395093F311A70AC8B902D /* ElectronShortcutScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElectronShortcutScannerTests.swift; sourceTree = "<group>"; };
 		37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLogger.swift; sourceTree = "<group>"; };
+		63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElectronShortcutScanner.swift; sourceTree = "<group>"; };
 		696FCA35F867499528AB23A3 /* SFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarCacheTests.swift; sourceTree = "<group>"; };
+		74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickWatcher.swift; sourceTree = "<group>"; };
+		75AB6406FDB65C7366C483F8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78F2522A34A64845E2F1A827 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		8F05A8D6CB7773DA43E1B8E7 /* MatchConfidence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchConfidence.swift; sourceTree = "<group>"; };
+		929AD545A5C8B883B67B8DF1 /* MenuBarIndexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIndexTests.swift; sourceTree = "<group>"; };
+		9CE6DD35A8575881A2D64BA5 /* Untitled.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Untitled.swift; sourceTree = "<group>"; };
+		9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchConfidenceTests.swift; sourceTree = "<group>"; };
+		9EE99A377EF3A592EEB73BC6 /* AsarReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReader.swift; sourceTree = "<group>"; };
+		A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarCache.swift; sourceTree = "<group>"; };
+		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
+		C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIndex.swift; sourceTree = "<group>"; };
+		CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRulesTests.swift; sourceTree = "<group>"; };
+		D05919D511DAC8124C848B31 /* ShortcutRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRules.swift; sourceTree = "<group>"; };
 		DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutEvent.swift; sourceTree = "<group>"; };
 		E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLoggerTests.swift; sourceTree = "<group>"; };
+		EE98E7B09E56ECD2733A8701 /* AsarTestFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarTestFixture.swift; sourceTree = "<group>"; };
+		FB8EBF6FD9A5AC7536364EAA /* ToastWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastWindow.swift; sourceTree = "<group>"; };
+		FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleStringsScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		30AC372D4A1035DCD8DFA3C4 /* SFlow */ = {
 			isa = PBXGroup;
 			children = (
+				75AB6406FDB65C7366C483F8 /* AppDelegate.swift */,
+				9EE99A377EF3A592EEB73BC6 /* AsarReader.swift */,
+				FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */,
+				74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */,
+				63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */,
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
 				37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */,
 				78F2522A34A64845E2F1A827 /* main.swift */,
+				8F05A8D6CB7773DA43E1B8E7 /* MatchConfidence.swift */,
+				A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */,
+				C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */,
 				DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */,
+				D05919D511DAC8124C848B31 /* ShortcutRules.swift */,
+				FB8EBF6FD9A5AC7536364EAA /* ToastWindow.swift */,
+				9CE6DD35A8575881A2D64BA5 /* Untitled.swift */,
 			);
 			path = SFlow;
 			sourceTree = "<group>";
@@ -59,7 +106,14 @@
 			isa = PBXGroup;
 			children = (
 				DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */,
+				A4927B1309184521DF315A53 /* AsarReaderTests.swift */,
+				EE98E7B09E56ECD2733A8701 /* AsarTestFixture.swift */,
+				2C3395093F311A70AC8B902D /* ElectronShortcutScannerTests.swift */,
 				E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */,
+				9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */,
+				71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */,
+				929AD545A5C8B883B67B8DF1 /* MenuBarIndexTests.swift */,
+				CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */,
 			);
 			path = SFlowTests;
 			sourceTree = "<group>";
@@ -121,6 +175,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					03F03064784A91D4917B6693 = {
+						DevelopmentTeam = Z8R9KWPK32;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -150,7 +205,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8DA7A33D1FEEFF27C202486F /* AsarReaderTests.swift in Sources */,
+				ABF500139EEDDCECFD6387DF /* AsarTestFixture.swift in Sources */,
+				66AEDAB8D6B27AC0FB7D50E7 /* ElectronShortcutScannerTests.swift in Sources */,
 				0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */,
+				D8B1CF34485FD3D6842055D5 /* MatchConfidenceTests.swift in Sources */,
+				3870CDD92A623CCC38212BBD /* MenuBarCacheTests.swift in Sources */,
+				9D0515F424679C978B7CB4FE /* MenuBarIndexTests.swift in Sources */,
+				2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,8 +220,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E6062D3A5D10E29C58E2669D /* AppDelegate.swift in Sources */,
+				B3F450355F09FDAD04F0AA40 /* AsarReader.swift in Sources */,
+				FBFAD138C297F1EC3CCECE4C /* BundleStringsScanner.swift in Sources */,
+				7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */,
+				B0CB749EB83B777278EF3108 /* ElectronShortcutScanner.swift in Sources */,
 				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
+				F2E728B4C8579C70488B1007 /* MatchConfidence.swift in Sources */,
+				0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */,
+				A376260BDFF9C683712A75D2 /* MenuBarIndex.swift in Sources */,
 				32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */,
+				B387629ECE75EB4A9EC78312 /* ShortcutRules.swift in Sources */,
+				60D4BD4F03942A723818EB31 /* ToastWindow.swift in Sources */,
+				D1A81ABC8DBA974581664E6A /* Untitled.swift in Sources */,
 				C934D80ECE34114EC3F593FC /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -181,6 +254,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = Z8R9KWPK32;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = SFlow/Info.plist;
@@ -217,6 +291,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = Z8R9KWPK32;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = SFlow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

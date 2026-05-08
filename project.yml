@@ -22,6 +22,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.filip.sflow
         SWIFT_VERSION: "5.9"
         CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: Z8R9KWPK32
         ENABLE_HARDENED_RUNTIME: NO
       configs:
         Debug:
