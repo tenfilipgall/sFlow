@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+*.profraw
+
+# Screenshots and temp files
+*.png
+*.jpg
+
+# Xcode user data
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+xcuserdata/
+
+# Build artifacts
+DerivedData/
+build/
