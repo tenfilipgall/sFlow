@@ -67,6 +67,13 @@ final class ElectronShortcutScannerTests: XCTestCase {
         XCTAssertEqual(result["browse dms"]?.keys, ["meta", "shift", "k"])
     }
 
+    func test_extractShortcuts_registerShortcut_withNearbyLabel() {
+        var result: [String: MenuBarEntry] = [:]
+        let js = "{label: 'Global Action', registerShortcut('Cmd+Shift+P', handler)}"
+        ElectronShortcutScanner.extractShortcuts(from: js, into: &result)
+        XCTAssertEqual(result["global action"]?.keys, ["meta", "shift", "p"])
+    }
+
     func test_extractShortcuts_duplicateKey_firstWins() {
         var result: [String: MenuBarEntry] = [:]
         let js = """
