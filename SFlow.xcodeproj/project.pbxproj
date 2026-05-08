@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */; };
+		32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */; };
 		C934D80ECE34114EC3F593FC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F2522A34A64845E2F1A827 /* main.swift */; };
+		F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -23,17 +26,22 @@
 /* Begin PBXFileReference section */
 		0AF326EDB03BF5D0178EF185 /* SFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLogger.swift; sourceTree = "<group>"; };
 		696FCA35F867499528AB23A3 /* SFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		78F2522A34A64845E2F1A827 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutEvent.swift; sourceTree = "<group>"; };
+		E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLoggerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		30AC372D4A1035DCD8DFA3C4 /* SFlow */ = {
 			isa = PBXGroup;
 			children = (
+				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
 				37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */,
 				78F2522A34A64845E2F1A827 /* main.swift */,
+				DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */,
 			);
 			path = SFlow;
 			sourceTree = "<group>";
@@ -51,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */,
+				E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */,
 			);
 			path = SFlowTests;
 			sourceTree = "<group>";
@@ -141,6 +150,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +158,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
+				32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */,
 				C934D80ECE34114EC3F593FC /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -206,7 +218,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = NO;
-				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = SFlow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
