@@ -48,9 +48,11 @@ final class AsarReaderTests: XCTestCase {
             XCTFail("readHeader returned nil"); return
         }
         XCTAssertEqual(result.files.count, 1)
-        XCTAssertEqual(result.files[0].path, "test.js")
-        XCTAssertEqual(result.files[0].size, 11)
-        XCTAssertEqual(result.files[0].offset, 0)
+        guard let file = result.files.first(where: { $0.path == "test.js" }) else {
+            XCTFail("test.js not found in file list"); return
+        }
+        XCTAssertEqual(file.size, 11)
+        XCTAssertEqual(file.offset, 0)
     }
 
     func test_readHeader_dataOffset_isCorrect() {
@@ -106,5 +108,11 @@ final class AsarReaderTests: XCTestCase {
         guard let result = AsarReader.readHeader(from: url) else { XCTFail(); return }
         XCTAssertEqual(result.files.count, 1)
         XCTAssertEqual(result.files[0].path, "packed.js")
+
+        // Verify packed file data is readable and correct
+        if let packedFile = result.files.first(where: { $0.path == "packed.js" }) {
+            let data = AsarReader.readFile(packedFile, in: url, dataOffset: result.dataOffset)
+            XCTAssertEqual(data, Data("hello".utf8))
+        }
     }
 }
