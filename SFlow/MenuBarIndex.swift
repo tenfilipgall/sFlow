@@ -121,6 +121,10 @@ final class MenuBarWatcher {
         if let current = NSWorkspace.shared.frontmostApplication {
             loadOrScan(app: current)
         }
+        for app in NSWorkspace.shared.runningApplications
+            where app.activationPolicy == .regular && app.bundleIdentifier != nil {
+            loadOrScan(app: app)
+        }
     }
 
     private func loadOrScan(app: NSRunningApplication) {
