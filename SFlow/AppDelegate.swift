@@ -31,6 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                     keyEquivalent: "")
         toggleItem.tag = 1
         menu.addItem(toggleItem)
+        menu.addItem(NSMenuItem(title: "Show Test Toast", action: #selector(showTestToast), keyEquivalent: ""))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit SFlow", action: #selector(quit), keyEquivalent: "q"))
         statusItem.menu = menu
@@ -38,9 +39,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func refreshStatusIcon() {
         guard let button = statusItem.button else { return }
-        let img = NSImage(systemSymbolName: "command", accessibilityDescription: "SFlow")
-        img?.isTemplate = true
-        button.image = img
+        if let img = NSImage(systemSymbolName: "command", accessibilityDescription: "SFlow") {
+            img.isTemplate = true
+            button.image = img
+            button.title = ""
+        } else {
+            button.image = nil
+            button.title = "⌘"
+        }
         button.alphaValue = isEnabled ? 1.0 : 0.4
     }
 
@@ -54,6 +60,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func quit() { NSApp.terminate(nil) }
+
+    @objc private func showTestToast() {
+        let frame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
+        let center = NSPoint(x: frame.midX, y: frame.midY)
+        let event = ShortcutEvent(bundleId: "test", shortcutId: "test",
+                                  keys: ["meta", "k"], hint: "Test Toast",
+                                  mouseX: center.x, mouseY: center.y)
+        ToastWindow.show(event: event)
+    }
 
     // MARK: - Permissions + Watcher
 

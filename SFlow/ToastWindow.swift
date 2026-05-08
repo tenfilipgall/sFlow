@@ -26,13 +26,13 @@ final class ToastWindow: NSPanel {
                    backing: .buffered,
                    defer: false)
 
-        level = .floating
+        level = .screenSaver
         isOpaque = false
         backgroundColor = .clear
         hasShadow = true
         ignoresMouseEvents = true
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        alphaValue = 0
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        alphaValue = 1
 
         // Visual effect background
         let vfx = NSVisualEffectView(frame: NSRect(origin: .zero, size: CGSize(width: w, height: h)))
@@ -89,20 +89,23 @@ final class ToastWindow: NSPanel {
     }
 
     func appear() {
-        makeKeyAndOrderFront(nil)
+        alphaValue = 0
+        let prevApp = NSWorkspace.shared.frontmostApplication
+        NSApp.activate(ignoringOtherApps: true)
+        orderFrontRegardless()
+        prevApp?.activate(options: .activateIgnoringOtherApps)
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15
-            animator().alphaValue = 1.0
-        } completionHandler: {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.7) { [weak self] in
-                NSAnimationContext.runAnimationGroup { ctx in
-                    ctx.duration = 0.15
-                    self?.animator().alphaValue = 0
-                } completionHandler: {
-                    self?.orderOut(nil)
-                    if ToastWindow.current === self { ToastWindow.current = nil }
-                }
-            }
+            animator().alphaValue = 1
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+            NSAnimationContext.runAnimationGroup({ ctx in
+                ctx.duration = 0.3
+                self?.animator().alphaValue = 0
+            }, completionHandler: {
+                self?.orderOut(nil)
+                if ToastWindow.current === self { ToastWindow.current = nil }
+            })
         }
     }
 }
