@@ -30,7 +30,10 @@ final class ClickWatcher {
             callback: tapCallback,
             userInfo: nil
         )
-        guard let tap else { return }
+        guard let tap else {
+            NSLog("SFlow: CGEventTap creation FAILED — check Input Monitoring permission")
+            return
+        }
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
@@ -55,7 +58,8 @@ final class ClickWatcher {
             var current = element
             for _ in 0..<6 {
                 // Layer 1: hardcoded rules
-                if let rule = ShortcutRules.match(element: current, bundleId: bundleId) {
+                if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId),
+                   confidence >= .threshold {
                     emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                          keys: rule.keys, hint: rule.hint, loc: nsLoc)
                     return
@@ -167,7 +171,7 @@ final class ClickWatcher {
         let role = roleRef as? String ?? ""
 
         if role != "AXMenuItem" {
-            if let rule = ShortcutRules.match(element: element, bundleId: bundleId) {
+            if let (rule, _) = ShortcutRules.match(element: element, bundleId: bundleId) {
                 emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                      keys: rule.keys, hint: rule.hint, loc: nsLoc)
             }
@@ -211,6 +215,8 @@ final class ClickWatcher {
 }
 
 private let tapCallback: CGEventTapCallBack = { _, type, event, _ in
-    if type == .leftMouseDown { sharedWatcher?.handleMouseDown() }
+    if type == .leftMouseDown {
+        sharedWatcher?.handleMouseDown()
+    }
     return Unmanaged.passUnretained(event)
 }

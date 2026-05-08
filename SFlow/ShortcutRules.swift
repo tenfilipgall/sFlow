@@ -26,7 +26,7 @@ enum ShortcutRules {
 
     // MARK: - Public API
 
-    static func match(element: AXUIElement, bundleId: String) -> ClickRule? {
+    static func match(element: AXUIElement, bundleId: String) -> (rule: ClickRule, confidence: MatchConfidence)? {
         guard let appRules = rules[bundleId] else { return nil }
 
         var roleRef: AnyObject?; var descRef: AnyObject?; var titleRef: AnyObject?
@@ -52,7 +52,7 @@ enum ShortcutRules {
             if let t = rule.titleContains,       !title.contains(t.lowercased())           { continue }
             if let p = rule.placeholderContains, !placeholder.contains(p.lowercased())     { continue }
             if let h = rule.helpContains,        !help.contains(h.lowercased())            { continue }
-            return rule
+            return (rule: rule, confidence: .high)
         }
         return nil
     }
