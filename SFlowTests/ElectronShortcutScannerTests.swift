@@ -3,29 +3,6 @@ import XCTest
 
 final class ElectronShortcutScannerTests: XCTestCase {
 
-    // MARK: - ASAR fixture helpers (same pattern as AsarReaderTests)
-
-    private func makeAsarData(files: [(path: String, content: String)]) -> Data {
-        var offset = 0; var filesDict: [String: Any] = [:]; var fileDataParts: [Data] = []
-        for (path, content) in files {
-            let data = Data(content.utf8)
-            filesDict[path] = ["offset": "\(offset)", "size": data.count]
-            offset += data.count; fileDataParts.append(data)
-        }
-        let headerJSON = try! JSONSerialization.data(withJSONObject: ["files": filesDict])
-        let jsonBytes = Array(headerJSON); let L = jsonBytes.count; let paddedL = (L+3) & ~3
-        let P = 4+paddedL; let S = 4+P
-        func u32(_ v:Int)->[UInt8]{let u=UInt32(v);return[UInt8(u&0xFF),UInt8((u>>8)&0xFF),UInt8((u>>16)&0xFF),UInt8((u>>24)&0xFF)]}
-        var bytes=[UInt8](); bytes+=u32(4); bytes+=u32(S); bytes+=u32(P); bytes+=u32(L)
-        bytes+=jsonBytes; bytes+=[UInt8](repeating:0,count:paddedL-L)
-        for data in fileDataParts { bytes+=Array(data) }; return Data(bytes)
-    }
-
-    private func writeAsar(files: [(path: String, content: String)]) -> URL {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString+".asar")
-        try! makeAsarData(files: files).write(to: url); return url
-    }
-
     // MARK: - extractShortcuts tests
 
     func test_extractShortcuts_acceleratorWithLabel() {
@@ -91,8 +68,9 @@ final class ElectronShortcutScannerTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString)
         let resourcesDir = tmpBundle.appendingPathComponent("Contents/Resources")
         try! FileManager.default.createDirectory(at: resourcesDir, withIntermediateDirectories: true)
-        FileManager.default.createFile(atPath: resourcesDir.appendingPathComponent("app.asar").path,
-                                       contents: Data())
+        let created = FileManager.default.createFile(
+            atPath: resourcesDir.appendingPathComponent("app.asar").path, contents: Data())
+        XCTAssertTrue(created, "Prerequisite: failed to create app.asar fixture")
         defer { try? FileManager.default.removeItem(at: tmpBundle) }
 
         XCTAssertTrue(ElectronShortcutScanner.isElectronBundle(at: tmpBundle))
