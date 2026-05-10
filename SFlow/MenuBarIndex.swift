@@ -68,7 +68,7 @@ struct MenuBarIndex {
     func lookup(query: String) -> (entry: MenuBarEntry, confidence: MatchConfidence)? {
         guard query.count >= 3 else { return nil }
         let q = query.lowercased()
-        if let entry = titleMap[q] { return (entry: entry, confidence: .medium) }
+        if let entry = titleMap[q] { return (entry: entry, confidence: .high) }
         if let pair = titleMap.first(where: { q.contains($0.key) }) {
             return (entry: pair.value, confidence: .medium)
         }

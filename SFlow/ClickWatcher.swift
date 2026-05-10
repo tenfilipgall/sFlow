@@ -39,6 +39,14 @@ final class ClickWatcher {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
+    // Roles whose title/description carry semantic UI meaning (vs. arbitrary user content).
+    // Used to gate Layers 3 and 4 — structural roles like AXWindow/AXTextArea are excluded.
+    private static let interactiveRoles: Set<String> = [
+        "AXButton", "AXTextField", "AXSearchField", "AXCell",
+        "AXMenuItem", "AXCheckBox", "AXRadioButton",
+        "AXLink", "AXPopUpButton", "AXComboBox",
+    ]
+
     func handleMouseDown() {
         guard let frontmost = NSWorkspace.shared.frontmostApplication,
               let bundleId  = frontmost.bundleIdentifier else { return }
@@ -57,39 +65,47 @@ final class ClickWatcher {
         if result == .success, let element = elemRef {
             var current = element
             for _ in 0..<6 {
-                // Layer 1: hardcoded rules
-                if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId),
+                // Read all AX attributes once per element — shared across all layers.
+                var roleRef: AnyObject?; var descRef: AnyObject?; var titleRef: AnyObject?
+                var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
+                AXUIElementCopyAttributeValue(current, kAXRoleAttribute as CFString, &roleRef)
+                AXUIElementCopyAttributeValue(current, kAXDescriptionAttribute as CFString, &descRef)
+                AXUIElementCopyAttributeValue(current, kAXTitleAttribute as CFString, &titleRef)
+                AXUIElementCopyAttributeValue(current, kAXSubroleAttribute as CFString, &subroleRef)
+                AXUIElementCopyAttributeValue(current, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
+                AXUIElementCopyAttributeValue(current, kAXHelpAttribute as CFString, &helpRef)
+                let currentRole    = roleRef    as? String ?? ""
+                let currentDesc    = (descRef    as? String ?? "").lowercased()
+                let currentHelp    = helpRef    as? String ?? ""
+                let isInteractive  = Self.interactiveRoles.contains(currentRole)
+
+                // Layer 1: hardcoded per-app rules
+                if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,
+                                                                  role: roleRef, desc: descRef,
+                                                                  title: titleRef, subrole: subroleRef,
+                                                                  placeholder: placeholderRef, help: helpRef),
                    confidence >= .threshold {
                     emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                          keys: rule.keys, hint: rule.hint, loc: nsLoc)
                     return
                 }
-                // Layer 2: kAXHelpAttribute auto-parse
-                // Single-char safety: only accept raw "e"/"k" etc. on clickable roles.
-                var helpRef: AnyObject?
-                AXUIElementCopyAttributeValue(current, kAXHelpAttribute as CFString, &helpRef)
-                if let help = helpRef as? String, !help.isEmpty {
-                    let isClickable = ["AXButton","AXMenuItem","AXCell","AXTextField",
-                                       "AXCheckBox","AXRadioButton"].contains(role(current))
-                    if help.count > 1 || isClickable,
-                       let keys = ShortcutRules.parseShortcut(from: help),
-                       MatchConfidence.medium >= .threshold {
+
+                // Layer 2: kAXHelpAttribute auto-parse.
+                // Single-char safety: only accept raw "e"/"k" on clickable roles.
+                if !currentHelp.isEmpty {
+                    if (currentHelp.count > 1 || isInteractive),
+                       let keys = ShortcutRules.parseShortcut(from: currentHelp) {
                         let autoId = "auto:\(bundleId):\(keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
-                             keys: keys, hint: help, loc: nsLoc)
+                             keys: keys, hint: currentHelp, loc: nsLoc)
                         return
                     }
                 }
-                // Layer 3: MenuBarIndex fuzzy match — only on interactive elements.
-                // Structural roles (AXWindow, AXTextArea, AXScrollArea, etc.) carry
-                // arbitrary user content in their title/description that causes false matches.
-                let interactiveRoles: Set<String> = [
-                    "AXButton", "AXTextField", "AXSearchField", "AXCell",
-                    "AXMenuItem", "AXCheckBox", "AXRadioButton",
-                    "AXLink", "AXPopUpButton", "AXComboBox",
-                ]
-                let currentRole = role(current)
-                if interactiveRoles.contains(currentRole) {
+
+                // Layer 3 & 4: only on interactive elements — structural roles (AXWindow,
+                // AXTextArea, AXScrollArea, etc.) carry arbitrary user content that causes false matches.
+                if isInteractive {
+                    // Layer 3: MenuBarIndex fuzzy match
                     let query = elementQuery(current)
                     if !query.isEmpty,
                        let (entry, confidence) = menuBarWatcher.currentIndex.lookup(query: query),
@@ -99,13 +115,12 @@ final class ClickWatcher {
                              keys: entry.keys, hint: entry.hint, loc: nsLoc)
                         return
                     }
-                }
-                // Layer 4: Universal semantic role heuristics
-                if let rule = ShortcutRules.universalRules.first(where: {
-                    matchUniversal(current, rule: $0)
-                }) {
-                    let confidence = MatchConfidence.low
-                    if confidence >= .threshold {
+
+                    // Layer 4: Universal semantic role heuristics
+                    if let rule = ShortcutRules.universalRules.first(where: {
+                        matchUniversal(role: currentRole, desc: currentDesc,
+                                       subrole: subroleRef as? String ?? "", rule: $0)
+                    }) {
                         emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                              keys: rule.keys, hint: rule.hint, loc: nsLoc)
                         return
@@ -129,17 +144,10 @@ final class ClickWatcher {
         return ref as? String ?? ""
     }
 
-    private func matchUniversal(_ element: AXUIElement, rule: ClickRule) -> Bool {
-        var roleRef: AnyObject?; var descRef: AnyObject?; var subRef: AnyObject?
-        AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
-        AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef)
-        AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &subRef)
-        let r = roleRef as? String ?? ""
-        let d = (descRef as? String ?? "").lowercased()
-        let s = subRef as? String ?? ""
-        if let rr = rule.role, r != rr { return false }
-        if let ss = rule.subroleEquals, s != ss { return false }
-        if let dd = rule.descContains, !d.contains(dd.lowercased()) { return false }
+    private func matchUniversal(role: String, desc: String, subrole: String, rule: ClickRule) -> Bool {
+        if let rr = rule.role,          role    != rr                        { return false }
+        if let ss = rule.subroleEquals, subrole != ss                        { return false }
+        if let dd = rule.descContains,  !desc.contains(dd.lowercased())      { return false }
         return true
     }
 
@@ -190,7 +198,17 @@ final class ClickWatcher {
         let role = roleRef as? String ?? ""
 
         if role != "AXMenuItem" {
-            if let (rule, _) = ShortcutRules.match(element: element, bundleId: bundleId) {
+            var descRef: AnyObject?; var titleRef2: AnyObject?
+            var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
+            AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef)
+            AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &titleRef2)
+            AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &subroleRef)
+            AXUIElementCopyAttributeValue(element, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
+            AXUIElementCopyAttributeValue(element, kAXHelpAttribute as CFString, &helpRef)
+            if let (rule, _) = ShortcutRules.match(element: element, bundleId: bundleId,
+                                                    role: roleRef, desc: descRef, title: titleRef2,
+                                                    subrole: subroleRef, placeholder: placeholderRef,
+                                                    help: helpRef) {
                 emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                      keys: rule.keys, hint: rule.hint, loc: nsLoc)
             }

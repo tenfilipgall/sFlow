@@ -26,17 +26,12 @@ enum ShortcutRules {
 
     // MARK: - Public API
 
-    static func match(element: AXUIElement, bundleId: String) -> (rule: ClickRule, confidence: MatchConfidence)? {
+    static func match(element: AXUIElement, bundleId: String,
+                      role roleRef: AnyObject?, desc descRef: AnyObject?,
+                      title titleRef: AnyObject?, subrole subroleRef: AnyObject?,
+                      placeholder placeholderRef: AnyObject?, help helpRef: AnyObject?
+    ) -> (rule: ClickRule, confidence: MatchConfidence)? {
         guard let appRules = rules[bundleId] else { return nil }
-
-        var roleRef: AnyObject?; var descRef: AnyObject?; var titleRef: AnyObject?
-        var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
-        AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
-        AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef)
-        AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &titleRef)
-        AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &subroleRef)
-        AXUIElementCopyAttributeValue(element, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
-        AXUIElementCopyAttributeValue(element, kAXHelpAttribute as CFString, &helpRef)
 
         let role        = roleRef        as? String ?? ""
         let desc        = (descRef        as? String ?? "").lowercased()
@@ -243,13 +238,40 @@ enum ShortcutRules {
 
         // ── Notion ────────────────────────────────────────────────────────
         "notion.id": [
+            // Sidebar nav items — placed first so they fire at depth 0 before any
+            // ancestor container with "sidebar" in its description triggers the
+            // generic toggle rule (openSlipperySlopeHomeTab / ChatsTab / MeetingsTab).
+            .init(desc: "home",
+                  id: "notion-home-tab", keys: ["meta","alt","g"], hint: "Home"),
+            .init(title: "home",
+                  id: "notion-home-tab", keys: ["meta","alt","g"], hint: "Home"),
+            .init(desc: "chats with notion ai",
+                  id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
+            .init(desc: "chats",
+                  id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
+            .init(title: "chats",
+                  id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
+            .init(desc: "meetings",
+                  id: "notion-meetings-tab", keys: ["meta","alt","y"], hint: "Meetings"),
+            .init(title: "meetings",
+                  id: "notion-meetings-tab", keys: ["meta","alt","y"], hint: "Meetings"),
+            .init(desc: "inbox",
+                  id: "notion-inbox", keys: ["meta","alt","u"], hint: "Inbox"),
+            .init(title: "inbox",
+                  id: "notion-inbox", keys: ["meta","alt","u"], hint: "Inbox"),
+            // Other actions
             .init(desc: "search",
                   id: "notion-quick-find", keys: ["meta","k"], hint: "Quick Find"),
             .init(desc: "quick find",
                   id: "notion-quick-find", keys: ["meta","k"], hint: "Quick Find"),
             .init(title: "new page",
                   id: "notion-new-page", keys: ["meta","n"], hint: "New Page"),
-            .init(desc: "sidebar",
+            // Toggle sidebar — specific text only, not the generic "sidebar" container desc
+            .init(desc: "toggle sidebar",
+                  id: "notion-toggle-sidebar", keys: ["meta","\\"], hint: "Toggle Sidebar"),
+            .init(desc: "close sidebar",
+                  id: "notion-toggle-sidebar", keys: ["meta","\\"], hint: "Toggle Sidebar"),
+            .init(desc: "open sidebar",
                   id: "notion-toggle-sidebar", keys: ["meta","\\"], hint: "Toggle Sidebar"),
             .init(desc: "back",
                   id: "notion-go-back", keys: ["meta","arrowleft"], hint: "Go Back"),
