@@ -71,9 +71,11 @@ final class ClickWatcher {
                 if let help = helpRef as? String, !help.isEmpty {
                     let isClickable = ["AXButton","AXMenuItem","AXCell","AXTextField",
                                        "AXCheckBox","AXRadioButton"].contains(role(current))
+                    NSLog("SFlow[L2] role=\(self.role(current)) help=\(help.prefix(80))")
                     if help.count > 1 || isClickable,
                        let keys = ShortcutRules.parseShortcut(from: help),
                        MatchConfidence.medium >= .threshold {
+                        NSLog("SFlow[L2 MATCH] keys=\(keys) hint=\(help.prefix(80))")
                         let autoId = "auto:\(bundleId):\(keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
                              keys: keys, hint: help, loc: nsLoc)
@@ -82,9 +84,11 @@ final class ClickWatcher {
                 }
                 // Layer 3: MenuBarIndex fuzzy match on desc/title/placeholder/identifier
                 let query = elementQuery(current)
+                NSLog("SFlow[L3] role=\(self.role(current)) query='\(query.prefix(80))'")
                 if !query.isEmpty,
                    let (entry, confidence) = menuBarWatcher.currentIndex.lookup(query: query),
                    confidence >= .threshold {
+                    NSLog("SFlow[L3 MATCH] query='\(query.prefix(80))' → hint=\(entry.hint) keys=\(entry.keys)")
                     let autoId = "menuindex:\(bundleId):\(entry.keys.joined(separator: "+"))"
                     emit(bundleId: bundleId, shortcutId: autoId,
                          keys: entry.keys, hint: entry.hint, loc: nsLoc)
@@ -110,7 +114,7 @@ final class ClickWatcher {
             }
         }
 
-        checkMenuBar(bundleId: bundleId, nsLoc: nsLoc, axX: axX, axY: axY)
+        checkMenuBar(bundleId: bundleId, pid: frontmost.processIdentifier, nsLoc: nsLoc, axX: axX, axY: axY)
     }
 
     private func role(_ element: AXUIElement) -> String {
@@ -137,7 +141,7 @@ final class ClickWatcher {
     /// Priority: description > title > placeholder > normalized kAXIdentifier.
     private func elementQuery(_ element: AXUIElement) -> String {
         let visibleAttrs = [kAXDescriptionAttribute, kAXTitleAttribute,
-                            kAXPlaceholderValueAttribute, kAXValueAttribute]
+                            kAXPlaceholderValueAttribute]
         for attr in visibleAttrs {
             var ref: AnyObject?
             AXUIElementCopyAttributeValue(element, attr as CFString, &ref)
@@ -166,11 +170,14 @@ final class ClickWatcher {
         return result.trimmingCharacters(in: .whitespaces)
     }
 
-    private func checkMenuBar(bundleId: String, nsLoc: NSPoint, axX: Float, axY: Float) {
+    private func checkMenuBar(bundleId: String, pid: pid_t, nsLoc: NSPoint, axX: Float, axY: Float) {
         let sysWide = AXUIElementCreateSystemWide()
         var elemRef: AXUIElement?
         guard AXUIElementCopyElementAtPosition(sysWide, axX, axY, &elemRef) == .success,
               let element = elemRef else { return }
+
+        var elemPid: pid_t = 0
+        guard AXUIElementGetPid(element, &elemPid) == .success, elemPid == pid else { return }
 
         var roleRef: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)

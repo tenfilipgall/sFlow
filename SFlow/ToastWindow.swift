@@ -90,10 +90,7 @@ final class ToastWindow: NSPanel {
 
     func appear() {
         alphaValue = 0
-        let prevApp = NSWorkspace.shared.frontmostApplication
-        NSApp.activate(ignoringOtherApps: true)
         orderFrontRegardless()
-        prevApp?.activate(options: .activateIgnoringOtherApps)
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15
             animator().alphaValue = 1
