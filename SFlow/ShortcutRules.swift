@@ -98,10 +98,13 @@ enum ShortcutRules {
     // MARK: - Universal role-based rules (#4 — semantic heuristics)
 
     static let universalRules: [ClickRule] = [
+        // Search fields — ⌘F is the macOS standard
         .init("AXTextField", sub: "AXSearchField",
               id: "universal-search", keys: ["meta", "f"], hint: "Search / Find"),
         .init(nil, sub: "AXSearchField",
               id: "universal-search", keys: ["meta", "f"], hint: "Search / Find"),
+
+        // Navigation
         .init("AXButton", desc: "back",
               id: "universal-back", keys: ["meta", "arrowleft"], hint: "Go Back"),
         .init("AXButton", desc: "forward",
@@ -114,6 +117,8 @@ enum ShortcutRules {
               id: "universal-reload", keys: ["meta", "r"], hint: "Reload"),
         .init("AXButton", desc: "refresh",
               id: "universal-reload", keys: ["meta", "r"], hint: "Reload"),
+
+        // Tabs & windows
         .init("AXButton", desc: "close tab",
               id: "universal-close-tab", keys: ["meta", "w"], hint: "Close Tab"),
         .init("AXButton", desc: "new tab",
@@ -124,6 +129,42 @@ enum ShortcutRules {
               id: "universal-print", keys: ["meta", "p"], hint: "Print"),
         .init("AXButton", desc: "share",
               id: "universal-share", keys: ["meta", "shift", "i"], hint: "Share"),
+
+        // Settings — ⌘, is the macOS HIG standard for every app
+        .init("AXButton", desc: "settings",
+              id: "universal-settings", keys: ["meta", ","], hint: "Settings"),
+        .init("AXButton", desc: "preferences",
+              id: "universal-settings", keys: ["meta", ","], hint: "Preferences"),
+        .init(title: "settings",
+              id: "universal-settings", keys: ["meta", ","], hint: "Settings"),
+        .init(title: "preferences",
+              id: "universal-settings", keys: ["meta", ","], hint: "Preferences"),
+
+        // Messaging / chat — send button pattern across apps
+        .init("AXButton", desc: "send",
+              id: "universal-send", keys: ["meta", "enter"], hint: "Send"),
+        .init(title: "send",
+              id: "universal-send", keys: ["meta", "enter"], hint: "Send"),
+
+        // Compose / new conversation — ⌘N is the macOS standard for "new thing"
+        .init("AXButton", desc: "compose",
+              id: "universal-compose", keys: ["meta", "n"], hint: "New Message"),
+        .init("AXButton", desc: "new message",
+              id: "universal-compose", keys: ["meta", "n"], hint: "New Message"),
+        .init("AXButton", desc: "new conversation",
+              id: "universal-compose", keys: ["meta", "n"], hint: "New Conversation"),
+        .init(title: "compose",
+              id: "universal-compose", keys: ["meta", "n"], hint: "New Message"),
+
+        // Email reply patterns
+        .init("AXButton", desc: "reply",
+              id: "universal-reply", keys: ["meta", "r"], hint: "Reply"),
+        .init(title: "reply",
+              id: "universal-reply", keys: ["meta", "r"], hint: "Reply"),
+        .init("AXButton", desc: "reply all",
+              id: "universal-reply-all", keys: ["meta", "shift", "r"], hint: "Reply All"),
+        .init(title: "reply all",
+              id: "universal-reply-all", keys: ["meta", "shift", "r"], hint: "Reply All"),
     ]
 
     // MARK: - Rules Database
