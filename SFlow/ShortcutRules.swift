@@ -266,32 +266,62 @@ enum ShortcutRules {
 
         // ── Claude ────────────────────────────────────────────────────────
         "com.anthropic.claudefordesktop": [
+            // Send message
             .init("AXButton", desc: "send",
                   id: "claude-send", keys: ["meta","enter"], hint: "Send Message"),
             .init(title: "send",
                   id: "claude-send", keys: ["meta","enter"], hint: "Send Message"),
+            // New conversation (⌘N — native menu binding confirmed in Electron bundle)
             .init("AXButton", desc: "new conversation",
-                  id: "claude-new-chat", keys: ["meta","shift","o"], hint: "New Conversation"),
+                  id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
             .init("AXButton", desc: "new chat",
-                  id: "claude-new-chat", keys: ["meta","shift","o"], hint: "New Conversation"),
+                  id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
+            .init("AXButton", desc: "compose",
+                  id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
             .init(title: "new conversation",
-                  id: "claude-new-chat", keys: ["meta","shift","o"], hint: "New Conversation"),
+                  id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
+            // Sidebar toggle
             .init("AXButton", desc: "collapse sidebar",
                   id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "expand sidebar",
                   id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "toggle sidebar",
                   id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
+            // Settings
             .init("AXButton", desc: "settings",
                   id: "claude-settings", keys: ["meta",","], hint: "Settings"),
             .init(title: "settings",
                   id: "claude-settings", keys: ["meta",","], hint: "Settings"),
+            // Mode switching tabs
             .init("AXButton", desc: "chat",
                   id: "claude-chat-mode", keys: ["meta","1"], hint: "Chat"),
             .init("AXButton", desc: "cowork",
                   id: "claude-cowork-mode", keys: ["meta","2"], hint: "Cowork"),
             .init("AXButton", desc: "code",
                   id: "claude-code-mode", keys: ["meta","3"], hint: "Code"),
+            // Search conversations (⌘K)
+            .init("AXTextField", sub: "AXSearchField",
+                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+            .init("AXButton", desc: "search",
+                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+            .init(desc: "search conversations",
+                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+            .init(ph: "search",
+                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+            // Voice dictation (Caps Lock — press once to start, once to stop)
+            .init("AXButton", desc: "dictate",
+                  id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
+            .init("AXButton", desc: "voice",
+                  id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
+            .init("AXButton", desc: "microphone",
+                  id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
+            .init("AXButton", desc: "record",
+                  id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
+            // Navigation history (⌘[ / ⌘] — macOS Electron nav)
+            .init("AXButton", desc: "back",
+                  id: "claude-back", keys: ["meta","["], hint: "Go Back"),
+            .init("AXButton", desc: "forward",
+                  id: "claude-forward", keys: ["meta","]"], hint: "Go Forward"),
         ],
 
         // ── WhatsApp ──────────────────────────────────────────────────────

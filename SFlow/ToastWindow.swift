@@ -84,6 +84,9 @@ final class ToastWindow: NSPanel {
         case "escape":     return "⎋"
         case "delete":     return "⌫"
         case "tab":        return "⇥"
+        case "capslock":   return "⇪"
+        case "[":          return "["
+        case "]":          return "]"
         default:           return key.uppercased()
         }
     }
