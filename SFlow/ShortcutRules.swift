@@ -307,12 +307,21 @@ enum ShortcutRules {
 
         // ── Claude ────────────────────────────────────────────────────────
         "com.anthropic.claudefordesktop": [
-            // Send message
+            // Send message — plain Enter (⇧↩ adds new line)
             .init("AXButton", desc: "send",
-                  id: "claude-send", keys: ["meta","enter"], hint: "Send Message"),
+                  id: "claude-send", keys: ["enter"], hint: "Send Message"),
             .init(title: "send",
-                  id: "claude-send", keys: ["meta","enter"], hint: "Send Message"),
-            // New conversation (⌘N — native menu binding confirmed in Electron bundle)
+                  id: "claude-send", keys: ["enter"], hint: "Send Message"),
+            // Stop response — Esc
+            .init("AXButton", desc: "stop",
+                  id: "claude-stop", keys: ["escape"], hint: "Stop Response"),
+            .init("AXButton", desc: "stop generating",
+                  id: "claude-stop", keys: ["escape"], hint: "Stop Response"),
+            .init("AXButton", desc: "stop response",
+                  id: "claude-stop", keys: ["escape"], hint: "Stop Response"),
+            .init("AXButton", desc: "cancel",
+                  id: "claude-stop", keys: ["escape"], hint: "Stop Response"),
+            // New conversation — ⌘N
             .init("AXButton", desc: "new conversation",
                   id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
             .init("AXButton", desc: "new chat",
@@ -321,35 +330,67 @@ enum ShortcutRules {
                   id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
             .init(title: "new conversation",
                   id: "claude-new-chat", keys: ["meta","n"], hint: "New Conversation"),
-            // Sidebar toggle
+            // Incognito chat — ⇧⌘I
+            .init("AXButton", desc: "incognito",
+                  id: "claude-incognito", keys: ["meta","shift","i"], hint: "Incognito Chat"),
+            .init("AXButton", desc: "incognito chat",
+                  id: "claude-incognito", keys: ["meta","shift","i"], hint: "Incognito Chat"),
+            .init(title: "incognito",
+                  id: "claude-incognito", keys: ["meta","shift","i"], hint: "Incognito Chat"),
+            // Toggle sidebar — ⌘. (period)
             .init("AXButton", desc: "collapse sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
+                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "expand sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
+                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "toggle sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
-            // Settings
+                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
+            .init("AXButton", desc: "sidebar",
+                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
+            // Keyboard shortcuts help — ⌘/
+            .init("AXButton", desc: "keyboard shortcuts",
+                  id: "claude-shortcuts-help", keys: ["meta","/"], hint: "Keyboard Shortcuts"),
+            .init("AXButton", desc: "shortcuts",
+                  id: "claude-shortcuts-help", keys: ["meta","/"], hint: "Keyboard Shortcuts"),
+            .init("AXButton", desc: "help",
+                  id: "claude-shortcuts-help", keys: ["meta","/"], hint: "Keyboard Shortcuts"),
+            // Settings — ⇧⌘, (not plain ⌘,)
             .init("AXButton", desc: "settings",
-                  id: "claude-settings", keys: ["meta",","], hint: "Settings"),
+                  id: "claude-settings", keys: ["meta","shift",","], hint: "Settings"),
             .init(title: "settings",
-                  id: "claude-settings", keys: ["meta",","], hint: "Settings"),
-            // Mode switching tabs
+                  id: "claude-settings", keys: ["meta","shift",","], hint: "Settings"),
+            // Mode switching tabs — ⌘1/2/3
             .init("AXButton", desc: "chat",
                   id: "claude-chat-mode", keys: ["meta","1"], hint: "Chat"),
             .init("AXButton", desc: "cowork",
                   id: "claude-cowork-mode", keys: ["meta","2"], hint: "Cowork"),
             .init("AXButton", desc: "code",
                   id: "claude-code-mode", keys: ["meta","3"], hint: "Code"),
-            // Search conversations (⌘K)
+            // Quick chat or search — ⌘K
             .init("AXTextField", sub: "AXSearchField",
-                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+                  id: "claude-search", keys: ["meta","k"], hint: "Quick Chat or Search"),
             .init("AXButton", desc: "search",
-                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+                  id: "claude-search", keys: ["meta","k"], hint: "Quick Chat or Search"),
             .init(desc: "search conversations",
-                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
+                  id: "claude-search", keys: ["meta","k"], hint: "Quick Chat or Search"),
             .init(ph: "search",
-                  id: "claude-search", keys: ["meta","k"], hint: "Search Conversations"),
-            // Voice dictation (Caps Lock — press once to start, once to stop)
+                  id: "claude-search", keys: ["meta","k"], hint: "Quick Chat or Search"),
+            // Toggle extended thinking — ⇧⌘E
+            .init("AXButton", desc: "extended thinking",
+                  id: "claude-extended-thinking", keys: ["meta","shift","e"], hint: "Extended Thinking"),
+            .init("AXButton", desc: "thinking",
+                  id: "claude-extended-thinking", keys: ["meta","shift","e"], hint: "Extended Thinking"),
+            .init("AXButton", desc: "toggle thinking",
+                  id: "claude-extended-thinking", keys: ["meta","shift","e"], hint: "Extended Thinking"),
+            // Upload file — ⌘U
+            .init("AXButton", desc: "upload",
+                  id: "claude-upload", keys: ["meta","u"], hint: "Upload File"),
+            .init("AXButton", desc: "attach",
+                  id: "claude-upload", keys: ["meta","u"], hint: "Upload File"),
+            .init("AXButton", desc: "upload file",
+                  id: "claude-upload", keys: ["meta","u"], hint: "Upload File"),
+            .init("AXButton", desc: "attach file",
+                  id: "claude-upload", keys: ["meta","u"], hint: "Upload File"),
+            // Voice dictation — Caps Lock (toggle)
             .init("AXButton", desc: "dictate",
                   id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
             .init("AXButton", desc: "voice",
@@ -358,11 +399,6 @@ enum ShortcutRules {
                   id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
             .init("AXButton", desc: "record",
                   id: "claude-voice", keys: ["capslock"], hint: "Voice Dictation"),
-            // Navigation history (⌘[ / ⌘] — macOS Electron nav)
-            .init("AXButton", desc: "back",
-                  id: "claude-back", keys: ["meta","["], hint: "Go Back"),
-            .init("AXButton", desc: "forward",
-                  id: "claude-forward", keys: ["meta","]"], hint: "Go Forward"),
         ],
 
         // ── WhatsApp ──────────────────────────────────────────────────────
