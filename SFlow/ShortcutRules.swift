@@ -337,15 +337,15 @@ enum ShortcutRules {
                   id: "claude-incognito", keys: ["meta","shift","i"], hint: "Incognito Chat"),
             .init(title: "incognito",
                   id: "claude-incognito", keys: ["meta","shift","i"], hint: "Incognito Chat"),
-            // Toggle sidebar — ⌘. (period)
+            // Toggle sidebar — ⌘B
             .init("AXButton", desc: "collapse sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
+                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "expand sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
+                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "toggle sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
+                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
             .init("AXButton", desc: "sidebar",
-                  id: "claude-toggle-sidebar", keys: ["meta","."], hint: "Toggle Sidebar"),
+                  id: "claude-toggle-sidebar", keys: ["meta","b"], hint: "Toggle Sidebar"),
             // Keyboard shortcuts help — ⌘/
             .init("AXButton", desc: "keyboard shortcuts",
                   id: "claude-shortcuts-help", keys: ["meta","/"], hint: "Keyboard Shortcuts"),
