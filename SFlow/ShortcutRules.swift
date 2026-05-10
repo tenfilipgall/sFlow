@@ -286,6 +286,12 @@ enum ShortcutRules {
                   id: "claude-settings", keys: ["meta",","], hint: "Settings"),
             .init(title: "settings",
                   id: "claude-settings", keys: ["meta",","], hint: "Settings"),
+            .init("AXButton", desc: "chat",
+                  id: "claude-chat-mode", keys: ["meta","1"], hint: "Chat"),
+            .init("AXButton", desc: "cowork",
+                  id: "claude-cowork-mode", keys: ["meta","2"], hint: "Cowork"),
+            .init("AXButton", desc: "code",
+                  id: "claude-code-mode", keys: ["meta","3"], hint: "Code"),
         ],
 
         // ── WhatsApp ──────────────────────────────────────────────────────
