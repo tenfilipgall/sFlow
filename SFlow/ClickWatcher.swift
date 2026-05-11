@@ -85,8 +85,6 @@ final class ClickWatcher {
                 let currentIdentifier = (identRef  as? String ?? "").lowercased()
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
 
-                if bundleId == "com.cron.electron" { NSLog("SFlow[NotionCal] role=\(currentRole) desc='\(currentDesc)' title='\(currentTitle)' help='\(currentHelp)' id='\(currentIdentifier)'") } // tmp
-
                 // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
                 if let result = ruleCache.match(
                     bundleId: bundleId,
