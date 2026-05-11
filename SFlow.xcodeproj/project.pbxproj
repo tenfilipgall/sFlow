@@ -41,6 +41,7 @@
 		C2D3E4F5A6B7C8D9E0F1A2B3 /* DiscoveryClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B7C8D9E0F1A2 /* DiscoveryClient.swift */; };
 		E4F5A6B7C8D9E0F1A2B3C4D5 /* DiscoveryClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5A6B7C8D9E0F1A2B3C4 /* DiscoveryClientTests.swift */; };
 		F6A7B8C9D0E1F2A3B4C5D6E7 /* DiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F6A7B8C9D0E1F2A3B4C5D6 /* DiscoveryService.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* SeedMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* SeedMode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,6 +93,7 @@
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* DiscoveryClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryClient.swift; sourceTree = "<group>"; };
 		D3E4F5A6B7C8D9E0F1A2B3C4 /* DiscoveryClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryClientTests.swift; sourceTree = "<group>"; };
 		E5F6A7B8C9D0E1F2A3B4C5D6 /* DiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryService.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* SeedMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedMode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -111,6 +113,7 @@
 				D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */,
 				07A160179D424B35A2BD5941 /* RuleCache.swift */,
 				FD0DBD23CF004F7BBA0EB28A /* RuleStorage.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* SeedMode.swift */,
 				78F2522A34A64845E2F1A827 /* main.swift */,
 				8F05A8D6CB7773DA43E1B8E7 /* MatchConfidence.swift */,
 				A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */,
@@ -279,6 +282,7 @@
 				60D4BD4F03942A723818EB31 /* ToastWindow.swift in Sources */,
 				C934D80ECE34114EC3F593FC /* main.swift in Sources */,
 				A138C7C943504B60933E8768 /* AXSkeletonExtractor.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* SeedMode.swift in Sources */,
 				C2D3E4F5A6B7C8D9E0F1A2B3 /* DiscoveryClient.swift in Sources */,
 				F6A7B8C9D0E1F2A3B4C5D6E7 /* DiscoveryService.swift in Sources */,
 			);
