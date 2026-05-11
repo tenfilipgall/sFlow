@@ -129,4 +129,127 @@ final class ElectronShortcutScannerTests: XCTestCase {
         let result = ElectronShortcutScanner.scanASAR(at: url)
         XCTAssertTrue(result.isEmpty)
     }
+
+    // MARK: - parseWebKeyCombo
+
+    func test_parseWebKeyCombo_commandAltG() {
+        XCTAssertEqual(
+            ElectronShortcutScanner.parseWebKeyCombo("command+alt+g"),
+            ["meta", "alt", "g"])
+    }
+
+    func test_parseWebKeyCombo_commandBackslash() {
+        XCTAssertEqual(
+            ElectronShortcutScanner.parseWebKeyCombo("command+\\"),
+            ["meta", "\\"])
+    }
+
+    func test_parseWebKeyCombo_ctrlShiftK() {
+        XCTAssertEqual(
+            ElectronShortcutScanner.parseWebKeyCombo("ctrl+shift+k"),
+            ["ctrl", "shift", "k"])
+    }
+
+    // MARK: - extractNotionStyleShortcuts (unit)
+
+    func test_extractNotion_simpleLiteralCombo() {
+        let js = #"{id:"openHome",description:"Open home",defaultKeyCombination:["command+alt+g"]}"#
+        let result = ElectronShortcutScanner.extractNotionStyleShortcuts(from: js)
+        XCTAssertEqual(result["openHome"], ["meta", "alt", "g"])
+    }
+
+    func test_extractNotion_ternaryPicksFirstOption() {
+        // t.isApple?"command+alt+g":"ctrl+alt+g" → picks "command+alt+g"
+        let js = #"{id:"openSlipperySlopeHomeTab",description:"Open home",defaultKeyCombination:[t.isApple?"command+alt+g":"ctrl+alt+g"],visibleToUsers:!1}"#
+        let result = ElectronShortcutScanner.extractNotionStyleShortcuts(from: js)
+        XCTAssertEqual(result["openSlipperySlopeHomeTab"], ["meta", "alt", "g"])
+    }
+
+    func test_extractNotion_multipleEntries() {
+        let js = """
+        {id:"openSlipperySlopeHomeTab",description:"Home",defaultKeyCombination:[t.isApple?"command+alt+g":"ctrl+alt+g"],visibleToUsers:!1},
+        {id:"openSlipperySlopeChatsTab",description:"Chats",defaultKeyCombination:[t.isApple?"command+alt+k":"ctrl+alt+k"],visibleToUsers:!1},
+        {id:"openSlipperySlopeMeetingsTab",description:"Meetings",defaultKeyCombination:[t.isApple?"command+alt+y":"ctrl+alt+y"],visibleToUsers:!1}
+        """
+        let result = ElectronShortcutScanner.extractNotionStyleShortcuts(from: js)
+        XCTAssertEqual(result["openSlipperySlopeHomeTab"],     ["meta", "alt", "g"])
+        XCTAssertEqual(result["openSlipperySlopeChatsTab"],    ["meta", "alt", "k"])
+        XCTAssertEqual(result["openSlipperySlopeMeetingsTab"], ["meta", "alt", "y"])
+    }
+
+    func test_extractNotion_modifierOnlyCombo_skipped() {
+        // No non-modifier key → must be skipped
+        let js = #"{id:"commandSOnly",defaultKeyCombination:["command"]}"#
+        let result = ElectronShortcutScanner.extractNotionStyleShortcuts(from: js)
+        XCTAssertNil(result["commandSOnly"])
+    }
+
+    func test_extractNotion_noCombo_skipped() {
+        let js = #"{id:"noop",description:"Nothing",visibleToUsers:!1}"#
+        let result = ElectronShortcutScanner.extractNotionStyleShortcuts(from: js)
+        XCTAssertTrue(result.isEmpty)
+    }
+
+    func test_extractNotion_firstIdWins_duplicateIgnored() {
+        let js = """
+        {id:"openHome",defaultKeyCombination:["command+alt+g"]},
+        {id:"openHome",defaultKeyCombination:["command+ctrl+h"]}
+        """
+        let result = ElectronShortcutScanner.extractNotionStyleShortcuts(from: js)
+        XCTAssertEqual(result["openHome"], ["meta", "alt", "g"])
+    }
+
+    // MARK: - scanServiceWorkerCache integration (requires Notion installed)
+    //
+    // These tests validate part B against the shortcuts hardcoded in part A.
+    // Skip automatically when Notion is not installed.
+
+    private var notionSWCache: [String: MenuBarEntry]? {
+        let fm = FileManager.default
+        let support = fm.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/Notion")
+        guard fm.fileExists(atPath: support.path) else { return nil }
+        return ElectronShortcutScanner.scanServiceWorkerCache(appName: "Notion")
+    }
+
+    // MARK: - Integration tests: B scanner vs A hardcoded rules
+
+    func test_scanSWCache_notion_homeTab_matchesHardcodedRule() throws {
+        guard let cache = notionSWCache else {
+            throw XCTSkip("Notion not installed — skipping integration test")
+        }
+        // Part A hardcodes Home → ["meta","alt","g"]
+        // Part B should produce the same keys under lookup key "home"
+        XCTAssertEqual(cache["home"]?.keys, ["meta", "alt", "g"],
+                       "B scanner must agree with A hardcoded rule for Home tab")
+    }
+
+    func test_scanSWCache_notion_chatsTab_matchesHardcodedRule() throws {
+        guard let cache = notionSWCache else {
+            throw XCTSkip("Notion not installed — skipping integration test")
+        }
+        // Part A hardcodes Chats → ["meta","alt","k"]
+        XCTAssertEqual(cache["chats"]?.keys, ["meta", "alt", "k"],
+                       "B scanner must agree with A hardcoded rule for Chats tab")
+    }
+
+    func test_scanSWCache_notion_meetingsTab_matchesHardcodedRule() throws {
+        guard let cache = notionSWCache else {
+            throw XCTSkip("Notion not installed — skipping integration test")
+        }
+        // Part A hardcodes Meetings → ["meta","alt","y"]
+        XCTAssertEqual(cache["meetings"]?.keys, ["meta", "alt", "y"],
+                       "B scanner must agree with A hardcoded rule for Meetings tab")
+    }
+
+    func test_scanSWCache_notion_toggleSidebar_notRequired() throws {
+        guard let cache = notionSWCache else {
+            throw XCTSkip("Notion not installed — skipping integration test")
+        }
+        // toggleSidebar uses an outer locale ternary — scanner intentionally skips it.
+        // Verify it doesn't store an incorrect value:
+        if let entry = cache["sidebar"] {
+            XCTAssertFalse(entry.keys.isEmpty)
+        }
+    }
 }

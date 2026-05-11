@@ -68,22 +68,29 @@ final class ClickWatcher {
                 // Read all AX attributes once per element — shared across all layers.
                 var roleRef: AnyObject?; var descRef: AnyObject?; var titleRef: AnyObject?
                 var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
+                var identRef: AnyObject?
                 AXUIElementCopyAttributeValue(current, kAXRoleAttribute as CFString, &roleRef)
                 AXUIElementCopyAttributeValue(current, kAXDescriptionAttribute as CFString, &descRef)
                 AXUIElementCopyAttributeValue(current, kAXTitleAttribute as CFString, &titleRef)
                 AXUIElementCopyAttributeValue(current, kAXSubroleAttribute as CFString, &subroleRef)
                 AXUIElementCopyAttributeValue(current, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
                 AXUIElementCopyAttributeValue(current, kAXHelpAttribute as CFString, &helpRef)
-                let currentRole    = roleRef    as? String ?? ""
-                let currentDesc    = (descRef    as? String ?? "").lowercased()
-                let currentHelp    = helpRef    as? String ?? ""
-                let isInteractive  = Self.interactiveRoles.contains(currentRole)
+                AXUIElementCopyAttributeValue(current, kAXIdentifierAttribute as CFString, &identRef)
+                let currentRole       = roleRef   as? String ?? ""
+                let currentDesc       = (descRef   as? String ?? "").lowercased()
+                let currentTitle      = (titleRef  as? String ?? "").lowercased()
+                let currentHelp       = helpRef   as? String ?? ""
+                let currentIdentifier = (identRef  as? String ?? "").lowercased()
+                let isInteractive     = Self.interactiveRoles.contains(currentRole)
+
+                if bundleId == "com.cron.electron" { NSLog("SFlow[NotionCal] role=\(currentRole) desc='\(currentDesc)' title='\(currentTitle)' help='\(currentHelp)' id='\(currentIdentifier)'") } // tmp
 
                 // Layer 1: hardcoded per-app rules
                 if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,
                                                                   role: roleRef, desc: descRef,
                                                                   title: titleRef, subrole: subroleRef,
-                                                                  placeholder: placeholderRef, help: helpRef),
+                                                                  placeholder: placeholderRef, help: helpRef,
+                                                                  identifier: currentIdentifier),
                    confidence >= .threshold {
                     emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                          keys: rule.keys, hint: rule.hint, loc: nsLoc)
@@ -118,7 +125,7 @@ final class ClickWatcher {
 
                     // Layer 4: Universal semantic role heuristics
                     if let rule = ShortcutRules.universalRules.first(where: {
-                        matchUniversal(role: currentRole, desc: currentDesc,
+                        matchUniversal(role: currentRole, desc: currentDesc, title: currentTitle,
                                        subrole: subroleRef as? String ?? "", rule: $0)
                     }) {
                         emit(bundleId: bundleId, shortcutId: rule.shortcutId,
@@ -144,10 +151,11 @@ final class ClickWatcher {
         return ref as? String ?? ""
     }
 
-    private func matchUniversal(role: String, desc: String, subrole: String, rule: ClickRule) -> Bool {
+    private func matchUniversal(role: String, desc: String, title: String, subrole: String, rule: ClickRule) -> Bool {
         if let rr = rule.role,          role    != rr                        { return false }
         if let ss = rule.subroleEquals, subrole != ss                        { return false }
         if let dd = rule.descContains,  !desc.contains(dd.lowercased())      { return false }
+        if let tt = rule.titleContains, !title.contains(tt.lowercased())     { return false }
         return true
     }
 
@@ -200,15 +208,18 @@ final class ClickWatcher {
         if role != "AXMenuItem" {
             var descRef: AnyObject?; var titleRef2: AnyObject?
             var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
+            var identRef2: AnyObject?
             AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef)
             AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &titleRef2)
             AXUIElementCopyAttributeValue(element, kAXSubroleAttribute as CFString, &subroleRef)
             AXUIElementCopyAttributeValue(element, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
             AXUIElementCopyAttributeValue(element, kAXHelpAttribute as CFString, &helpRef)
+            AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identRef2)
+            let menuIdentifier = (identRef2 as? String ?? "").lowercased()
             if let (rule, _) = ShortcutRules.match(element: element, bundleId: bundleId,
                                                     role: roleRef, desc: descRef, title: titleRef2,
                                                     subrole: subroleRef, placeholder: placeholderRef,
-                                                    help: helpRef) {
+                                                    help: helpRef, identifier: menuIdentifier) {
                 emit(bundleId: bundleId, shortcutId: rule.shortcutId,
                      keys: rule.keys, hint: rule.hint, loc: nsLoc)
             }

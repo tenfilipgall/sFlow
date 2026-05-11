@@ -8,16 +8,19 @@ struct ClickRule {
     let titleContains: String?
     let placeholderContains: String?
     let helpContains: String?
+    let identifierContains: String?
     let shortcutId: String
     let keys: [String]
     let hint: String
 
     init(_ role: String? = nil, sub: String? = nil, desc: String? = nil,
          title: String? = nil, ph: String? = nil, help: String? = nil,
+         identifier: String? = nil,
          id: String, keys: [String], hint: String) {
         self.role = role; self.subroleEquals = sub
         self.descContains = desc; self.titleContains = title
         self.placeholderContains = ph; self.helpContains = help
+        self.identifierContains = identifier
         self.shortcutId = id; self.keys = keys; self.hint = hint
     }
 }
@@ -29,7 +32,8 @@ enum ShortcutRules {
     static func match(element: AXUIElement, bundleId: String,
                       role roleRef: AnyObject?, desc descRef: AnyObject?,
                       title titleRef: AnyObject?, subrole subroleRef: AnyObject?,
-                      placeholder placeholderRef: AnyObject?, help helpRef: AnyObject?
+                      placeholder placeholderRef: AnyObject?, help helpRef: AnyObject?,
+                      identifier: String = ""
     ) -> (rule: ClickRule, confidence: MatchConfidence)? {
         guard let appRules = rules[bundleId] else { return nil }
 
@@ -47,6 +51,7 @@ enum ShortcutRules {
             if let t = rule.titleContains,       !title.contains(t.lowercased())           { continue }
             if let p = rule.placeholderContains, !placeholder.contains(p.lowercased())     { continue }
             if let h = rule.helpContains,        !help.contains(h.lowercased())            { continue }
+            if let i = rule.identifierContains,  !identifier.contains(i.lowercased())      { continue }
             return (rule: rule, confidence: .high)
         }
         return nil
@@ -249,6 +254,8 @@ enum ShortcutRules {
                   id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
             .init(desc: "chats",
                   id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
+            .init(desc: "chat",
+                  id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
             .init(title: "chats",
                   id: "notion-chats-tab", keys: ["meta","alt","k"], hint: "Chats with AI"),
             .init(desc: "meetings",
@@ -273,10 +280,37 @@ enum ShortcutRules {
                   id: "notion-toggle-sidebar", keys: ["meta","\\"], hint: "Toggle Sidebar"),
             .init(desc: "open sidebar",
                   id: "notion-toggle-sidebar", keys: ["meta","\\"], hint: "Toggle Sidebar"),
+            // Navigation — Notion uses ⌘[ / ⌘] (browser-style), not ⌘←/⌘→
             .init(desc: "back",
-                  id: "notion-go-back", keys: ["meta","arrowleft"], hint: "Go Back"),
+                  id: "notion-go-back", keys: ["meta","["], hint: "Go Back"),
+            .init(title: "back",
+                  id: "notion-go-back", keys: ["meta","["], hint: "Go Back"),
             .init(desc: "forward",
-                  id: "notion-go-forward", keys: ["meta","arrowright"], hint: "Go Forward"),
+                  id: "notion-go-forward", keys: ["meta","]"], hint: "Go Forward"),
+            .init(title: "forward",
+                  id: "notion-go-forward", keys: ["meta","]"], hint: "Go Forward"),
+            .init(desc: "parent page",
+                  id: "notion-go-up", keys: ["meta","shift","u"], hint: "Go Up"),
+            .init(desc: "go up",
+                  id: "notion-go-up", keys: ["meta","shift","u"], hint: "Go Up"),
+            .init(title: "new tab",
+                  id: "notion-new-tab", keys: ["meta","t"], hint: "New Tab"),
+            .init(title: "new window",
+                  id: "notion-new-window", keys: ["meta","shift","n"], hint: "New Window"),
+            // Content actions
+            .init(desc: "comment",
+                  id: "notion-comment", keys: ["meta","shift","m"], hint: "Comment"),
+            .init(title: "comment",
+                  id: "notion-comment", keys: ["meta","shift","m"], hint: "Comment"),
+            .init(desc: "edit block",
+                  id: "notion-edit-block", keys: ["meta","/"], hint: "Edit Block"),
+            .init(desc: "change block",
+                  id: "notion-edit-block", keys: ["meta","/"], hint: "Edit Block"),
+            .init(desc: "expand toggle",
+                  id: "notion-toggle-expand", keys: ["meta","alt","t"], hint: "Expand/Close Toggles"),
+            .init(desc: "collapse toggle",
+                  id: "notion-toggle-expand", keys: ["meta","alt","t"], hint: "Expand/Close Toggles"),
+            // Appearance
             .init(desc: "dark mode",
                   id: "notion-dark-mode", keys: ["meta","shift","l"], hint: "Toggle Dark/Light Mode"),
             .init(desc: "light mode",
@@ -449,6 +483,22 @@ enum ShortcutRules {
                   id: "wa-new-group", keys: ["meta","shift","n"], hint: "New Group"),
             .init(desc: "settings",
                   id: "wa-settings", keys: ["meta",","], hint: "Settings"),
+            .init(desc: "next conversation",
+                  id: "wa-next-chat", keys: ["meta","shift","]"], hint: "Next Conversation"),
+            .init(title: "next conversation",
+                  id: "wa-next-chat", keys: ["meta","shift","]"], hint: "Next Conversation"),
+            .init(desc: "previous conversation",
+                  id: "wa-prev-chat", keys: ["meta","shift","["], hint: "Previous Conversation"),
+            .init(title: "previous conversation",
+                  id: "wa-prev-chat", keys: ["meta","shift","["], hint: "Previous Conversation"),
+            .init(desc: "mark as unread",
+                  id: "wa-mark-unread", keys: ["meta","shift","u"], hint: "Mark as Unread"),
+            .init(title: "mark as unread",
+                  id: "wa-mark-unread", keys: ["meta","shift","u"], hint: "Mark as Unread"),
+            .init(desc: "profile",
+                  id: "wa-profile", keys: ["meta","p"], hint: "Show Profile"),
+            .init(title: "profile",
+                  id: "wa-profile", keys: ["meta","p"], hint: "Show Profile"),
         ],
 
         // ── Comet (Perplexity) ────────────────────────────────────────────

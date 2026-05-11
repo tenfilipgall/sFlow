@@ -142,8 +142,8 @@ final class MenuBarWatcher {
             var index = MenuBarIndex()
             index.build(for: app)
             if ElectronShortcutScanner.isElectronApp(app) {
-                let asarEntries = ElectronShortcutScanner.scan(app: app)
-                index.merge(asarEntries)
+                index.merge(ElectronShortcutScanner.scan(app: app))
+                index.merge(ElectronShortcutScanner.scanServiceWorkerCache(app: app))
             }
             MenuBarCache.save(bundleId: bundleId, version: version, entries: index.allEntries)
             DispatchQueue.main.async { [weak self] in
