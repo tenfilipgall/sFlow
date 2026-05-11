@@ -10,6 +10,8 @@
 		0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */; };
 		5525C7031E3345BAB6786FF6 /* LoadedRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */; };
 		CCB34E0771A848B7A7D8C272 /* LoadedRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB51F0417544CFF82F5C289 /* LoadedRuleTests.swift */; };
+		4EFCC6984BD94D70BB4E70AE /* RuleCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A160179D424B35A2BD5941 /* RuleCache.swift */; };
+		863B1C19EEB943C985C454F5 /* RuleCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E151CB1851446F39843FFD3 /* RuleCacheTests.swift */; };
 		0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */; };
 		2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */; };
 		32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */; };
@@ -60,6 +62,8 @@
 		A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarCache.swift; sourceTree = "<group>"; };
 		D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRule.swift; sourceTree = "<group>"; };
 		0BB51F0417544CFF82F5C289 /* LoadedRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRuleTests.swift; sourceTree = "<group>"; };
+		07A160179D424B35A2BD5941 /* RuleCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleCache.swift; sourceTree = "<group>"; };
+		1E151CB1851446F39843FFD3 /* RuleCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleCacheTests.swift; sourceTree = "<group>"; };
 		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
 		C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIndex.swift; sourceTree = "<group>"; };
 		CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRulesTests.swift; sourceTree = "<group>"; };
@@ -84,6 +88,7 @@
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
 				37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */,
 				D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */,
+				07A160179D424B35A2BD5941 /* RuleCache.swift */,
 				78F2522A34A64845E2F1A827 /* main.swift */,
 				8F05A8D6CB7773DA43E1B8E7 /* MatchConfidence.swift */,
 				A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */,
@@ -115,6 +120,7 @@
 				9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */,
 				71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */,
 				0BB51F0417544CFF82F5C289 /* LoadedRuleTests.swift */,
+				1E151CB1851446F39843FFD3 /* RuleCacheTests.swift */,
 				929AD545A5C8B883B67B8DF1 /* MenuBarIndexTests.swift */,
 				CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */,
 			);
@@ -215,6 +221,7 @@
 				3870CDD92A623CCC38212BBD /* MenuBarCacheTests.swift in Sources */,
 				9D0515F424679C978B7CB4FE /* MenuBarIndexTests.swift in Sources */,
 				CCB34E0771A848B7A7D8C272 /* LoadedRuleTests.swift in Sources */,
+				863B1C19EEB943C985C454F5 /* RuleCacheTests.swift in Sources */,
 				2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -231,6 +238,7 @@
 				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
 				F2E728B4C8579C70488B1007 /* MatchConfidence.swift in Sources */,
 				5525C7031E3345BAB6786FF6 /* LoadedRule.swift in Sources */,
+				4EFCC6984BD94D70BB4E70AE /* RuleCache.swift in Sources */,
 				0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */,
 				A376260BDFF9C683712A75D2 /* MenuBarIndex.swift in Sources */,
 				32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */,
