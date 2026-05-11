@@ -34,6 +34,8 @@
 		FBFAD138C297F1EC3CCECE4C /* BundleStringsScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */; };
 		4A835C02919B427AA984BECB /* RuleStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0DBD23CF004F7BBA0EB28A /* RuleStorage.swift */; };
 		9698660406FF4FBCA10BD95C /* RuleStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C684DC6328A45048684C767 /* RuleStorageTests.swift */; };
+		A138C7C943504B60933E8768 /* AXSkeletonExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1D88C6833E423691C4E649 /* AXSkeletonExtractor.swift */; };
+		F1A3B968D79E4057808DA853 /* AXSkeletonFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB9E295F3FE4BBA889E2FCA /* AXSkeletonFilterTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +80,8 @@
 		FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleStringsScanner.swift; sourceTree = "<group>"; };
 		FD0DBD23CF004F7BBA0EB28A /* RuleStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleStorage.swift; sourceTree = "<group>"; };
 		9C684DC6328A45048684C767 /* RuleStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleStorageTests.swift; sourceTree = "<group>"; };
+		4D1D88C6833E423691C4E649 /* AXSkeletonExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXSkeletonExtractor.swift; sourceTree = "<group>"; };
+		5BB9E295F3FE4BBA889E2FCA /* AXSkeletonFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXSkeletonFilterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -86,6 +90,7 @@
 			children = (
 				75AB6406FDB65C7366C483F8 /* AppDelegate.swift */,
 				9EE99A377EF3A592EEB73BC6 /* AsarReader.swift */,
+				4D1D88C6833E423691C4E649 /* AXSkeletonExtractor.swift */,
 				FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */,
 				74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */,
 				63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */,
@@ -129,6 +134,7 @@
 				9C684DC6328A45048684C767 /* RuleStorageTests.swift */,
 				929AD545A5C8B883B67B8DF1 /* MenuBarIndexTests.swift */,
 				CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */,
+				5BB9E295F3FE4BBA889E2FCA /* AXSkeletonFilterTests.swift */,
 			);
 			path = SFlowTests;
 			sourceTree = "<group>";
@@ -230,6 +236,7 @@
 				863B1C19EEB943C985C454F5 /* RuleCacheTests.swift in Sources */,
 				9698660406FF4FBCA10BD95C /* RuleStorageTests.swift in Sources */,
 				2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */,
+				F1A3B968D79E4057808DA853 /* AXSkeletonFilterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,6 +260,7 @@
 				B387629ECE75EB4A9EC78312 /* ShortcutRules.swift in Sources */,
 				60D4BD4F03942A723818EB31 /* ToastWindow.swift in Sources */,
 				C934D80ECE34114EC3F593FC /* main.swift in Sources */,
+				A138C7C943504B60933E8768 /* AXSkeletonExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
