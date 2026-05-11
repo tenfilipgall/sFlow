@@ -1,0 +1,20 @@
+name = "sflow-rules"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV namespaces (create via: wrangler kv namespace create RULES_CACHE)
+# Then paste the returned IDs below.
+[[kv_namespaces]]
+binding = "RULES_CACHE"
+id = "TODO_REPLACE_AFTER_WRANGLER_KV_CREATE"
+
+[[kv_namespaces]]
+binding = "FEEDBACK"
+id = "TODO_REPLACE_AFTER_WRANGLER_KV_CREATE"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "TODO_REPLACE_AFTER_WRANGLER_KV_CREATE"
+
+# Secrets set via: wrangler secret put ANTHROPIC_API_KEY
