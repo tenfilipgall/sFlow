@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */; };
+		5525C7031E3345BAB6786FF6 /* LoadedRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */; };
+		CCB34E0771A848B7A7D8C272 /* LoadedRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB51F0417544CFF82F5C289 /* LoadedRuleTests.swift */; };
 		0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */; };
 		2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */; };
 		32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */; };
@@ -56,6 +58,8 @@
 		9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchConfidenceTests.swift; sourceTree = "<group>"; };
 		9EE99A377EF3A592EEB73BC6 /* AsarReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReader.swift; sourceTree = "<group>"; };
 		A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarCache.swift; sourceTree = "<group>"; };
+		D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRule.swift; sourceTree = "<group>"; };
+		0BB51F0417544CFF82F5C289 /* LoadedRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRuleTests.swift; sourceTree = "<group>"; };
 		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
 		C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIndex.swift; sourceTree = "<group>"; };
 		CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRulesTests.swift; sourceTree = "<group>"; };
@@ -79,6 +83,7 @@
 				63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */,
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
 				37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */,
+				D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */,
 				78F2522A34A64845E2F1A827 /* main.swift */,
 				8F05A8D6CB7773DA43E1B8E7 /* MatchConfidence.swift */,
 				A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */,
@@ -109,6 +114,7 @@
 				E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */,
 				9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */,
 				71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */,
+				0BB51F0417544CFF82F5C289 /* LoadedRuleTests.swift */,
 				929AD545A5C8B883B67B8DF1 /* MenuBarIndexTests.swift */,
 				CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */,
 			);
@@ -208,6 +214,7 @@
 				D8B1CF34485FD3D6842055D5 /* MatchConfidenceTests.swift in Sources */,
 				3870CDD92A623CCC38212BBD /* MenuBarCacheTests.swift in Sources */,
 				9D0515F424679C978B7CB4FE /* MenuBarIndexTests.swift in Sources */,
+				CCB34E0771A848B7A7D8C272 /* LoadedRuleTests.swift in Sources */,
 				2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -223,6 +230,7 @@
 				B0CB749EB83B777278EF3108 /* ElectronShortcutScanner.swift in Sources */,
 				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
 				F2E728B4C8579C70488B1007 /* MatchConfidence.swift in Sources */,
+				5525C7031E3345BAB6786FF6 /* LoadedRule.swift in Sources */,
 				0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */,
 				A376260BDFF9C683712A75D2 /* MenuBarIndex.swift in Sources */,
 				32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */,
@@ -268,6 +276,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -304,6 +313,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
