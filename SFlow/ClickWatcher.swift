@@ -9,12 +9,14 @@ final class ClickWatcher {
 
     private let onEvent: Handler
     private let menuBarWatcher = MenuBarWatcher()
+    private let ruleCache: RuleCache
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var lastShortcutId: String = ""
     private var lastShortcutTime: Date = .distantPast
 
-    init(onEvent: @escaping Handler) {
+    init(ruleCache: RuleCache, onEvent: @escaping Handler) {
+        self.ruleCache = ruleCache
         self.onEvent = onEvent
         sharedWatcher = self
         setup()
@@ -84,6 +86,20 @@ final class ClickWatcher {
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
 
                 if bundleId == "com.cron.electron" { NSLog("SFlow[NotionCal] role=\(currentRole) desc='\(currentDesc)' title='\(currentTitle)' help='\(currentHelp)' id='\(currentIdentifier)'") } // tmp
+
+                // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
+                if let result = ruleCache.match(
+                    bundleId: bundleId,
+                    role: currentRole,
+                    title: currentTitle,
+                    desc: currentDesc,
+                    help: currentHelp.lowercased()
+                ) {
+                    let autoId = "json:\(bundleId):\(result.keys.joined(separator: "+"))"
+                    emit(bundleId: bundleId, shortcutId: autoId,
+                         keys: result.keys, hint: result.hint, loc: nsLoc)
+                    return
+                }
 
                 // Layer 1: hardcoded per-app rules
                 if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,

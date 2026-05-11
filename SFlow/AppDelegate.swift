@@ -4,6 +4,7 @@ import ApplicationServices
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var clickWatcher: ClickWatcher?
+    private var ruleCache: RuleCache!
 
     private var isEnabled: Bool {
         get { UserDefaults.standard.object(forKey: "enabled") as? Bool ?? true }
@@ -87,7 +88,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func startWatcher() {
-        clickWatcher = ClickWatcher { event in
+        do {
+            try RuleStorage.seedBundledIfMissing()
+            ruleCache = RuleCache(rootDir: RuleStorage.userRulesDirectory())
+            try ruleCache.load()
+        } catch {
+            NSLog("SFlow: RuleCache load failed: \(error). Continuing without JSON rules.")
+            ruleCache = RuleCache(rootDir: RuleStorage.userRulesDirectory())
+        }
+        clickWatcher = ClickWatcher(ruleCache: ruleCache) { event in
             ToastWindow.show(event: event)
             EventLogger.log(event: event)
         }
