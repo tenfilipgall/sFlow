@@ -18,7 +18,7 @@ final class DiscoveryClient {
     }
 
     /// Default for production. Replace before shipping with the URL from Task A8.
-    static let productionURL = URL(string: "https://sflow-rules.YOUR-SUBDOMAIN.workers.dev")!
+    static let productionURL = URL(string: "https://sflow-rules.shortcutflow.workers.dev")!
 
     func discover(
         bundleId: String,
