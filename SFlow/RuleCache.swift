@@ -55,19 +55,39 @@ final class RuleCache {
         "AXGroup", "AXCell", "AXImage",
     ]
 
+    /// Strips a trailing " X" (space + single letter) from a title — handles Slack/Discord
+    /// menu items that render the access-key letter in the AX title (e.g. "Edit message E").
+    /// Returns nil if the title doesn't have that shape OR stripping would leave fewer
+    /// than 2 characters (too aggressive).
+    static func stripHotkeySuffix(_ s: String) -> String? {
+        guard s.count >= 4 else { return nil }
+        let chars = Array(s)
+        let last = chars[chars.count - 1]
+        let prev = chars[chars.count - 2]
+        guard prev == " ", last.isLetter else { return nil }
+        let stripped = String(chars.dropLast(2))
+        guard stripped.count >= 2 else { return nil }
+        return stripped
+    }
+
     func match(bundleId: String, role: String, title: String, desc: String, help: String) -> MatchResult? {
         guard let rules = rulesByBundle[bundleId] else { return nil }
         let titleLC = title.lowercased()
         let descLC = desc.lowercased()
         let helpLC = help.lowercased()
+        let titleStripped = Self.stripHotkeySuffix(title)?.lowercased()
 
         for rule in rules {
             if !showExperimental, rule.confidence == .low { continue }
             if !roleCompatible(ruleRole: rule.match.role, actualRole: role) { continue }
             let titleMatches = rule.match.titles.contains { candidate in
                 let c = candidate.lowercased()
-                return titleLC == c || descLC == c || helpLC == c
-                    || titleLC.contains(c) || descLC.contains(c)
+                if titleLC == c || descLC == c || helpLC == c
+                    || titleLC.contains(c) || descLC.contains(c) { return true }
+                if let stripped = titleStripped {
+                    if stripped == c || stripped.contains(c) { return true }
+                }
+                return false
             }
             if titleMatches { return MatchResult(rule: rule) }
         }

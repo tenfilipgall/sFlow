@@ -170,6 +170,93 @@ final class RuleCacheTests: XCTestCase {
         XCTAssertNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Search", desc: "", help: ""))
     }
 
+    func testMatchAcceptsAXTitleWithTrailingHotkeySuffix() throws {
+        // Slack/Discord render menu access keys in the AX title: "Edit message E".
+        // Bundled rules only carry "Edit message" — the matcher must tolerate the suffix.
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+
+        let menuRule = LoadedRule(
+            match: LoadedMatch(role: "AXMenuItem", titles: ["Edit message"]),
+            keys: ["e"], hint: "Edit message",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(
+            bundleId: "com.x", appVersion: "1.0", fetchedAt: "2026-05-11T00:00:00Z",
+            source: .cloud, rulesVersion: nil,
+            rules: [menuRule]
+        )
+        let data = try JSONEncoder().encode(set)
+        try data.write(to: tempDir.appendingPathComponent("cache/com.x.json"))
+
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        let result = cache.match(bundleId: "com.x", role: "AXMenuItem",
+                                  title: "Edit message E", desc: "", help: "")
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result?.keys, ["e"])
+    }
+
+    func testMatchDoesNotStripSuffixWhenStrippedTitleTooShort() throws {
+        // Candidate "ab" is not a substring of AX title "Q Y", and stripping "Q Y" would
+        // leave just "Q" (length 1) which is rejected — so no match by either path.
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+
+        let menuRule = LoadedRule(
+            match: LoadedMatch(role: "AXMenuItem", titles: ["ab"]),
+            keys: ["x"], hint: "ab",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(
+            bundleId: "com.x", appVersion: "1.0", fetchedAt: "2026-05-11T00:00:00Z",
+            source: .cloud, rulesVersion: nil,
+            rules: [menuRule]
+        )
+        let data = try JSONEncoder().encode(set)
+        try data.write(to: tempDir.appendingPathComponent("cache/com.x.json"))
+
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        let result = cache.match(bundleId: "com.x", role: "AXMenuItem",
+                                  title: "Q Y", desc: "", help: "")
+        XCTAssertNil(result)
+    }
+
+    func testMatchDoesNotStripWhenLastCharIsNotLetter() throws {
+        // Candidate "hello" is not a substring of AX title "ello 1"; stripping would
+        // require a trailing letter (last char is "1") — neither path matches.
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+
+        let menuRule = LoadedRule(
+            match: LoadedMatch(role: "AXMenuItem", titles: ["hello"]),
+            keys: ["h"], hint: "hello",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(
+            bundleId: "com.x", appVersion: "1.0", fetchedAt: "2026-05-11T00:00:00Z",
+            source: .cloud, rulesVersion: nil,
+            rules: [menuRule]
+        )
+        let data = try JSONEncoder().encode(set)
+        try data.write(to: tempDir.appendingPathComponent("cache/com.x.json"))
+
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        let result = cache.match(bundleId: "com.x", role: "AXMenuItem",
+                                  title: "ello 1", desc: "", help: "")
+        XCTAssertNil(result)
+    }
+
+    func testStripHotkeySuffixExamples() {
+        XCTAssertEqual(RuleCache.stripHotkeySuffix("Edit message E"), "Edit message")
+        XCTAssertEqual(RuleCache.stripHotkeySuffix("Mark unread U"), "Mark unread")
+        // "AB C" stripped → "AB" (2 chars) — allowed by `stripped.count >= 2`.
+        XCTAssertEqual(RuleCache.stripHotkeySuffix("AB C"), "AB")
+        XCTAssertNil(RuleCache.stripHotkeySuffix("A B"))         // stripped "A" → too short
+        XCTAssertNil(RuleCache.stripHotkeySuffix("Hello"))       // no space-letter ending
+        XCTAssertNil(RuleCache.stripHotkeySuffix("Hello 9"))     // digit, not letter
+        XCTAssertNil(RuleCache.stripHotkeySuffix(""))            // empty
+    }
+
     func testFiltersLowConfidenceByDefault() throws {
         try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
 
