@@ -1,5 +1,13 @@
 import Foundation
 
+struct MissEvent {
+    let bundleId: String
+    let role: String
+    let title: String
+    let desc: String
+    let help: String
+}
+
 enum EventLogger {
     static let defaultLogURL: URL = {
         let appSupport = FileManager.default
@@ -16,14 +24,37 @@ enum EventLogger {
     static func log(event: ShortcutEvent, to url: URL) {
         let formatter = ISO8601DateFormatter()
         let entry: [String: Any] = [
+            "type":       "toast",
+            "timestamp":  formatter.string(from: Date()),
+            "bundleId":   event.bundleId,
+            "shortcutId": event.shortcutId,
+            "keys":       event.keys,
+            "hint":       event.hint,
+            "mouseX":     event.mouseX,
+            "mouseY":     event.mouseY,
+        ]
+        write(entry, to: url)
+    }
+
+    static func logMiss(event: MissEvent) {
+        logMiss(event: event, to: defaultLogURL)
+    }
+
+    static func logMiss(event: MissEvent, to url: URL) {
+        let formatter = ISO8601DateFormatter()
+        let entry: [String: Any] = [
+            "type":      "miss",
             "timestamp": formatter.string(from: Date()),
             "bundleId":  event.bundleId,
-            "shortcutId": event.shortcutId,
-            "keys":      event.keys,
-            "hint":      event.hint,
-            "mouseX":    event.mouseX,
-            "mouseY":    event.mouseY,
+            "role":      event.role,
+            "title":     event.title,
+            "desc":      event.desc,
+            "help":      event.help,
         ]
+        write(entry, to: url)
+    }
+
+    private static func write(_ entry: [String: Any], to url: URL) {
         guard let data = try? JSONSerialization.data(withJSONObject: entry, options: .sortedKeys),
               let line = String(data: data, encoding: .utf8) else { return }
         let lineWithNewline = (line + "\n").data(using: .utf8)!

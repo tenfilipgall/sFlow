@@ -52,6 +52,33 @@ final class EventLoggerTests: XCTestCase {
         XCTAssertEqual(json1["shortcutId"] as? String, "second")
     }
 
+    func test_logMiss_writesTypeMissLine() throws {
+        let event = MissEvent(bundleId: "md.obsidian",
+                              role: "AXButton",
+                              title: "open quick switcher",
+                              desc: "",
+                              help: "")
+        EventLogger.logMiss(event: event, to: logFile)
+        let content = try String(contentsOf: logFile, encoding: .utf8)
+        let line = content.trimmingCharacters(in: .newlines)
+        let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "miss")
+        XCTAssertEqual(json["bundleId"] as? String, "md.obsidian")
+        XCTAssertEqual(json["role"] as? String, "AXButton")
+        XCTAssertEqual(json["title"] as? String, "open quick switcher")
+        XCTAssertEqual(json["desc"] as? String, "")
+        XCTAssertEqual(json["help"] as? String, "")
+        XCTAssertNotNil(json["timestamp"])
+    }
+
+    func test_log_toastEventIncludesTypeField() throws {
+        EventLogger.log(event: makeEvent(), to: logFile)
+        let content = try String(contentsOf: logFile, encoding: .utf8)
+        let line = content.trimmingCharacters(in: .newlines)
+        let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "toast")
+    }
+
     private func makeEvent(bundleId: String = "com.test", shortcutId: String = "test",
                            keys: [String] = ["meta", "k"], hint: String = "Test",
                            mouseX: Double = 0, mouseY: Double = 0) -> ShortcutEvent {
