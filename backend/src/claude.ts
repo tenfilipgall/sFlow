@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { DiscoverRequest, RuleSet, Rule } from "./types";
 import { RuleSchema } from "./types";
 import { buildSystemPrompt, buildUserPrompt } from "./prompt";
+import { dedupOverlappingRules } from "./dedup";
 
 const MODEL = "claude-sonnet-4-6";
 
@@ -23,11 +24,17 @@ export async function generateRules(
   const text = extractFinalText(message);
   const rules = parseRulesJSON(text);
 
-  return {
+  const parsed: RuleSet = {
     bundleId: req.bundleId,
     rulesVersion: new Date().toISOString(),
     rules,
   };
+
+  const { result: deduped, dropped } = dedupOverlappingRules(parsed);
+  if (dropped.length > 0) {
+    console.log(`[dedup] ${req.bundleId}: dropped ${dropped.length} overlapping rules:`, dropped);
+  }
+  return deduped;
 }
 
 function extractFinalText(message: Awaited<ReturnType<Anthropic["messages"]["create"]>>): string {
