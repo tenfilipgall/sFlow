@@ -4,6 +4,9 @@ import ApplicationServices
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var clickWatcher: ClickWatcher?
+    private var ruleCache: RuleCache!
+    private var discoveryService: DiscoveryService?
+    private var statusIndicatorText: String = ""
 
     private var isEnabled: Bool {
         get { UserDefaults.standard.object(forKey: "enabled") as? Bool ?? true }
@@ -86,8 +89,52 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if isEnabled { startWatcher() }
     }
 
+    private func updateStatusItemTitle(_ text: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let button = self.statusItem?.button else { return }
+            self.statusIndicatorText = text
+            if text.isEmpty {
+                button.title = ""
+            } else {
+                button.title = " " + text   // small offset from the ⌘ icon
+            }
+        }
+    }
+
     private func startWatcher() {
-        clickWatcher = ClickWatcher { event in
+        do {
+            try RuleStorage.seedBundledIfMissing()
+            ruleCache = RuleCache(rootDir: RuleStorage.userRulesDirectory())
+            try ruleCache.load()
+        } catch {
+            NSLog("SFlow: RuleCache load failed: \(error)")
+            ruleCache = RuleCache(rootDir: RuleStorage.userRulesDirectory())
+        }
+
+        let client = DiscoveryClient(
+            baseURL: DiscoveryClient.productionURL,
+            clientVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+        )
+        discoveryService = DiscoveryService(
+            client: client,
+            ruleCache: ruleCache,
+            rulesDir: RuleStorage.userRulesDirectory()
+        )
+        discoveryService?.onStatusChange = { [weak self] status in
+            switch status {
+            case .idle:
+                self?.updateStatusItemTitle("")
+            case .running(let name):
+                self?.updateStatusItemTitle("✨ Learning \(name)…")
+            case .completed:
+                self?.updateStatusItemTitle("")
+            case .failed:
+                self?.updateStatusItemTitle("")
+            }
+        }
+        discoveryService?.observeAppActivation()
+
+        clickWatcher = ClickWatcher(ruleCache: ruleCache) { event in
             ToastWindow.show(event: event)
             EventLogger.log(event: event)
         }

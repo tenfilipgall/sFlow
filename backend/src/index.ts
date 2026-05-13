@@ -1,0 +1,24 @@
+import { handleDiscover } from "./handlers/discover";
+
+export interface Env {
+  RULES_CACHE: KVNamespace;
+  FEEDBACK: KVNamespace;
+  RATE_LIMIT: KVNamespace;
+  ANTHROPIC_API_KEY: string;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/v1/discover") {
+      return handleDiscover(request, env);
+    }
+
+    if (url.pathname === "/" || url.pathname === "/health") {
+      return new Response("SFlow Rules Worker", { status: 200 });
+    }
+
+    return new Response("Not Found", { status: 404 });
+  },
+};

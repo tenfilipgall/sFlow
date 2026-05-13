@@ -9,12 +9,14 @@ final class ClickWatcher {
 
     private let onEvent: Handler
     private let menuBarWatcher = MenuBarWatcher()
+    private let ruleCache: RuleCache
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var lastShortcutId: String = ""
     private var lastShortcutTime: Date = .distantPast
 
-    init(onEvent: @escaping Handler) {
+    init(ruleCache: RuleCache, onEvent: @escaping Handler) {
+        self.ruleCache = ruleCache
         self.onEvent = onEvent
         sharedWatcher = self
         setup()
@@ -52,13 +54,21 @@ final class ClickWatcher {
               let bundleId  = frontmost.bundleIdentifier else { return }
 
         let nsLoc   = NSEvent.mouseLocation
-        let screenH = NSScreen.screens
-            .first(where: { NSMouseInRect(nsLoc, $0.frame, false) })?
-            .frame.maxY ?? (NSScreen.main?.frame.height ?? 900)
+        // AX uses Quartz coords (origin = top-left of the menu-bar-bearing screen).
+        // NSEvent.mouseLocation uses NSScreen coords (origin = bottom-left of the same).
+        // Convert using NSScreen.screens[0]'s height (the menu-bar screen) — not the
+        // screen under the cursor. Otherwise multi-monitor setups put AX coords on the
+        // wrong screen and AXUIElementCopyElementAtPosition falls back to the menu bar.
+        let primaryH = NSScreen.screens.first?.frame.height
+            ?? (NSScreen.main?.frame.height ?? 900)
         let axX = Float(nsLoc.x)
-        let axY = Float(screenH - nsLoc.y)
+        let axY = Float(primaryH - nsLoc.y)
 
         let axApp = AXUIElementCreateApplication(frontmost.processIdentifier)
+        // Force Chromium/Electron apps (Slack, Notion, Discord, VSCode) to expose their
+        // accessibility tree. Idempotent. No-op on native apps.
+        AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
+        AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
         var elemRef: AXUIElement?
         let result = AXUIElementCopyElementAtPosition(axApp, axX, axY, &elemRef)
 
@@ -83,7 +93,19 @@ final class ClickWatcher {
                 let currentIdentifier = (identRef  as? String ?? "").lowercased()
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
 
-                if bundleId == "com.cron.electron" { NSLog("SFlow[NotionCal] role=\(currentRole) desc='\(currentDesc)' title='\(currentTitle)' help='\(currentHelp)' id='\(currentIdentifier)'") } // tmp
+                // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
+                if let result = ruleCache.match(
+                    bundleId: bundleId,
+                    role: currentRole,
+                    title: currentTitle,
+                    desc: currentDesc,
+                    help: currentHelp.lowercased()
+                ) {
+                    let autoId = "json:\(bundleId):\(result.keys.joined(separator: "+"))"
+                    emit(bundleId: bundleId, shortcutId: autoId,
+                         keys: result.keys, hint: result.hint, loc: nsLoc)
+                    return
+                }
 
                 // Layer 1: hardcoded per-app rules
                 if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,
