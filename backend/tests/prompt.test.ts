@@ -37,3 +37,22 @@ describe("buildUserPrompt", () => {
     expect(result).toContain('AXButton: "Send"');
   });
 });
+
+describe("buildSystemPrompt v1.1 prompt", () => {
+  const prompt = buildSystemPrompt();
+
+  it("instructs Claude to produce 3-5 title variants per rule", () => {
+    expect(prompt).toMatch(/3[-–]5 variant/i);
+    expect(prompt.toLowerCase()).toContain("verb-led");
+    expect(prompt.toLowerCase()).toContain("noun-only");
+  });
+
+  it("includes few-shot examples block", () => {
+    expect(prompt).toContain("Example 1");
+    expect(prompt).toContain("Quick Switcher");
+  });
+
+  it("documents the version field in the schema", () => {
+    expect(prompt).toContain('"version": 1');
+  });
+});

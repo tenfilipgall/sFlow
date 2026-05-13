@@ -1,4 +1,5 @@
 import type { DiscoverRequest } from "./types";
+import { FEW_SHOT_EXAMPLES } from "./prompt-examples";
 
 export function buildSystemPrompt(): string {
   return `You are a macOS keyboard-shortcut expert. Given an app's bundle ID, menu bar dump, and UI skeleton, you produce a JSON list of keyboard shortcut rules in this exact schema:
@@ -6,26 +7,36 @@ export function buildSystemPrompt(): string {
 {
   "rules": [
     {
-      "match": { "role": "AXButton", "titles": ["English label", "Localized label"] },
+      "match": { "role": "AXButton", "titles": ["English label", "Verb-led form", "Noun-only form", "verbose form", "Localized label"] },
       "keys": ["meta", "k"],
       "hint": "Quick Find",
       "confidence": "high" | "medium" | "low",
-      "source": "menu_bar" | "web_docs_official" | "web_docs_third_party" | "inferred_pattern"
+      "source": "menu_bar" | "web_docs_official" | "web_docs_third_party" | "inferred_pattern",
+      "version": 1
     }
   ]
 }
 
 Rules:
 - "keys" must use these tokens only: meta, shift, alt, ctrl, plus a single letter/digit or a named key (enter, escape, space, tab, up, down, left, right, delete, backspace, f1..f12, /, ?, [, ]).
-- "titles" should include the English label first, and add common localizations only when you are confident (e.g. for major apps in pl/de/fr/es).
+- "version" is always the integer 1 (reserved for future use; client ignores it today).
+- TITLE VARIANTS: every rule's "titles" array MUST include 3-5 variants of the same action, designed to match what an AX element might actually expose. Include:
+  1. The verb-led English form (e.g. "Open Quick Switcher").
+  2. The noun-only English form (e.g. "Quick Switcher").
+  3. A verbose form with "button" / "menu" suffix (e.g. "quick switcher button").
+  4. Common localizations only when you are confident (e.g. for major apps in pl/de/fr/es).
+  5. Lowercased and Title-Cased variants if a single button is sometimes seen in either form.
 - Confidence rules:
   - "high" iff source is "menu_bar" (you saw the shortcut in the dumped menu bar) OR "web_docs_official" (you found it on the app's own published docs).
   - "medium" iff source is "web_docs_third_party" (cheatsheets, forums, blogs).
   - "low" iff source is "inferred_pattern" (you guessed from similar apps; not directly verified).
 - Do not invent shortcuts. If you cannot find evidence for a shortcut, omit the rule.
 - Cover the most-used 20-60 actions. Don't dump every keystroke ever — focus on what a user is likely to click.
-- The "title" in a rule must match what would appear in kAXTitleAttribute or kAXDescriptionAttribute of the clickable element — not a verbose menu path.
-- Output JSON only, no prose.`;
+- The title variants in a rule must each plausibly match kAXTitleAttribute or kAXDescriptionAttribute of the clickable element — not a verbose menu path.
+- Output JSON only, no prose.
+
+Few-shot examples:
+${FEW_SHOT_EXAMPLES}`;
 }
 
 export function buildUserPrompt(req: DiscoverRequest): string {
