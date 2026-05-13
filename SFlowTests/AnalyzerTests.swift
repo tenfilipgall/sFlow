@@ -55,6 +55,17 @@ final class AnalyzerTests: XCTestCase {
         XCTAssertEqual(report.totalMisses, 1)
     }
 
+    func test_aggregate_handlesPipeCharacterInTitle() {
+        let lines = [
+            #"{"type":"miss","bundleId":"md.obsidian","role":"AXButton","title":"File | New","desc":"","help":""}"#,
+            #"{"type":"miss","bundleId":"md.obsidian","role":"AXButton","title":"File | New","desc":"","help":""}"#,
+        ]
+        let report = Analyzer.aggregate(lines: lines)
+        XCTAssertEqual(report.appsRanked[0].topMisses.count, 1)
+        XCTAssertEqual(report.appsRanked[0].topMisses[0].title, "File | New")
+        XCTAssertEqual(report.appsRanked[0].topMisses[0].count, 2)
+    }
+
     func test_format_includesAppNameBundleIdAndTopMisses() {
         let lines = [
             #"{"type":"miss","bundleId":"md.obsidian","role":"AXButton","title":"open quick switcher","desc":"","help":""}"#,

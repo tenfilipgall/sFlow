@@ -19,9 +19,14 @@ enum Analyzer {
         let appsRanked: [AppReport]
     }
 
+    private struct MissKey: Hashable {
+        let role: String
+        let title: String
+    }
+
     static func aggregate(lines: [String]) -> Report {
         var toastCount = 0
-        var missByApp: [String: [String: Int]] = [:]
+        var missByApp: [String: [MissKey: Int]] = [:]
 
         for line in lines {
             guard let data = line.data(using: .utf8),
@@ -35,7 +40,7 @@ enum Analyzer {
                 guard let bundleId = obj["bundleId"] as? String,
                       let role     = obj["role"]     as? String else { continue }
                 let title = obj["title"] as? String ?? ""
-                let key = "\(role)|\(title)"
+                let key = MissKey(role: role, title: title)
                 missByApp[bundleId, default: [:]][key, default: 0] += 1
             }
         }
@@ -44,10 +49,7 @@ enum Analyzer {
             let total = tuples.values.reduce(0, +)
             let top = tuples
                 .map { (key, count) -> MissEntry in
-                    let parts = key.split(separator: "|", maxSplits: 1).map(String.init)
-                    return MissEntry(role: parts[0],
-                                     title: parts.count > 1 ? parts[1] : "",
-                                     count: count)
+                    return MissEntry(role: key.role, title: key.title, count: count)
                 }
                 .sorted { $0.count > $1.count }
                 .prefix(10)
