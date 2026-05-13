@@ -54,13 +54,21 @@ final class ClickWatcher {
               let bundleId  = frontmost.bundleIdentifier else { return }
 
         let nsLoc   = NSEvent.mouseLocation
-        let screenH = NSScreen.screens
-            .first(where: { NSMouseInRect(nsLoc, $0.frame, false) })?
-            .frame.maxY ?? (NSScreen.main?.frame.height ?? 900)
+        // AX uses Quartz coords (origin = top-left of the menu-bar-bearing screen).
+        // NSEvent.mouseLocation uses NSScreen coords (origin = bottom-left of the same).
+        // Convert using NSScreen.screens[0]'s height (the menu-bar screen) — not the
+        // screen under the cursor. Otherwise multi-monitor setups put AX coords on the
+        // wrong screen and AXUIElementCopyElementAtPosition falls back to the menu bar.
+        let primaryH = NSScreen.screens.first?.frame.height
+            ?? (NSScreen.main?.frame.height ?? 900)
         let axX = Float(nsLoc.x)
-        let axY = Float(screenH - nsLoc.y)
+        let axY = Float(primaryH - nsLoc.y)
 
         let axApp = AXUIElementCreateApplication(frontmost.processIdentifier)
+        // Force Chromium/Electron apps (Slack, Notion, Discord, VSCode) to expose their
+        // accessibility tree. Idempotent. No-op on native apps.
+        AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
+        AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
         var elemRef: AXUIElement?
         let result = AXUIElementCopyElementAtPosition(axApp, axX, axY, &elemRef)
 
