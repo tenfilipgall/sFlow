@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Wrapper that locates SFlow.app and invokes its --reseed-all entry.
+# Pass --reseed <bundleId> to reseed a single app.
+set -euo pipefail
+
+CANDIDATES=(
+  "/Applications/SFlow.app/Contents/MacOS/SFlow"
+  "$HOME/Applications/SFlow.app/Contents/MacOS/SFlow"
+)
+
+DERIVED_GLOB="$HOME/Library/Developer/Xcode/DerivedData/SFlow-*/Build/Products/Debug/SFlow.app/Contents/MacOS/SFlow"
+for path in $DERIVED_GLOB; do
+  if [[ -x "$path" ]]; then
+    CANDIDATES+=("$path")
+  fi
+done
+
+for bin in "${CANDIDATES[@]}"; do
+  if [[ -x "$bin" ]]; then
+    if [[ $# -eq 0 ]]; then
+      exec "$bin" --reseed-all
+    else
+      exec "$bin" "$@"
+    fi
+  fi
+done
+
+echo "sflow-reseed: SFlow.app not found in /Applications, ~/Applications, or DerivedData." >&2
+exit 1
