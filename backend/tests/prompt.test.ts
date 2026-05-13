@@ -55,4 +55,16 @@ describe("buildSystemPrompt v1.1 prompt", () => {
   it("documents the version field in the schema", () => {
     expect(prompt).toContain('"version": 1');
   });
+
+  it("instructs Claude to avoid overlapping titles across rules", () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toMatch(/DISJOINT TITLES/);
+    expect(prompt.toLowerCase()).toContain("merge");
+  });
+
+  it("instructs Claude on hotkey-suffix variants for Electron menu items", () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toMatch(/HOTKEY[- ]SUFFIX/i);
+    expect(prompt).toContain("Edit message E");
+  });
 });
