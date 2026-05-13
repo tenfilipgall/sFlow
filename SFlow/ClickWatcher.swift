@@ -14,6 +14,7 @@ final class ClickWatcher {
     private var runLoopSource: CFRunLoopSource?
     private var lastShortcutId: String = ""
     private var lastShortcutTime: Date = .distantPast
+    private var emitFiredInCurrentClick: Bool = false
 
     init(ruleCache: RuleCache, onEvent: @escaping Handler) {
         self.ruleCache = ruleCache
@@ -52,6 +53,9 @@ final class ClickWatcher {
     func handleMouseDown() {
         guard let frontmost = NSWorkspace.shared.frontmostApplication,
               let bundleId  = frontmost.bundleIdentifier else { return }
+
+        emitFiredInCurrentClick = false
+        var firstInteractiveMiss: MissEvent? = nil
 
         let nsLoc   = NSEvent.mouseLocation
         // AX uses Quartz coords (origin = top-left of the menu-bar-bearing screen).
@@ -92,6 +96,16 @@ final class ClickWatcher {
                 let currentHelp       = helpRef   as? String ?? ""
                 let currentIdentifier = (identRef  as? String ?? "").lowercased()
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
+
+                if isInteractive && firstInteractiveMiss == nil {
+                    firstInteractiveMiss = MissEvent(
+                        bundleId: bundleId,
+                        role:     currentRole,
+                        title:    (titleRef as? String) ?? "",
+                        desc:     (descRef as? String) ?? "",
+                        help:     currentHelp
+                    )
+                }
 
                 // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
                 if let result = ruleCache.match(
@@ -165,6 +179,10 @@ final class ClickWatcher {
         }
 
         checkMenuBar(bundleId: bundleId, pid: frontmost.processIdentifier, nsLoc: nsLoc, axX: axX, axY: axY)
+
+        if !emitFiredInCurrentClick, let miss = firstInteractiveMiss {
+            EventLogger.logMiss(event: miss)
+        }
     }
 
     private func role(_ element: AXUIElement) -> String {
@@ -275,6 +293,7 @@ final class ClickWatcher {
                                   keys: keys, hint: hint,
                                   mouseX: loc.x, mouseY: loc.y)
         onEvent(event)
+        emitFiredInCurrentClick = true
     }
 
     deinit {
