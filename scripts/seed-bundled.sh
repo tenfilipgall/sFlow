@@ -32,21 +32,19 @@ echo "[" > "$OUT"
 
 FIRST=1
 for BUNDLE in "${APPS[@]}"; do
-  if ! pgrep -lf "$BUNDLE" >/dev/null 2>&1; then
-    if ! osascript -e "exists application id \"$BUNDLE\"" >/dev/null 2>&1; then
-      echo "skip $BUNDLE (not installed)"
-      continue
-    fi
-    echo "warning: $BUNDLE is not currently running; AX dump will be empty"
-  fi
   echo "Seeding $BUNDLE …"
   TMP="$(mktemp)"
-  if "$BIN" --seed "$BUNDLE" > "$TMP" 2>/dev/null; then
+  # --seed writes JSON to stdout, status messages and errors to stderr.
+  # Exit codes: 0=success, 2=usage, 3=app-not-running, 4=encode-fail, 5=backend-fail.
+  if "$BIN" --seed "$BUNDLE" > "$TMP" 2>&1 >"$TMP" && [ -s "$TMP" ]; then
     if [ "$FIRST" -eq 0 ]; then echo "," >> "$OUT"; fi
     cat "$TMP" >> "$OUT"
     FIRST=0
+    echo "  ok ($(wc -c < "$TMP") bytes)"
   else
-    echo "  failed (see error output)"
+    RC=$?
+    echo "  failed (exit $RC) — running with stderr visible to diagnose:"
+    "$BIN" --seed "$BUNDLE" >/dev/null || true
   fi
   rm -f "$TMP"
 done

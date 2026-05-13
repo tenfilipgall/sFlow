@@ -9,14 +9,14 @@ enum SeedMode {
               !bundleId.hasPrefix("-"),
               bundleId != CommandLine.arguments.first else {
             FileHandle.standardError.write(Data("usage: SFlow --seed <bundleId>\n".utf8))
-            return
+            exit(2)
         }
 
         // Find the running app
         let running = NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == bundleId }
         guard let app = running else {
             FileHandle.standardError.write(Data("error: app \(bundleId) is not running. Launch it first.\n".utf8))
-            return
+            exit(3)
         }
 
         let appName = app.localizedName ?? bundleId
@@ -62,9 +62,11 @@ enum SeedMode {
                 FileHandle.standardOutput.write(Data("\n".utf8))
             } catch {
                 FileHandle.standardError.write(Data("encode error: \(error)\n".utf8))
+                exit(4)
             }
         case .failure(let err):
             FileHandle.standardError.write(Data("error: \(err)\n".utf8))
+            exit(5)
         }
     }
 
