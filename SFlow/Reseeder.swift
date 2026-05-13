@@ -20,6 +20,8 @@ enum Reseeder {
         let mode = parseMode(arguments)
         guard preflight() else { exit(1) }
 
+        backupBundledJsonIfPresent()
+
         switch mode {
         case .all:
             for bundleId in verifiedApps {
@@ -27,6 +29,22 @@ enum Reseeder {
             }
         case .single(let bundleId):
             reseedOne(bundleId)
+        }
+    }
+
+    private static func backupBundledJsonIfPresent() {
+        let root = RuleStorage.userRulesDirectory()
+        let bundled = root.appendingPathComponent("bundled.json")
+        guard FileManager.default.fileExists(atPath: bundled.path) else { return }
+        let stamp = ISO8601DateFormatter().string(from: Date())
+            .replacingOccurrences(of: ":", with: "-")
+        let backup = root.appendingPathComponent("bundled.json.bak.\(stamp)")
+        do {
+            try FileManager.default.copyItem(at: bundled, to: backup)
+            print("Reseeder: backed up bundled.json → \(backup.lastPathComponent)")
+        } catch {
+            fputs("Reseeder: backup failed (\(error)) — aborting to avoid data loss.\n", stderr)
+            exit(2)
         }
     }
 

@@ -14,3 +14,6 @@ xcuserdata/
 # Build artifacts
 DerivedData/
 build/
+
+# Reseeder backups
+bundled.json.bak.*
