@@ -25,9 +25,15 @@ final class DiscoveryClient {
         appName: String,
         appVersion: String,
         menuBar: [MenuBarDumpEntry],
-        skeleton: [SkeletonItem]
+        skeleton: [SkeletonItem],
+        fresh: Bool = false
     ) async throws -> BackendRuleSet {
-        let url = baseURL.appendingPathComponent("v1/discover")
+        var components = URLComponents(url: baseURL.appendingPathComponent("v1/discover"),
+                                       resolvingAgainstBaseURL: false)!
+        if fresh {
+            components.queryItems = [URLQueryItem(name: "fresh", value: "1")]
+        }
+        let url = components.url!
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

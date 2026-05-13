@@ -206,7 +206,7 @@ enum Reseeder {
             do {
                 result = try await client.discover(
                     bundleId: bundleId, appName: appName, appVersion: appVersion,
-                    menuBar: menuBar, skeleton: skeleton
+                    menuBar: menuBar, skeleton: skeleton, fresh: true
                 )
             } catch let DiscoveryClientError.http(code, body) {
                 rawError = "HTTP \(code)\n\(body)"
