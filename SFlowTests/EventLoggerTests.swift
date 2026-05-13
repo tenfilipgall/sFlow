@@ -19,6 +19,7 @@ final class EventLoggerTests: XCTestCase {
 
     func test_log_createsFileOnFirstWrite() {
         EventLogger.log(event: makeEvent(), to: logFile)
+        EventLogger.flush()
         XCTAssertTrue(FileManager.default.fileExists(atPath: logFile.path))
     }
 
@@ -26,6 +27,7 @@ final class EventLoggerTests: XCTestCase {
         let event = makeEvent(bundleId: "com.test.app", shortcutId: "test-id",
                               keys: ["meta", "k"], hint: "Test", mouseX: 100, mouseY: 200)
         EventLogger.log(event: event, to: logFile)
+        EventLogger.flush()
         let content = try String(contentsOf: logFile, encoding: .utf8)
         XCTAssertTrue(content.hasSuffix("\n"))
         let line = content.trimmingCharacters(in: .newlines)
@@ -42,7 +44,9 @@ final class EventLoggerTests: XCTestCase {
 
     func test_log_appendsMultipleLines() throws {
         EventLogger.log(event: makeEvent(shortcutId: "first"), to: logFile)
+        EventLogger.flush()
         EventLogger.log(event: makeEvent(shortcutId: "second"), to: logFile)
+        EventLogger.flush()
         let content = try String(contentsOf: logFile, encoding: .utf8)
         let lines = content.components(separatedBy: "\n").filter { !$0.isEmpty }
         XCTAssertEqual(lines.count, 2)
@@ -59,6 +63,7 @@ final class EventLoggerTests: XCTestCase {
                               desc: "",
                               help: "")
         EventLogger.logMiss(event: event, to: logFile)
+        EventLogger.flush()
         let content = try String(contentsOf: logFile, encoding: .utf8)
         let line = content.trimmingCharacters(in: .newlines)
         let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]
@@ -73,6 +78,7 @@ final class EventLoggerTests: XCTestCase {
 
     func test_log_toastEventIncludesTypeField() throws {
         EventLogger.log(event: makeEvent(), to: logFile)
+        EventLogger.flush()
         let content = try String(contentsOf: logFile, encoding: .utf8)
         let line = content.trimmingCharacters(in: .newlines)
         let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]

@@ -17,6 +17,12 @@ enum EventLogger {
         return dir.appendingPathComponent("events.jsonl")
     }()
 
+    private static let writeQueue = DispatchQueue(label: "com.sflow.eventlog", qos: .utility)
+
+    static func flush() {
+        writeQueue.sync {}
+    }
+
     static func log(event: ShortcutEvent) {
         log(event: event, to: defaultLogURL)
     }
@@ -59,13 +65,15 @@ enum EventLogger {
               let line = String(data: data, encoding: .utf8) else { return }
         let lineWithNewline = (line + "\n").data(using: .utf8)!
 
-        if FileManager.default.fileExists(atPath: url.path) {
-            guard let handle = try? FileHandle(forWritingTo: url) else { return }
-            handle.seekToEndOfFile()
-            handle.write(lineWithNewline)
-            try? handle.close()
-        } else {
-            try? lineWithNewline.write(to: url)
+        writeQueue.async {
+            if FileManager.default.fileExists(atPath: url.path) {
+                guard let handle = try? FileHandle(forWritingTo: url) else { return }
+                handle.seekToEndOfFile()
+                handle.write(lineWithNewline)
+                try? handle.close()
+            } else {
+                try? lineWithNewline.write(to: url)
+            }
         }
     }
 }
