@@ -46,6 +46,15 @@ final class RuleCache {
         }
     }
 
+    /// Roles compatible with a rule that asks for AXButton. Chromium/Electron apps wrap
+    /// aria-label'd clickables in AXGroup; menu items show up as AXMenuItem/AXMenuBarItem;
+    /// some lists use AXCell. All of these are semantically "buttons" for our purposes.
+    private static let clickableRoles: Set<String> = [
+        "AXButton", "AXLink", "AXMenuItem", "AXMenuBarItem",
+        "AXCheckBox", "AXRadioButton", "AXPopUpButton",
+        "AXGroup", "AXCell", "AXImage",
+    ]
+
     func match(bundleId: String, role: String, title: String, desc: String, help: String) -> MatchResult? {
         guard let rules = rulesByBundle[bundleId] else { return nil }
         let titleLC = title.lowercased()
@@ -54,7 +63,7 @@ final class RuleCache {
 
         for rule in rules {
             if !showExperimental, rule.confidence == .low { continue }
-            if rule.match.role != role { continue }
+            if !roleCompatible(ruleRole: rule.match.role, actualRole: role) { continue }
             let titleMatches = rule.match.titles.contains { candidate in
                 let c = candidate.lowercased()
                 return titleLC == c || descLC == c || helpLC == c
@@ -63,6 +72,15 @@ final class RuleCache {
             if titleMatches { return MatchResult(rule: rule) }
         }
         return nil
+    }
+
+    private func roleCompatible(ruleRole: String, actualRole: String) -> Bool {
+        if ruleRole == actualRole { return true }
+        // AXButton in a rule = "anything clickable" — be permissive (covers Chromium quirks).
+        if ruleRole == "AXButton" {
+            return Self.clickableRoles.contains(actualRole)
+        }
+        return false
     }
 
     func hasRules(bundleId: String) -> Bool {

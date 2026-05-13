@@ -112,7 +112,10 @@ final class RuleCacheTests: XCTestCase {
         XCTAssertNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Cancel", desc: "", help: ""))
     }
 
-    func testRoleMustMatch() throws {
+    func testAXButtonRuleMatchesAnyClickableRole() throws {
+        // Chromium/Electron apps wrap aria-label'd clickables in AXGroup, menu items
+        // appear as AXMenuItem, links as AXLink. An LLM-generated rule with role:AXButton
+        // should match any of these — but not non-interactive roles like AXTextField.
         try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
 
         let set = StoredRuleSet(
@@ -126,8 +129,45 @@ final class RuleCacheTests: XCTestCase {
         let cache = RuleCache(rootDir: tempDir)
         try cache.load()
 
-        XCTAssertNotNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Send", desc: "", help: ""))
-        XCTAssertNil(cache.match(bundleId: "com.x", role: "AXLink", title: "Send", desc: "", help: ""))
+        // Should match — semantically clickable
+        for clickable in ["AXButton", "AXLink", "AXMenuItem", "AXGroup", "AXCell"] {
+            XCTAssertNotNil(
+                cache.match(bundleId: "com.x", role: clickable, title: "Send", desc: "", help: ""),
+                "AXButton rule should match \(clickable)"
+            )
+        }
+        // Should NOT match — non-interactive structural roles
+        for nonClickable in ["AXTextField", "AXScrollArea", "AXWindow", "AXStaticText"] {
+            XCTAssertNil(
+                cache.match(bundleId: "com.x", role: nonClickable, title: "Send", desc: "", help: ""),
+                "AXButton rule should not match \(nonClickable)"
+            )
+        }
+    }
+
+    func testNonButtonRuleStillRequiresExactRole() throws {
+        // Rules with specific roles (AXTextField, AXSearchField) match strictly — no
+        // permissive aliasing. Only AXButton is the "any clickable" wildcard.
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+
+        let textFieldRule = LoadedRule(
+            match: LoadedMatch(role: "AXTextField", titles: ["Search"]),
+            keys: ["meta", "f"], hint: "Search",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(
+            bundleId: "com.x", appVersion: "1.0", fetchedAt: "2026-05-11T00:00:00Z",
+            source: .cloud, rulesVersion: nil,
+            rules: [textFieldRule]
+        )
+        let data = try JSONEncoder().encode(set)
+        try data.write(to: tempDir.appendingPathComponent("cache/com.x.json"))
+
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+
+        XCTAssertNotNil(cache.match(bundleId: "com.x", role: "AXTextField", title: "Search", desc: "", help: ""))
+        XCTAssertNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Search", desc: "", help: ""))
     }
 
     func testFiltersLowConfidenceByDefault() throws {
