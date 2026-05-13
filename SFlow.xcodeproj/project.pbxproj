@@ -45,6 +45,7 @@
 		C3D4E5F6A7B8C9D0E1F2A3B4 /* bundled.json in Resources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* bundled.json */; };
 		A1B2C3D4E5F6A7B8C9D0E1A1 /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F0A1B2 /* Analyzer.swift */; };
 		B1C2D3E4F5A6B7C8D9E0E1A2 /* AnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* AnalyzerTests.swift */; };
+		E2F3A4B5C6D7E8F9A0B1C2D3 /* Reseeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A4B5C6D7E8F9A0B1C2D3E4 /* Reseeder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +101,7 @@
 		D4E5F6A7B8C9D0E1F2A3B4C5 /* bundled.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = bundled.json; path = Resources/bundled.json; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F0A1B2 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C6D7E8F9A0B1C2 /* AnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerTests.swift; sourceTree = "<group>"; };
+		F3A4B5C6D7E8F9A0B1C2D3E4 /* Reseeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reseeder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -119,6 +121,7 @@
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
 				37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */,
 				D04AD2DDC92F4F91938F47DD /* LoadedRule.swift */,
+				F3A4B5C6D7E8F9A0B1C2D3E4 /* Reseeder.swift */,
 				07A160179D424B35A2BD5941 /* RuleCache.swift */,
 				FD0DBD23CF004F7BBA0EB28A /* RuleStorage.swift */,
 				B2C3D4E5F6A7B8C9D0E1F2A3 /* SeedMode.swift */,
@@ -295,6 +298,7 @@
 				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
 				F2E728B4C8579C70488B1007 /* MatchConfidence.swift in Sources */,
 				5525C7031E3345BAB6786FF6 /* LoadedRule.swift in Sources */,
+				E2F3A4B5C6D7E8F9A0B1C2D3 /* Reseeder.swift in Sources */,
 				4EFCC6984BD94D70BB4E70AE /* RuleCache.swift in Sources */,
 				4A835C02919B427AA984BECB /* RuleStorage.swift in Sources */,
 				0C5AEE4B53D6A4594ACDCAED /* MenuBarCache.swift in Sources */,
