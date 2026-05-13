@@ -25,10 +25,15 @@ export async function handleDiscover(
   }
   const req = parsed.data;
 
-  // Cache lookup first — does not consume rate limit.
-  const cached = await getCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion);
-  if (cached) {
-    return jsonResponse(cached);
+  const url = new URL(request.url);
+  const skipCache = url.searchParams.get("fresh") === "1";
+
+  // Cache lookup first — does not consume rate limit. Bypassed via ?fresh=1 (re-seed tool).
+  if (!skipCache) {
+    const cached = await getCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion);
+    if (cached) {
+      return jsonResponse(cached);
+    }
   }
 
   const clientIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
