@@ -1,121 +1,103 @@
 [
   {
+    "fetchedAt": "2026-05-13T19:19:32Z",
     "rules": [
       {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Quick Switcher",
-            "Open Quick Switcher",
-            "Jump to channel or person",
-            "quick switcher button",
-            "Switch channel or DM"
-          ]
-        },
-        "hint": "Quick Switcher — jump to any channel or DM",
         "confidence": "high",
-        "source": "web_docs_official",
         "version": 1,
-        "keys": [
-          "meta",
-          "k"
-        ]
-      },
-      {
+        "hint": "Preferences",
         "match": {
-          "role": "AXButton",
-          "titles": [
-            "New Message",
-            "Compose",
-            "Compose new message",
-            "New message button",
-            "Start a conversation"
-          ]
-        },
-        "hint": "New message / Compose",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
-        "version": 1,
-        "keys": [
-          "meta",
-          "n"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Search",
-            "Search Slack",
-            "Find in Slack",
-            "Search button",
-            "Search messages and files"
-          ]
-        },
-        "hint": "Search current conversation",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
-        "version": 1,
-        "keys": [
-          "meta",
-          "f"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
           "titles": [
             "Preferences",
+            "Preferences…",
             "Open Preferences",
-            "Settings",
-            "Preferences button",
-            "Open Settings"
-          ]
+            "Slack Preferences",
+            "preferences menu item"
+          ],
+          "role": "AXMenuItem"
         },
-        "hint": "Open Preferences",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
+        "source": "menu_bar",
         "keys": [
           "meta",
           ","
         ]
       },
       {
+        "confidence": "high",
+        "version": 1,
+        "hint": "New Message",
         "match": {
-          "role": "AXButton",
+          "role": "AXMenuItem",
           "titles": [
-            "Keyboard Shortcuts",
-            "Show keyboard shortcuts",
-            "Shortcuts help",
-            "keyboard shortcuts button",
-            "Open keyboard shortcuts"
+            "New Message",
+            "Compose New Message",
+            "New Message N",
+            "new message",
+            "compose message"
           ]
         },
-        "hint": "Show keyboard shortcuts panel",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
+        "source": "menu_bar",
         "keys": [
           "meta",
-          "/"
+          "n"
         ]
       },
       {
+        "confidence": "high",
+        "version": 1,
+        "hint": "New Canvas",
         "match": {
-          "role": "AXButton",
+          "titles": [
+            "New Canvas",
+            "Create Canvas",
+            "New Canvas N",
+            "new canvas",
+            "create new canvas"
+          ],
+          "role": "AXMenuItem"
+        },
+        "source": "menu_bar",
+        "keys": [
+          "meta",
+          "shift",
+          "n"
+        ]
+      },
+      {
+        "confidence": "high",
+        "version": 1,
+        "hint": "Quick Switcher",
+        "match": {
+          "titles": [
+            "Switch to Channel",
+            "Switch to Channel K",
+            "Quick Switcher",
+            "Jump to channel",
+            "open channel switcher"
+          ],
+          "role": "AXMenuItem"
+        },
+        "source": "menu_bar",
+        "keys": [
+          "meta",
+          "k"
+        ]
+      },
+      {
+        "confidence": "high",
+        "version": 1,
+        "hint": "All Unreads",
+        "match": {
+          "role": "AXMenuItem",
           "titles": [
             "All Unreads",
+            "All Unreads A",
             "Unreads",
-            "Open unreads",
-            "Unreads view",
-            "View all unreads"
+            "Open All Unreads",
+            "all unreads view"
           ]
         },
-        "hint": "Open All Unreads view",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
+        "source": "menu_bar",
         "keys": [
           "meta",
           "shift",
@@ -123,20 +105,62 @@
         ]
       },
       {
+        "confidence": "high",
+        "version": 1,
+        "hint": "Threads",
         "match": {
-          "role": "AXButton",
+          "role": "AXMenuItem",
           "titles": [
-            "Mentions & Reactions",
-            "Recent Mentions",
-            "Open mentions",
-            "Mentions button",
-            "Activity"
+            "Threads",
+            "Threads T",
+            "Open Threads",
+            "View Threads",
+            "threads panel"
           ]
         },
-        "hint": "Open Mentions & Reactions",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
+        "source": "menu_bar",
+        "keys": [
+          "meta",
+          "shift",
+          "t"
+        ]
+      },
+      {
+        "confidence": "high",
         "version": 1,
+        "hint": "All DMs",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "All DMs",
+            "All DMs K",
+            "Direct Messages",
+            "Open All DMs",
+            "all direct messages"
+          ]
+        },
+        "source": "menu_bar",
+        "keys": [
+          "meta",
+          "shift",
+          "k"
+        ]
+      },
+      {
+        "confidence": "high",
+        "version": 1,
+        "hint": "Activity",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Activity",
+            "Activity M",
+            "Open Activity",
+            "Mentions & Reactions",
+            "activity feed"
+          ]
+        },
+        "source": "menu_bar",
         "keys": [
           "meta",
           "shift",
@@ -144,957 +168,998 @@
         ]
       },
       {
+        "hint": "Channel Browser",
         "match": {
-          "role": "AXButton",
           "titles": [
-            "Saved Items",
-            "Starred Items",
-            "Open saved items",
-            "Saved button",
-            "Bookmarks"
-          ]
+            "Channel Browser",
+            "Channel Browser L",
+            "Browse Channels",
+            "Open Channel Browser",
+            "channel list"
+          ],
+          "role": "AXMenuItem"
         },
-        "hint": "Open Saved / Starred Items",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
-        "version": 1,
         "keys": [
           "meta",
           "shift",
-          "s"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Channel Info",
-            "Open channel info",
-            "Channel details",
-            "Channel info pane",
-            "About this channel"
-          ]
-        },
-        "hint": "Open Channel Info pane",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
+          "l"
+        ],
         "version": 1,
-        "keys": [
-          "meta",
-          "shift",
-          "i"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Toggle Right Pane",
-            "Close sidebar",
-            "Open right sidebar",
-            "Right pane button",
-            "Toggle sidebar"
-          ]
-        },
-        "hint": "Toggle right pane open/closed",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
-        "version": 1,
-        "keys": [
-          "meta",
-          "."
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Set Status",
-            "Update status",
-            "Edit status",
-            "Status button",
-            "Set your status"
-          ]
-        },
-        "hint": "Set / update your status",
-        "confidence": "medium",
-        "source": "web_docs_third_party",
-        "version": 1,
-        "keys": [
-          "meta",
-          "shift",
-          "y"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Activity",
-            "Open activity",
-            "Notifications activity",
-            "Activity feed",
-            "Activity button"
-          ]
-        },
-        "hint": "Open Activity feed",
         "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "ctrl",
-          "3"
-        ]
+        "source": "menu_bar"
       },
       {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Next channel",
-            "Next channel or DM",
-            "Move down in sidebar",
-            "next channel button"
-          ]
-        },
-        "hint": "Next channel or DM in sidebar",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "alt",
-          "down"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Previous channel",
-            "Previous channel or DM",
-            "Move up in sidebar",
-            "previous channel button"
-          ]
-        },
-        "hint": "Previous channel or DM in sidebar",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "alt",
-          "up"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Next unread channel",
-            "Jump to next unread",
-            "Next unread",
-            "next unread button"
-          ]
-        },
-        "hint": "Next channel or DM with unread messages",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "alt",
-          "shift",
-          "down"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Previous unread channel",
-            "Jump to previous unread",
-            "Previous unread",
-            "previous unread button"
-          ]
-        },
-        "hint": "Previous channel or DM with unread messages",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "alt",
-          "shift",
-          "up"
-        ]
-      },
-      {
+        "hint": "People & User Groups",
         "match": {
           "role": "AXMenuItem",
           "titles": [
-            "Back",
-            "History Back",
-            "Go Back",
-            "back button",
-            "Previous in history"
+            "People & User Groups",
+            "People & User Groups E",
+            "People",
+            "Directory",
+            "user directory"
           ]
         },
-        "hint": "Navigate back in history",
-        "confidence": "high",
-        "source": "menu_bar",
+        "keys": [
+          "meta",
+          "shift",
+          "e"
+        ],
         "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Downloads",
+        "match": {
+          "titles": [
+            "Downloads",
+            "Downloads J",
+            "Open Downloads",
+            "File Downloads",
+            "downloads panel"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "j"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Navigate Back",
+        "match": {
+          "titles": [
+            "History Back",
+            "Back",
+            "Go Back",
+            "Previous Channel",
+            "navigate back"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "["
-        ]
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
       },
       {
+        "hint": "Navigate Forward",
         "match": {
-          "role": "AXMenuItem",
           "titles": [
             "Forward",
             "History Forward",
             "Go Forward",
-            "forward button",
-            "Next in history"
-          ]
-        },
-        "hint": "Navigate forward in history",
-        "confidence": "high",
-        "source": "menu_bar",
-        "version": 1,
-        "keys": [
-          "meta",
-          "]"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Next workspace",
-            "Switch to next workspace",
-            "Move to next workspace",
-            "next workspace button"
-          ]
-        },
-        "hint": "Move to next workspace",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "meta",
-          "shift",
-          "]"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Previous workspace",
-            "Switch to previous workspace",
-            "Move to previous workspace",
-            "previous workspace button"
-          ]
-        },
-        "hint": "Move to previous workspace",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "meta",
-          "shift",
-          "["
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Workspace 1",
-            "Switch to workspace 1",
-            "First workspace",
-            "workspace 1 button"
-          ]
-        },
-        "hint": "Switch to workspace 1",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "meta",
-          "1"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Workspace 2",
-            "Switch to workspace 2",
-            "Second workspace",
-            "workspace 2 button"
-          ]
-        },
-        "hint": "Switch to workspace 2",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "meta",
-          "2"
-        ]
-      },
-      {
-        "match": {
-          "role": "AXButton",
-          "titles": [
-            "Workspace 3",
-            "Switch to workspace 3",
-            "Third workspace",
-            "workspace 3 button"
-          ]
-        },
-        "hint": "Switch to workspace 3",
-        "confidence": "high",
-        "source": "web_docs_official",
-        "version": 1,
-        "keys": [
-          "meta",
-          "3"
-        ]
-      },
-      {
-        "keys": [
-          "meta",
-          "r"
-        ],
-        "match": {
-          "titles": [
-            "Reload",
-            "Reload Slack",
-            "Refresh",
-            "refresh button",
-            "Reload page"
+            "Next Channel",
+            "navigate forward"
           ],
           "role": "AXMenuItem"
         },
-        "confidence": "high",
-        "version": 1,
-        "source": "menu_bar",
-        "hint": "Reload"
-      },
-      {
         "keys": [
           "meta",
-          "shift",
-          "r"
+          "]"
         ],
         "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Force Reload",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Close Window",
+        "match": {
+          "titles": [
+            "Close Window",
+            "Close Window W",
+            "close window",
+            "close"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "w"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Close All Windows",
+        "match": {
+          "titles": [
+            "Close All",
+            "Close All W",
+            "close all windows",
+            "close all"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "alt",
+          "w"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Undo",
+        "match": {
+          "titles": [
+            "Undo",
+            "Undo Z",
+            "undo action",
+            "undo last action"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "z"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Redo",
         "match": {
           "role": "AXMenuItem",
           "titles": [
-            "Force Reload",
-            "Hard Reload",
-            "Force reload page",
-            "force refresh"
+            "Redo",
+            "Redo Z",
+            "redo action",
+            "redo last action"
           ]
-        }
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "z"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
       },
       {
+        "hint": "Cut",
+        "match": {
+          "titles": [
+            "Cut",
+            "Cut X",
+            "cut text",
+            "cut selection"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "x"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Copy",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Copy",
+            "Copy C",
+            "copy text",
+            "copy selection"
+          ]
+        },
+        "keys": [
+          "meta",
+          "c"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Paste",
+        "match": {
+          "titles": [
+            "Paste",
+            "Paste V",
+            "paste text",
+            "paste content"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "v"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Paste and Match Style",
+        "match": {
+          "titles": [
+            "Paste and Match Style",
+            "Paste and Match Style V",
+            "paste without formatting",
+            "paste match style"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "v"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Select All",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Select All",
+            "Select All A",
+            "select all text",
+            "select all messages"
+          ]
+        },
+        "keys": [
+          "meta",
+          "a"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Search Slack",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Search",
+            "Search G",
+            "Search All of Slack",
+            "global search",
+            "search slack"
+          ]
+        },
+        "keys": [
+          "meta",
+          "g"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Reload",
+        "match": {
+          "titles": [
+            "Reload",
+            "Reload R",
+            "refresh",
+            "reload slack"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "meta",
+          "r"
+        ],
+        "version": 1,
+        "confidence": "high",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Toggle Full Screen",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Toggle Full Screen",
+            "Toggle Full Screen F",
+            "Full Screen",
+            "enter full screen",
+            "exit full screen"
+          ]
+        },
         "keys": [
           "meta",
           "ctrl",
           "f"
         ],
         "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Toggle Full Screen",
+        "source": "menu_bar"
+      },
+      {
+        "hint": "Zoom In",
         "match": {
           "role": "AXMenuItem",
           "titles": [
-            "Toggle Full Screen",
-            "Full Screen",
-            "Enter full screen",
-            "full screen button",
-            "Exit full screen"
+            "Zoom In",
+            "Increase Text Size",
+            "Zoom In +",
+            "zoom in view",
+            "increase zoom"
           ]
-        }
-      },
-      {
+        },
         "keys": [
           "meta",
-          "+"
+          "plus"
         ],
         "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Zoom In",
-        "match": {
-          "titles": [
-            "Zoom In",
-            "Increase text size",
-            "Zoom in button",
-            "Make text bigger"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "confidence": "high",
+        "source": "menu_bar",
+        "match": {
+          "titles": [
+            "Zoom Out",
+            "Decrease Text Size",
+            "Zoom Out -",
+            "zoom out view",
+            "decrease zoom"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "-"
         ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
         "hint": "Zoom Out",
-        "match": {
-          "titles": [
-            "Zoom Out",
-            "Decrease text size",
-            "Zoom out button",
-            "Make text smaller"
-          ],
-          "role": "AXMenuItem"
-        }
+        "version": 1
       },
       {
+        "confidence": "high",
+        "source": "menu_bar",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Actual Size",
+            "Reset Zoom",
+            "Actual Size 0",
+            "default zoom",
+            "reset text size"
+          ]
+        },
         "keys": [
           "meta",
           "0"
         ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Actual Size / Reset Zoom",
-        "match": {
-          "titles": [
-            "Actual Size",
-            "Reset zoom",
-            "Default text size",
-            "actual size button",
-            "Reset text size"
-          ],
-          "role": "AXMenuItem"
-        }
+        "hint": "Actual Size",
+        "version": 1
       },
       {
-        "keys": [
-          "meta",
-          "w"
-        ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Close Window",
-        "match": {
-          "titles": [
-            "Close Window",
-            "Close",
-            "Close Slack window",
-            "close button",
-            "Dismiss window"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "alt",
-          "w"
-        ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Close All Windows",
-        "match": {
-          "titles": [
-            "Close All",
-            "Close all windows",
-            "Dismiss all windows",
-            "close all button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "h"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Hide Slack",
-        "match": {
-          "titles": [
-            "Hide Slack",
-            "Hide",
-            "Hide application",
-            "hide slack button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "alt",
-          "h"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Hide Others",
-        "match": {
-          "titles": [
-            "Hide Others",
-            "Hide other apps",
-            "Hide other windows",
-            "hide others button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "q"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Quit Slack",
-        "match": {
-          "titles": [
-            "Quit Slack",
-            "Quit",
-            "Exit Slack",
-            "quit button",
-            "Close Slack"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "m"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Minimize Window",
         "match": {
           "titles": [
             "Minimize",
             "Minimize Window",
-            "Minimise",
-            "minimize button",
-            "Dock window"
+            "Minimize M",
+            "minimize slack",
+            "minimize to dock"
           ],
           "role": "AXMenuItem"
-        }
-      },
-      {
+        },
         "keys": [
           "meta",
-          "z"
+          "m"
         ],
-        "version": 1,
-        "source": "menu_bar",
+        "hint": "Minimize Window",
+        "version": 1
+      },
+      {
         "confidence": "high",
-        "hint": "Undo",
+        "source": "menu_bar",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Minimize All",
+            "Minimize All Windows",
+            "Minimize All M",
+            "minimize all slack windows"
+          ]
+        },
+        "keys": [
+          "meta",
+          "alt",
+          "m"
+        ],
+        "hint": "Minimize All",
+        "version": 1
+      },
+      {
+        "confidence": "high",
+        "source": "menu_bar",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Quit Slack",
+            "Quit Slack Q",
+            "quit",
+            "exit slack"
+          ]
+        },
+        "keys": [
+          "meta",
+          "q"
+        ],
+        "hint": "Quit Slack",
+        "version": 1
+      },
+      {
+        "confidence": "high",
+        "source": "menu_bar",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Hide Slack",
+            "Hide Slack H",
+            "hide",
+            "hide application"
+          ]
+        },
+        "keys": [
+          "meta",
+          "h"
+        ],
+        "hint": "Hide Slack",
+        "version": 1
+      },
+      {
+        "confidence": "high",
+        "source": "menu_bar",
         "match": {
           "titles": [
-            "Undo",
-            "Undo last action",
-            "undo button"
+            "Hide Others",
+            "Hide Others H",
+            "hide other apps",
+            "hide all other windows"
           ],
           "role": "AXMenuItem"
-        }
-      },
-      {
+        },
         "keys": [
           "meta",
-          "shift",
-          "z"
+          "alt",
+          "h"
         ],
-        "version": 1,
-        "source": "menu_bar",
+        "hint": "Hide Others",
+        "version": 1
+      },
+      {
         "confidence": "high",
-        "hint": "Redo",
-        "match": {
-          "titles": [
-            "Redo",
-            "Redo last action",
-            "redo button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "x"
-        ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Cut",
         "match": {
+          "role": "AXMenuItem",
           "titles": [
-            "Cut",
-            "Cut text",
-            "cut button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
+            "Workspace Camping",
+            "Camping",
+            "Switch to Camping",
+            "workspace 1",
+            "Camping workspace"
+          ]
+        },
         "keys": [
           "meta",
-          "c"
+          "1"
         ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Copy",
-        "match": {
-          "titles": [
-            "Copy",
-            "Copy text",
-            "copy button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "hint": "Switch to Workspace 1",
+        "version": 1
       },
       {
-        "keys": [
-          "meta",
-          "v"
-        ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Paste",
-        "match": {
-          "titles": [
-            "Paste",
-            "Paste text",
-            "paste button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "shift",
-          "v"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Paste and Match Style",
-        "match": {
-          "titles": [
-            "Paste and Match Style",
-            "Paste without formatting",
-            "paste match style button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "a"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Select All",
-        "match": {
-          "titles": [
-            "Select All",
-            "Select all text",
-            "select all button"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "b"
-        ],
-        "version": 1,
         "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Bold selected text",
         "match": {
           "titles": [
-            "Bold",
-            "Bold text",
-            "Format bold",
-            "bold button",
-            "Make bold"
+            "Show Keyboard Shortcuts",
+            "Keyboard Shortcuts",
+            "Open Shortcuts Help",
+            "shortcuts help",
+            "keyboard shortcuts panel"
           ],
-          "role": "AXButton"
-        }
-      },
-      {
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
-          "i"
+          "/"
         ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Italicize selected text",
-        "match": {
-          "titles": [
-            "Italic",
-            "Italic text",
-            "Format italic",
-            "italic button",
-            "Make italic"
-          ],
-          "role": "AXButton"
-        }
+        "hint": "Keyboard Shortcuts",
+        "version": 1
       },
       {
-        "keys": [
-          "meta",
-          "shift",
-          "x"
-        ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Strikethrough selected text",
-        "match": {
-          "titles": [
-            "Strikethrough",
-            "Strike through text",
-            "Format strikethrough",
-            "strikethrough button"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "shift",
-          "c"
-        ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Format selected text as inline code",
-        "match": {
-          "titles": [
-            "Code",
-            "Inline code",
-            "Format code",
-            "code button",
-            "Format as code"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "shift",
-          "u"
-        ],
-        "version": 1,
-        "source": "web_docs_third_party",
         "confidence": "medium",
-        "hint": "Add / insert hyperlink",
+        "source": "web_docs_third_party",
         "match": {
+          "role": "AXButton",
           "titles": [
-            "Add link",
-            "Hyperlink",
-            "Insert link",
-            "link button",
-            "Format as link"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
+            "Set Status",
+            "Set your status",
+            "Status",
+            "Update status",
+            "set status button"
+          ]
+        },
         "keys": [
           "meta",
           "shift",
-          "8"
+          "y"
         ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Format as bulleted list",
-        "match": {
-          "titles": [
-            "Bulleted list",
-            "Unordered list",
-            "Bullet list button",
-            "Format bulleted list"
-          ],
-          "role": "AXButton"
-        }
+        "hint": "Set Status",
+        "version": 1
       },
       {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "titles": [
+            "Start Huddle",
+            "Huddle",
+            "Start a Huddle",
+            "join huddle",
+            "huddle button"
+          ],
+          "role": "AXButton"
+        },
         "keys": [
           "meta",
           "shift",
-          "7"
+          "h"
         ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Format as numbered list",
-        "match": {
-          "titles": [
-            "Numbered list",
-            "Ordered list",
-            "Number list button",
-            "Format numbered list"
-          ],
-          "role": "AXButton"
-        }
+        "hint": "Start Huddle",
+        "version": 1
       },
       {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Toggle Right Sidebar",
+            "Right Sidebar",
+            "Open Right Pane",
+            "close right pane",
+            "right panel toggle"
+          ]
+        },
+        "keys": [
+          "meta",
+          "."
+        ],
+        "hint": "Toggle Right Sidebar",
+        "version": 1
+      },
+      {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Add Emoji Reaction",
+            "Emoji Reaction",
+            "React with Emoji",
+            "add reaction",
+            "emoji picker"
+          ]
+        },
         "keys": [
           "meta",
           "shift",
           "\\"
         ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Open emoji picker / react to last message",
-        "match": {
-          "titles": [
-            "Emoji",
-            "Open emoji picker",
-            "Insert emoji",
-            "emoji button",
-            "Add reaction emoji"
-          ],
-          "role": "AXButton"
-        }
+        "hint": "Add Emoji Reaction",
+        "version": 1
       },
       {
-        "keys": [
-          "escape"
-        ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Mark all messages in current channel as read",
+        "confidence": "medium",
+        "source": "web_docs_third_party",
         "match": {
           "titles": [
+            "Bold",
+            "Bold Text",
+            "Format Bold",
+            "bold selected text",
+            "bold button"
+          ],
+          "role": "AXButton"
+        },
+        "keys": [
+          "meta",
+          "b"
+        ],
+        "hint": "Bold",
+        "version": 1
+      },
+      {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Italic",
+            "Italic Text",
+            "Format Italic",
+            "italicize selected text",
+            "italic button"
+          ]
+        },
+        "keys": [
+          "meta",
+          "i"
+        ],
+        "hint": "Italic",
+        "version": 1
+      },
+      {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Strikethrough",
+            "Strike Through",
+            "Format Strikethrough",
+            "strikethrough text",
+            "strikethrough button"
+          ]
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "x"
+        ],
+        "hint": "Strikethrough",
+        "version": 1
+      },
+      {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Bulleted List",
+            "Bullet List",
+            "Format Bulleted List",
+            "unordered list",
+            "bulleted list button"
+          ]
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "8"
+        ],
+        "hint": "Bulleted List",
+        "version": 1
+      },
+      {
+        "confidence": "medium",
+        "source": "web_docs_third_party",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Numbered List",
+            "Ordered List",
+            "Format Numbered List",
+            "numbered list button",
+            "ordered list button"
+          ]
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "7"
+        ],
+        "hint": "Numbered List",
+        "version": 1
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Hyperlink",
+            "Add Link",
+            "Insert Link",
+            "format hyperlink",
+            "link button"
+          ],
+          "role": "AXButton"
+        },
+        "keys": [
+          "meta",
+          "shift",
+          "u"
+        ],
+        "hint": "Hyperlink",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Mark All as Read",
+            "Mark All Messages Read",
+            "Clear all unread",
+            "mark all read",
+            "mark all as read button"
+          ]
+        },
+        "keys": [
+          "shift",
+          "escape"
+        ],
+        "hint": "Mark All as Read",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Mark Channel as Read",
             "Mark as Read",
-            "Mark all as read",
-            "Dismiss all unreads",
-            "mark read button",
-            "Clear unread messages"
+            "dismiss unread",
+            "channel read",
+            "mark channel read button"
           ],
           "role": "AXButton"
-        }
-      },
-      {
+        },
         "keys": [
-          "shift",
           "escape"
         ],
+        "hint": "Mark Channel as Read",
+        "source": "web_docs_third_party"
+      },
+      {
         "version": 1,
-        "source": "web_docs_third_party",
         "confidence": "medium",
-        "hint": "Mark all messages in all channels as read",
         "match": {
           "titles": [
-            "Mark all as read",
-            "Mark all channels read",
-            "Clear all unreads",
-            "mark all read button",
-            "Dismiss all unreads"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "shift",
-          "k"
-        ],
-        "version": 1,
-        "source": "web_docs_official",
-        "confidence": "high",
-        "hint": "Open direct message switcher",
-        "match": {
-          "titles": [
-            "Open DM Switcher",
-            "Direct message switcher",
-            "New direct message",
-            "DM switcher button",
-            "Switch direct message"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "g"
-        ],
-        "version": 1,
-        "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Search all of Slack (global search)",
-        "match": {
-          "titles": [
-            "Global Search",
-            "Search everything",
-            "Search all of Slack",
-            "global search button",
-            "Search Slack"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
-        "keys": [
-          "f1"
-        ],
-        "version": 1,
-        "source": "inferred_pattern",
-        "confidence": "low",
-        "hint": "Open Help Center",
-        "match": {
-          "titles": [
-            "Open Help Center",
-            "Help",
-            "Help Center",
-            "help button",
-            "Get help"
+            "Edit message",
+            "Edit message E",
+            "edit message",
+            "Edit this message"
           ],
           "role": "AXMenuItem"
-        }
+        },
+        "keys": [
+          "e"
+        ],
+        "hint": "Edit Message (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Reply in thread",
+            "Reply in thread T",
+            "Open thread",
+            "start thread reply",
+            "thread reply"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "t"
+        ],
+        "hint": "Reply in Thread (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Pin message",
+            "Pin message P",
+            "pin or unpin",
+            "pin to channel",
+            "unpin message"
+          ]
+        },
+        "keys": [
+          "p"
+        ],
+        "hint": "Pin/Unpin Message (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Share message",
+            "Share message S",
+            "forward message",
+            "share this message"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "s"
+        ],
+        "hint": "Share Message (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Save message",
+            "Save message A",
+            "bookmark message",
+            "save for later",
+            "add to saved items"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "a"
+        ],
+        "hint": "Save Message (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Mark unread",
+            "Mark unread U",
+            "mark as unread",
+            "mark message unread"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "u"
+        ],
+        "hint": "Mark Unread (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Create reminder",
+            "Create reminder M",
+            "remind me",
+            "set reminder",
+            "message reminder"
+          ],
+          "role": "AXMenuItem"
+        },
+        "keys": [
+          "m"
+        ],
+        "hint": "Create Reminder (focused)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Edit last message",
+            "Edit Previous Message",
+            "edit last sent message",
+            "edit last message sent"
+          ]
+        },
+        "keys": [
+          "up"
+        ],
+        "hint": "Edit Last Message",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "New Line in Message",
+            "Line Break",
+            "Insert Line Break",
+            "shift enter new line",
+            "newline without send"
+          ]
+        },
+        "keys": [
+          "shift",
+          "enter"
+        ],
+        "hint": "New Line (no send)",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "titles": [
+            "Move Focus",
+            "Focus Next Section",
+            "Cycle Focus",
+            "navigate sections",
+            "focus sections"
+          ],
+          "role": "AXButton"
+        },
+        "keys": [
+          "f6"
+        ],
+        "hint": "Move Focus Between Sections",
+        "source": "web_docs_third_party"
+      },
+      {
+        "version": 1,
+        "confidence": "medium",
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Search current conversation",
+            "Search in Conversation",
+            "Search Current Channel",
+            "find in channel",
+            "search channel messages"
+          ]
+        },
+        "keys": [
+          "meta",
+          "f"
+        ],
+        "hint": "Search Current Channel",
+        "source": "web_docs_third_party"
       }
     ],
+    "rulesVersion": "2026-05-13T19:19:32.619Z",
     "source": "cloud",
-    "bundleId": "com.tinyspeck.slackmacgap",
     "appVersion": "4.49.89",
-    "fetchedAt": "2026-05-13T18:10:09Z",
-    "rulesVersion": "2026-05-13T18:10:09.290Z"
+    "bundleId": "com.tinyspeck.slackmacgap"
   },
   {
     "fetchedAt": "2026-05-13T14:57:17Z",
@@ -3836,809 +3901,904 @@
     ]
   },
   {
+    "bundleId": "md.obsidian",
+    "fetchedAt": "2026-05-13T19:20:33Z",
+    "rulesVersion": "2026-05-13T19:20:33.448Z",
+    "source": "cloud",
     "rules": [
       {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Settings",
+            "Settings…",
+            "Open Settings",
+            "Preferences",
+            "settings menu item"
+          ]
+        },
+        "hint": "Settings",
         "keys": [
           "meta",
           ","
         ],
-        "version": 1,
         "source": "menu_bar",
         "confidence": "high",
-        "hint": "Settings",
-        "match": {
-          "titles": [
-            "Settings…",
-            "Settings",
-            "Open Settings",
-            "Preferences",
-            "settings button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "version": 1
       },
       {
-        "keys": [
-          "meta",
-          "n"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "New Note",
         "match": {
+          "role": "AXMenuItem",
           "titles": [
             "New Note",
-            "Create new note",
-            "new note button",
-            "Neue Notiz",
-            "Nueva nota"
-          ],
-          "role": "AXMenuItem"
-        }
-      },
-      {
+            "Create Note",
+            "new note",
+            "create new note",
+            "new note menu item"
+          ]
+        },
+        "hint": "New Note",
         "keys": [
           "meta",
-          "shift",
           "n"
         ],
-        "version": 1,
         "source": "menu_bar",
         "confidence": "high",
-        "hint": "New Note to the Right",
+        "version": 1
+      },
+      {
         "match": {
           "titles": [
             "New Note to the Right",
             "New note to the right",
-            "Split new note",
-            "new note right button"
+            "Open note to the right",
+            "split right new note",
+            "new note right pane"
           ],
           "role": "AXMenuItem"
-        }
-      },
-      {
+        },
+        "hint": "New Note to the Right",
         "keys": [
           "meta",
-          "t"
+          "shift",
+          "n"
         ],
-        "version": 1,
         "source": "menu_bar",
         "confidence": "high",
-        "hint": "New Tab",
+        "version": 1
+      },
+      {
         "match": {
           "titles": [
             "New Tab",
             "Open new tab",
-            "new tab button",
-            "Neuer Tab"
+            "new tab",
+            "new tab menu item",
+            "create tab"
           ],
           "role": "AXMenuItem"
-        }
+        },
+        "hint": "New Tab",
+        "keys": [
+          "meta",
+          "t"
+        ],
+        "source": "menu_bar",
+        "confidence": "high",
+        "version": 1
       },
       {
+        "match": {
+          "titles": [
+            "Open Quickly",
+            "Open Quickly…",
+            "Quick Switcher",
+            "quick switcher",
+            "open quickly menu item"
+          ],
+          "role": "AXMenuItem"
+        },
+        "hint": "Open Quickly / Quick Switcher",
         "keys": [
           "meta",
           "o"
         ],
-        "version": 1,
         "source": "menu_bar",
         "confidence": "high",
-        "hint": "Quick Open",
-        "match": {
-          "titles": [
-            "Open Quickly…",
-            "Open Quickly",
-            "Quick Open",
-            "Quick Switcher",
-            "quick open button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "version": 1
       },
       {
-        "keys": [
-          "meta",
-          "w"
-        ],
-        "version": 1,
-        "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Close Tab",
         "match": {
           "titles": [
             "Close Tab",
-            "close tab button",
-            "Close current tab",
-            "Schließen"
+            "close tab",
+            "close current tab",
+            "close tab menu item",
+            "dismiss tab"
           ],
           "role": "AXMenuItem"
-        }
+        },
+        "hint": "Close Tab",
+        "keys": [
+          "meta",
+          "w"
+        ],
+        "source": "menu_bar",
+        "confidence": "high",
+        "version": 1
       },
       {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Close Window",
+            "close window",
+            "close current window",
+            "close window menu item",
+            "dismiss window"
+          ]
+        },
+        "hint": "Close Window",
         "keys": [
           "meta",
           "shift",
           "w"
         ],
-        "version": 1,
         "source": "menu_bar",
         "confidence": "high",
-        "hint": "Close Window",
-        "match": {
-          "titles": [
-            "Close Window",
-            "close window button",
-            "Close current window"
-          ],
-          "role": "AXMenuItem"
-        }
+        "version": 1
       },
       {
+        "match": {
+          "titles": [
+            "Undo",
+            "undo",
+            "undo action",
+            "undo menu item",
+            "revert last action"
+          ],
+          "role": "AXMenuItem"
+        },
+        "hint": "Undo",
         "keys": [
           "meta",
           "z"
         ],
-        "version": 1,
         "source": "menu_bar",
         "confidence": "high",
-        "hint": "Undo",
-        "match": {
-          "titles": [
-            "Undo",
-            "undo action",
-            "undo button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "version": 1
       },
       {
+        "hint": "Redo",
+        "version": 1,
+        "match": {
+          "titles": [
+            "Redo",
+            "redo",
+            "redo action",
+            "redo menu item",
+            "restore action"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "shift",
           "z"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Redo",
-        "match": {
-          "titles": [
-            "Redo",
-            "redo action",
-            "redo button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Cut",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Cut",
+            "cut",
+            "cut selection",
+            "cut menu item",
+            "cut text"
+          ]
+        },
         "keys": [
           "meta",
           "x"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Cut",
-        "match": {
-          "titles": [
-            "Cut",
-            "cut selection",
-            "cut button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Copy",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Copy",
+            "copy",
+            "copy selection",
+            "copy menu item",
+            "copy text"
+          ]
+        },
         "keys": [
           "meta",
           "c"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Copy",
-        "match": {
-          "titles": [
-            "Copy",
-            "copy selection",
-            "copy button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Paste",
+        "version": 1,
+        "match": {
+          "titles": [
+            "Paste",
+            "paste",
+            "paste content",
+            "paste menu item",
+            "paste text"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "v"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Paste",
-        "match": {
-          "titles": [
-            "Paste",
-            "paste content",
-            "paste button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Paste and Match Style",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Paste and Match Style",
+            "paste and match style",
+            "paste match style",
+            "paste without formatting",
+            "paste plain text"
+          ]
+        },
         "keys": [
           "meta",
           "shift",
           "v"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Paste and Match Style",
-        "match": {
-          "titles": [
-            "Paste and Match Style",
-            "paste match style",
-            "Paste without formatting"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Select All",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Select All",
+            "select all",
+            "select all text",
+            "select all menu item",
+            "select everything"
+          ]
+        },
         "keys": [
           "meta",
           "a"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Select All",
-        "match": {
-          "titles": [
-            "Select All",
-            "select all text",
-            "select all button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Find in Note",
+        "version": 1,
+        "match": {
+          "titles": [
+            "Find",
+            "find",
+            "find in note",
+            "search note",
+            "find menu item"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "f"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Find in Note",
-        "match": {
-          "titles": [
-            "Find",
-            "Find in note",
-            "search in file",
-            "find button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Find and Replace",
+        "version": 1,
+        "match": {
+          "titles": [
+            "Replace",
+            "replace",
+            "find and replace",
+            "replace menu item",
+            "find replace"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "alt",
           "f"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Find and Replace",
-        "match": {
-          "titles": [
-            "Replace",
-            "Find and Replace",
-            "replace in note",
-            "replace button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Insert Markdown Link",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Markdown Link",
+            "Insert Markdown Link",
+            "markdown link",
+            "insert link",
+            "add link"
+          ]
+        },
         "keys": [
           "meta",
           "k"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Insert Link",
-        "match": {
-          "titles": [
-            "Markdown Link",
-            "Insert Markdown Link",
-            "Insert Link",
-            "link button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Toggle Task List",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Task List",
+            "Insert Task List",
+            "task list",
+            "toggle task list",
+            "checklist"
+          ]
+        },
         "keys": [
           "meta",
           "l"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Task List",
-        "match": {
-          "titles": [
-            "Task List",
-            "Insert Task List",
-            "Toggle task",
-            "Checkbox",
-            "task list button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Bold",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Bold",
+            "bold text",
+            "toggle bold",
+            "make bold",
+            "format bold"
+          ]
+        },
         "keys": [
           "meta",
           "b"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Bold",
-        "match": {
-          "titles": [
-            "Bold",
-            "Toggle Bold",
-            "bold button",
-            "Fett",
-            "Negrita"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Italics",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Italics",
+            "italic text",
+            "toggle italic",
+            "make italic",
+            "format italic"
+          ]
+        },
         "keys": [
           "meta",
           "i"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Italics",
-        "match": {
-          "titles": [
-            "Italics",
-            "Italic",
-            "Toggle Italics",
-            "italic button",
-            "Kursiv"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Toggle Comment",
+        "version": 1,
+        "match": {
+          "titles": [
+            "Comment",
+            "toggle comment",
+            "insert comment",
+            "add comment",
+            "comment out"
+          ],
+          "role": "AXMenuItem"
+        },
         "keys": [
           "meta",
           "/"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Comment",
-        "match": {
-          "titles": [
-            "Comment",
-            "Toggle Comment",
-            "comment button",
-            "Inline comment"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Toggle Reading View",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Reading View",
+            "toggle reading view",
+            "preview mode",
+            "toggle preview",
+            "read mode"
+          ]
+        },
         "keys": [
           "meta",
           "e"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Toggle Reading View",
-        "match": {
-          "titles": [
-            "Reading View",
-            "Toggle Reading View",
-            "Preview mode",
-            "reading view button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Navigate Back",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Navigate Back",
+            "go back",
+            "navigate back",
+            "back button",
+            "previous note"
+          ]
+        },
         "keys": [
           "meta",
           "alt",
           "left"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Navigate Back",
-        "match": {
-          "titles": [
-            "Navigate Back",
-            "Go back",
-            "Navigate backward",
-            "back button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Navigate Forward",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Navigate Forward",
+            "go forward",
+            "navigate forward",
+            "forward button",
+            "next note"
+          ]
+        },
         "keys": [
           "meta",
           "alt",
           "right"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Navigate Forward",
-        "match": {
-          "titles": [
-            "Navigate Forward",
-            "Go forward",
-            "Navigate forward",
-            "forward button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Actual Size",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Actual Size",
+            "reset zoom",
+            "zoom reset",
+            "actual size",
+            "zoom 100%"
+          ]
+        },
         "keys": [
           "meta",
           "0"
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Actual Size",
-        "match": {
-          "titles": [
-            "Actual Size",
-            "Reset Zoom",
-            "Zoom to 100%",
-            "actual size button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "hint": "Zoom In",
+        "version": 1,
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Zoom In",
+            "zoom in",
+            "increase zoom",
+            "zoom in menu item",
+            "enlarge"
+          ]
+        },
         "keys": [
           "meta",
           "="
         ],
-        "version": 1,
-        "source": "menu_bar",
         "confidence": "high",
-        "hint": "Zoom In",
-        "match": {
-          "titles": [
-            "Zoom In",
-            "Increase text size",
-            "zoom in button",
-            "Vergrößern"
-          ],
-          "role": "AXMenuItem"
-        }
+        "source": "menu_bar"
       },
       {
+        "match": {
+          "titles": [
+            "Zoom Out",
+            "zoom out",
+            "decrease zoom",
+            "zoom out menu item",
+            "shrink"
+          ],
+          "role": "AXMenuItem"
+        },
+        "version": 1,
+        "hint": "Zoom Out",
         "keys": [
           "meta",
           "-"
         ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Zoom Out",
-        "match": {
-          "titles": [
-            "Zoom Out",
-            "Decrease text size",
-            "zoom out button",
-            "Verkleinern"
-          ],
-          "role": "AXMenuItem"
-        }
+        "confidence": "high"
       },
       {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Toggle Developer Tools",
+            "developer tools",
+            "DevTools",
+            "inspect element",
+            "toggle dev tools"
+          ]
+        },
+        "version": 1,
+        "hint": "Toggle Developer Tools",
         "keys": [
           "meta",
           "alt",
           "i"
         ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Toggle Developer Tools",
-        "match": {
-          "titles": [
-            "Toggle Developer Tools",
-            "Developer Tools",
-            "DevTools",
-            "developer tools button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "confidence": "high"
       },
       {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Toggle Full Screen",
+            "full screen",
+            "fullscreen",
+            "toggle fullscreen",
+            "enter full screen"
+          ]
+        },
+        "version": 1,
+        "hint": "Toggle Full Screen",
         "keys": [
           "f"
         ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Toggle Full Screen",
-        "match": {
-          "titles": [
-            "Toggle Full Screen",
-            "Full Screen",
-            "Enter Full Screen",
-            "fullscreen button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "confidence": "high"
       },
       {
+        "match": {
+          "titles": [
+            "Minimize",
+            "minimize window",
+            "minimize",
+            "hide window",
+            "minimize menu item"
+          ],
+          "role": "AXMenuItem"
+        },
+        "version": 1,
+        "hint": "Minimize",
         "keys": [
           "meta",
           "m"
         ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Minimize",
-        "match": {
-          "titles": [
-            "Minimize",
-            "Minimize Window",
-            "minimize button",
-            "Minimieren"
-          ],
-          "role": "AXMenuItem"
-        }
+        "confidence": "high"
       },
       {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Hide Obsidian",
+            "hide obsidian",
+            "hide app",
+            "hide obsidian menu item",
+            "hide"
+          ]
+        },
+        "version": 1,
+        "hint": "Hide Obsidian",
+        "keys": [
+          "meta",
+          "h"
+        ],
+        "source": "menu_bar",
+        "confidence": "high"
+      },
+      {
+        "match": {
+          "titles": [
+            "Hide Others",
+            "hide other windows",
+            "hide others",
+            "hide other apps",
+            "hide other apps menu item"
+          ],
+          "role": "AXMenuItem"
+        },
+        "version": 1,
+        "hint": "Hide Others",
+        "keys": [
+          "meta",
+          "alt",
+          "h"
+        ],
+        "source": "menu_bar",
+        "confidence": "high"
+      },
+      {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Quit Obsidian",
+            "quit",
+            "exit obsidian",
+            "close obsidian",
+            "quit app"
+          ]
+        },
+        "version": 1,
+        "hint": "Quit Obsidian",
         "keys": [
           "meta",
           "q"
         ],
-        "version": 1,
         "source": "menu_bar",
-        "confidence": "high",
-        "hint": "Quit Obsidian",
-        "match": {
-          "titles": [
-            "Quit Obsidian",
-            "Quit",
-            "Exit Obsidian",
-            "quit button"
-          ],
-          "role": "AXMenuItem"
-        }
+        "confidence": "high"
       },
       {
-        "keys": [
-          "meta",
-          "p"
-        ],
-        "version": 1,
-        "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Command Palette",
         "match": {
           "titles": [
             "Command Palette",
             "Open Command Palette",
+            "command palette",
             "command palette button",
-            "Commands"
+            "run command"
           ],
           "role": "AXButton"
-        }
+        },
+        "version": 1,
+        "hint": "Command Palette",
+        "keys": [
+          "meta",
+          "p"
+        ],
+        "source": "web_docs_official",
+        "confidence": "high"
       },
       {
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Search",
+            "Global Search",
+            "search all notes",
+            "search vault",
+            "search button"
+          ]
+        },
+        "version": 1,
+        "hint": "Global Search",
         "keys": [
           "meta",
           "shift",
           "f"
         ],
-        "version": 1,
         "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Search in All Files",
-        "match": {
-          "titles": [
-            "Search",
-            "Search all notes",
-            "Search in all files",
-            "Global Search",
-            "search vault button"
-          ],
-          "role": "AXButton"
-        }
+        "confidence": "medium"
       },
       {
-        "keys": [
-          "meta",
-          "shift",
-          "["
-        ],
-        "version": 1,
-        "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Toggle Left Sidebar",
         "match": {
+          "role": "AXButton",
           "titles": [
             "Toggle Left Sidebar",
             "Left Sidebar",
-            "Show left sidebar",
-            "left sidebar button",
-            "Collapse left sidebar"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
+            "left sidebar",
+            "show left sidebar",
+            "left panel toggle"
+          ]
+        },
+        "version": 1,
+        "hint": "Toggle Left Sidebar",
         "keys": [
           "meta",
-          "shift",
-          "]"
+          "["
         ],
-        "version": 1,
         "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Toggle Right Sidebar",
+        "confidence": "medium"
+      },
+      {
         "match": {
           "titles": [
             "Toggle Right Sidebar",
             "Right Sidebar",
-            "Show right sidebar",
-            "right sidebar button",
-            "Collapse right sidebar"
+            "right sidebar",
+            "show right sidebar",
+            "right panel toggle"
           ],
           "role": "AXButton"
-        }
-      },
-      {
+        },
+        "version": 1,
+        "hint": "Toggle Right Sidebar",
         "keys": [
           "meta",
-          "shift",
+          "]"
+        ],
+        "source": "web_docs_third_party",
+        "confidence": "medium"
+      },
+      {
+        "match": {
+          "role": "AXButton",
+          "titles": [
+            "Graph View",
+            "Open Graph View",
+            "graph view",
+            "graph button",
+            "knowledge graph"
+          ]
+        },
+        "version": 1,
+        "hint": "Open Graph View",
+        "keys": [
+          "meta",
           "g"
         ],
-        "version": 1,
         "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Open Graph View",
-        "match": {
-          "titles": [
-            "Open Graph View",
-            "Graph View",
-            "Show graph",
-            "graph view button",
-            "knowledge graph"
-          ],
-          "role": "AXButton"
-        }
+        "confidence": "medium"
       },
       {
-        "keys": [
-          "meta",
-          "alt",
-          "d"
-        ],
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Export To PDF",
+            "Export To PDF…",
+            "export pdf",
+            "save as pdf",
+            "export to pdf menu item"
+          ]
+        },
         "version": 1,
-        "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Open Daily Note",
-        "match": {
-          "titles": [
-            "Daily Notes",
-            "Open Today's Note",
-            "Open daily note",
-            "today's note button"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
-        "keys": [
-          "meta",
-          "shift",
-          "r"
-        ],
-        "version": 1,
-        "source": "inferred_pattern",
-        "confidence": "low",
-        "hint": "Split Right",
-        "match": {
-          "titles": [
-            "Split Right",
-            "Split Editor Right",
-            "split editor right button",
-            "Open to the right"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
+        "hint": "Export To PDF",
         "keys": [
           "meta",
           "shift",
           "e"
         ],
-        "version": 1,
         "source": "inferred_pattern",
-        "confidence": "low",
-        "hint": "Export to PDF",
-        "match": {
-          "titles": [
-            "Export to PDF",
-            "Export To PDF…",
-            "Print to PDF",
-            "export pdf button"
-          ],
-          "role": "AXButton"
-        }
+        "confidence": "low"
       },
       {
+        "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Heading 1",
+            "heading 1",
+            "h1",
+            "format heading 1",
+            "set heading 1"
+          ]
+        },
+        "version": 1,
+        "hint": "Heading 1",
         "keys": [
           "meta",
-          "alt",
-          "["
+          "1"
         ],
-        "version": 1,
-        "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Fold All",
+        "source": "inferred_pattern",
+        "confidence": "low"
+      },
+      {
         "match": {
+          "role": "AXMenuItem",
+          "titles": [
+            "Heading 2",
+            "heading 2",
+            "h2",
+            "format heading 2",
+            "set heading 2"
+          ]
+        },
+        "version": 1,
+        "hint": "Heading 2",
+        "keys": [
+          "meta",
+          "2"
+        ],
+        "source": "inferred_pattern",
+        "confidence": "low"
+      },
+      {
+        "match": {
+          "titles": [
+            "Heading 3",
+            "heading 3",
+            "h3",
+            "format heading 3",
+            "set heading 3"
+          ],
+          "role": "AXMenuItem"
+        },
+        "version": 1,
+        "hint": "Heading 3",
+        "keys": [
+          "meta",
+          "3"
+        ],
+        "source": "inferred_pattern",
+        "confidence": "low"
+      },
+      {
+        "match": {
+          "role": "AXMenuItem",
           "titles": [
             "Fold All",
-            "Fold all headings",
+            "fold all",
             "collapse all",
-            "fold all button"
-          ],
-          "role": "AXButton"
-        }
-      },
-      {
+            "fold all sections",
+            "collapse all headings"
+          ]
+        },
+        "version": 1,
+        "hint": "Fold All",
         "keys": [
           "meta",
-          "alt",
-          "]"
+          "shift",
+          "["
         ],
-        "version": 1,
-        "source": "web_docs_third_party",
-        "confidence": "medium",
-        "hint": "Unfold All",
+        "source": "inferred_pattern",
+        "confidence": "low"
+      },
+      {
         "match": {
           "titles": [
             "Unfold All",
-            "Unfold all headings",
+            "unfold all",
             "expand all",
-            "unfold all button"
+            "unfold all sections",
+            "expand all headings"
           ],
-          "role": "AXButton"
-        }
+          "role": "AXMenuItem"
+        },
+        "version": 1,
+        "hint": "Unfold All",
+        "keys": [
+          "meta",
+          "shift",
+          "]"
+        ],
+        "source": "inferred_pattern",
+        "confidence": "low"
       }
     ],
-    "source": "cloud",
-    "bundleId": "md.obsidian",
-    "appVersion": "1.12.7",
-    "fetchedAt": "2026-05-13T18:10:50Z",
-    "rulesVersion": "2026-05-13T18:10:50.851Z"
+    "appVersion": "1.12.7"
   }
 ]
