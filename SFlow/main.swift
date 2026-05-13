@@ -5,6 +5,11 @@ if CommandLine.arguments.contains("--analyze") {
     exit(0)
 }
 
+if CommandLine.arguments.contains("--reseed-all") || CommandLine.arguments.contains("--reseed") {
+    Reseeder.run(arguments: CommandLine.arguments)
+    exit(0)
+}
+
 if CommandLine.arguments.contains("--seed") {
     let args = CommandLine.arguments.filter { $0 != "--seed" }
     let bundleId = args.last
