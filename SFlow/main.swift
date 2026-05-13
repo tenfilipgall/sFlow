@@ -1,5 +1,10 @@
 import AppKit
 
+if CommandLine.arguments.contains("--analyze") {
+    Analyzer.run()
+    exit(0)
+}
+
 if CommandLine.arguments.contains("--seed") {
     let args = CommandLine.arguments.filter { $0 != "--seed" }
     let bundleId = args.last
