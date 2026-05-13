@@ -7,14 +7,14 @@ compatibility_flags = ["nodejs_compat"]
 # Then paste the returned IDs below.
 [[kv_namespaces]]
 binding = "RULES_CACHE"
-id = "TODO_REPLACE_AFTER_WRANGLER_KV_CREATE"
+id = "ed443550fce14bd198bdb3e57042ed5f"
 
 [[kv_namespaces]]
 binding = "FEEDBACK"
-id = "TODO_REPLACE_AFTER_WRANGLER_KV_CREATE"
+id = "0793757af7f94eb08475790e7d42a4bd"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
-id = "TODO_REPLACE_AFTER_WRANGLER_KV_CREATE"
+id = "b1440619dbac40038d7f6b26b32a679b"
 
 # Secrets set via: wrangler secret put ANTHROPIC_API_KEY
