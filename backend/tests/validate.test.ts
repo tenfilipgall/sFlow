@@ -52,3 +52,28 @@ describe("RuleSchema", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("RuleSchema version normalization", () => {
+  it("defaults missing version to 1", () => {
+    const parsed = RuleSchema.parse({
+      match: { role: "AXButton", titles: ["x"] },
+      keys: ["meta", "k"],
+      hint: "h",
+      confidence: "high",
+      source: "menu_bar",
+    });
+    expect(parsed.version).toBe(1);
+  });
+
+  it("preserves an explicit version", () => {
+    const parsed = RuleSchema.parse({
+      match: { role: "AXButton", titles: ["x"] },
+      keys: ["meta", "k"],
+      hint: "h",
+      confidence: "high",
+      source: "menu_bar",
+      version: 1,
+    });
+    expect(parsed.version).toBe(1);
+  });
+});

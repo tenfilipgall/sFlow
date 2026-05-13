@@ -30,6 +30,7 @@ export const RuleSchema = z.object({
   hint: z.string().min(1).max(100),
   confidence: z.enum(["high", "medium", "low"]),
   source: z.enum(["menu_bar", "web_docs_official", "web_docs_third_party", "inferred_pattern"]),
+  version: z.number().int().default(1),
 });
 
 export type Rule = z.infer<typeof RuleSchema>;
