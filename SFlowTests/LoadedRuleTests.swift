@@ -43,4 +43,33 @@ final class LoadedRuleTests: XCTestCase {
         let decoded = try JSONDecoder().decode(StoredRuleSet.self, from: json)
         XCTAssertEqual(decoded.source, .cloud)
     }
+
+    func test_decode_legacyRuleWithoutVersionField_defaultsToOne() throws {
+        let json = #"""
+        {
+          "match": { "role": "AXButton", "titles": ["x"] },
+          "keys": ["meta", "k"],
+          "hint": "h",
+          "confidence": "high",
+          "source": "menu_bar"
+        }
+        """#.data(using: .utf8)!
+        let rule = try JSONDecoder().decode(LoadedRule.self, from: json)
+        XCTAssertEqual(rule.version, 1)
+    }
+
+    func test_decode_ruleWithExplicitVersion_preservesValue() throws {
+        let json = #"""
+        {
+          "match": { "role": "AXButton", "titles": ["x"] },
+          "keys": ["meta", "k"],
+          "hint": "h",
+          "confidence": "high",
+          "source": "menu_bar",
+          "version": 1
+        }
+        """#.data(using: .utf8)!
+        let rule = try JSONDecoder().decode(LoadedRule.self, from: json)
+        XCTAssertEqual(rule.version, 1)
+    }
 }
