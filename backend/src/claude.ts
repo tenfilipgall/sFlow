@@ -31,14 +31,18 @@ export async function generateRules(
 }
 
 function extractFinalText(message: Awaited<ReturnType<Anthropic["messages"]["create"]>>): string {
-  for (const block of message.content) {
+  // With server-side tools (web_search), Claude emits multiple text blocks:
+  // a preamble ("I'll search..."), then tool_use blocks, then the final JSON answer.
+  // We want the LAST text block — the answer after tool use is complete.
+  for (let i = message.content.length - 1; i >= 0; i--) {
+    const block = message.content[i];
     if (block.type === "text") return block.text;
   }
   throw new Error("No text block in Claude response");
 }
 
 export function parseRulesJSON(text: string): Rule[] {
-  const cleaned = stripCodeFence(text);
+  const cleaned = extractJSONObject(stripCodeFence(text));
   let parsed: unknown;
   try {
     parsed = JSON.parse(cleaned);
@@ -63,4 +67,13 @@ export function parseRulesJSON(text: string): Rule[] {
 
 function stripCodeFence(s: string): string {
   return s.replace(/^```(?:json)?\n?/, "").replace(/\n?```\s*$/, "").trim();
+}
+
+/// If text contains prose around a JSON object, return the substring from the first
+/// `{` to the matching final `}`. If no `{` exists, returns the input unchanged.
+function extractJSONObject(s: string): string {
+  const first = s.indexOf("{");
+  const last = s.lastIndexOf("}");
+  if (first === -1 || last === -1 || last < first) return s;
+  return s.slice(first, last + 1);
 }
