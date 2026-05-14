@@ -2,7 +2,29 @@
 
 > Idealny stan po Fazie 1, problemy do rozwiązania (z odniesieniami do
 > `audit-phase-0.md`), sub-cele z opcjami implementacji, decyzje, kryteria
-> akceptacji. Spisany 2026-05-13.
+> akceptacji. Spisany 2026-05-13, aktualizowany po każdej sesji.
+
+## Legenda statusów (dla AI updatującego po sesji)
+
+- ⬜ **pending** — nie zaczęte
+- 🟡 **in-progress** — zaczęte, niedokończone (opisać co jeszcze trzeba)
+- 🔵 **partial** — działa częściowo (opisać co działa a co nie)
+- 🟢 **done** — zrobione + zweryfikowane
+- 🔴 **regression** — cofnięte z poprzedniego statusu (opisać dlaczego)
+
+## Aktualne statusy sub-celów
+
+| Sub-cel | Status | Komentarz |
+|---|---|---|
+| 1.0 Re-seed Terminal/Notion/Claude | ⬜ pending | najszybszy ROI; do zrobienia pierwsze w następnej sesji |
+| 1.1 Quality gate dla auto-discovered rules | 🔵 partial | Backend dedup zrobiony (v1.1.1, `dedup.ts`). Brakuje: client-side filtr po confidence/source, mechanizm "experimental" toggle |
+| 1.2 Retry + backoff dla failed discovery | ⬜ pending | — |
+| 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
+| 1.4 False-positive feedback (cmd-klik) | ⬜ pending | Krytyczne — nadal nie wiemy które toasty są błędne |
+| 1.5 Naprawa bugu MenuBarIndex.lookup | ⬜ pending | NIE jest tym samym co `RuleCache.stripHotkeySuffix` (v1.1.1) — różne matchery |
+| 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
+| 1.7 Beta z 3-5 osobami | ⬜ pending | — |
+| 1.8 Video-based eval protocol | 🔵 partial | Manual proces wykonany raz (sesja 2026-05-13 wieczór). Brakuje automatyzacji |
 
 ---
 
@@ -433,6 +455,146 @@ Tier 3 (dobrze mieć):
 - Discord (com.hnc.Discord)
 - Zoom (us.zoom.xos)
 - 1Password (com.1password.1password)
+
+### Sub-cel 1.8: Video-based quality eval (NOWY, periodic)
+
+**Status:** 🔵 partial — wykonano raz manualnie w sesji 2026-05-13 wieczór
+(diagnoza Slack search bar ⌘F vs ⌘G bug). Brakuje strukturyzowanego procesu
+i automatyzacji.
+
+**Problem:** Analiza miss log (`sflow-analyze`) wyłapuje "kliknięcie bez
+toasta", ale **nie wyłapuje błędnych toastów** — sytuacji gdy SFlow pokazał
+shortcut ale **inny niż realnie obowiązujący w apce**. Pierwsza taka
+diagnoza wymagała:
+
+1. Filip nagrał 90s screen recording (CleanShot)
+2. AI wyciągnął ~200 klatek przez Swift+AVFoundation
+3. AI manualnie czytał klatki, krzyżowo z `bundled.json`
+4. AI odkrył nakładające się reguły (Slack "Search Slack" w 2 rule'ach
+   z różnymi keys)
+
+To **zadziałało**, ale 90% czasu poszło na manualną analizę klatek.
+Da się to zautomatyzować.
+
+**Idealny outcome:**
+- Raz na N sesji (lub po zmianie promptu / reseedzie apki) Filip nagrywa
+  60-90s normalnego użycia 1-2 zweryfikowanych apek
+- AI uruchamia `./scripts/sflow-video-eval <video.mp4>` które wyciąga klatki
+  i robi raport "co działa / co chybi / co źle"
+- Wyniki idą do `docs/coverage-report.md` jako per-apka kolumny
+  + jako wpis w session log
+
+**Drogi:**
+
+**Droga A: Pełna automatyzacja (Phase 3 long-term)**
+- AppleScript driver dla Slack/Obsidian wykonuje 20 predefiniowanych
+  akcji
+- SFlow w trybie eval loguje wszystkie toasty + miss events do
+  `eval-output.jsonl`
+- Skrypt porównuje z expected output (golden file per apka)
+- CI-friendly, headless
+- **Plus:** Bez Filip-in-the-loop, deterministyczne
+- **Minus:** Duża praca początkowa (AppleScript per apka), kruchość
+  (każda zmiana UI apki łamie golden file)
+- **Kiedy:** Po Fazie 1.7 beta, gdy mamy >10 apek z confirmed coverage
+
+**Droga B: Wideo + LLM vision (Phase 2 medium-term, ~1 dzień pracy)**
+- Filip nagrywa MP4 jak teraz
+- `sflow-video-eval` wyciąga klatki (Swift+AVFoundation jak w sesji 2026-05-13)
+- Co N klatek (np. co 1s) → POST do Claude API z prompt'em
+  "Tu jest klatka screen recordingu. Czy widzisz SFlow toast? Jakie keys
+  pokazuje? Czy w apce widoczny jest natywny tooltip z innym shortcut'em?
+  Odpowiedź JSON: {toastVisible, toastKeys, toastHint, appTooltipKeys, appTooltipHint}"
+- Skrypt agreguje per-frame answers, krzyżowo z rules cache
+- Output: structured report `docs/video-eval-<timestamp>.md`
+- **Plus:** Minimalna manualna praca, działa dla dowolnej apki bez golden file
+- **Minus:** Koszt API (~$0.05 per 90s wideo), zależność od Claude vision
+- **Kiedy:** Następna sesja (po sub-celu 1.0)
+
+**Droga C: Manualny z lepszymi narzędziami (Phase 1 short-term, ~2h)**
+- `sflow-video-eval <mp4>` wyciąga klatki, zapisuje do `/tmp/...` i drukuje
+  proste podsumowanie (timestamps + ile klatek)
+- Buduje **stripy 3×3** klatek (montaż) żeby AI mogło ogarnąć więcej w jednym Read
+- AI manualnie analizuje stripy (10 zamiast 200 klatek)
+- **Plus:** Najmniej kodu, najszybsze do zrobienia
+- **Minus:** Nadal manualna analiza, ale 10× efektywniejsza
+
+**Rekomendacja:** **Droga C** (now) → **Droga B** (gdy doceni się wartość)
+→ **Droga A** (post-beta).
+
+### Implementacja Drogi C (najbliższa sesja po sub-celu 1.0)
+
+**`scripts/sflow-video-eval`** (bash + Swift):
+```bash
+#!/usr/bin/env bash
+# Usage: sflow-video-eval <video.mp4> [interval_sec=1.0]
+# Wyciąga klatki, montażuje stripy 3x3, drukuje metadane.
+set -euo pipefail
+
+VIDEO="${1:?usage: sflow-video-eval <video.mp4> [interval]}"
+INTERVAL="${2:-1.0}"
+OUTDIR="/tmp/sflow_video_eval_$(date +%Y%m%dT%H%M%S)"
+mkdir -p "$OUTDIR"
+
+# Wyciągnij klatki przez Swift+AVFoundation (skrypt patrz docs/audit-phase-1.md)
+swift "$(dirname "$0")/sflow-video-extract.swift" "$VIDEO" "$OUTDIR" "$INTERVAL"
+
+# Zbierz w stripy 3x3 (jeden PNG na 9 klatek)
+# Wymaga ImageMagick (montage); fallback: zostaw pojedyncze klatki
+if command -v montage >/dev/null; then
+    cd "$OUTDIR"
+    ls f_*.png | xargs -n9 sh -c 'montage "$@" -tile 3x3 -geometry 800x \
+        "strip_$(printf %03d $((${0##*_}-1))).png"' _
+fi
+
+echo "Klatki w: $OUTDIR"
+echo "Stripy w: $OUTDIR/strip_*.png"
+echo "Następny krok: poproś AI 'przeczytaj stripy i znajdź wrong toasts'"
+```
+
+**`scripts/sflow-video-extract.swift`** — Swift script (~40 linii) używający
+AVFoundation. Patrz template z sesji 2026-05-13 w session log (commit
+`ede9c97` / wcześniej w sesji wieczornej).
+
+**Wynik dla AI:** stripy w `/tmp/sflow_video_eval_<ts>/strip_*.png`. AI czyta
+~10 stripów (zamiast 200 klatek), porównuje z rules cache, raportuje.
+
+### Proces use'owy (dla Filipa + AI)
+
+1. **Trigger:** AI proaktywnie sugeruje wideo po jednej z sytuacji:
+   - Minęła >1 sesja od ostatniego video evalu
+   - Zmiana w `backend/src/prompt.ts` lub `dedup.ts` w tej sesji
+   - Reseed apki w `bundled.json` w tej sesji
+   - Filip zgłasza "coś dziwnie działa"
+
+2. **Filip:**
+   - Nagrywa 60-90s screen recording (preferowane CleanShot, ale dowolne MP4)
+   - Klika reprezentatywne przyciski w 1-2 zweryfikowanych apkach
+   - Drop MP4 do repo root (gitignored: `*.mp4`)
+   - Pisze do AI "przeanalizuj ten wideo: <ścieżka>"
+
+3. **AI:**
+   - `./scripts/sflow-video-eval <path>` (lub manualny extract jeśli skrypt
+     jeszcze nie istnieje)
+   - Czyta stripy/klatki
+   - Krzyżowo z `SFlow/Resources/bundled.json` i `cache/*.json`
+   - Raport markdown: ✅ toasts fired correctly / ❌ misses / ⚠️ wrong toasts
+   - Sugeruje konkretne fix'y per finding
+   - Dopisuje do `docs/coverage-report.md` (jeśli istnieje) per-app row
+
+4. **Po sesji:**
+   - MP4 usunięty (`*.mp4` w `.gitignore` więc nie zaśmieca repo)
+   - Klatki w /tmp i tak są ulotne
+   - Findings w session log
+
+### Acceptance criteria sub-celu 1.8
+
+- [ ] `scripts/sflow-video-eval` istnieje i działa (Droga C minimum)
+- [ ] Wykonano ≥1 video eval z udokumentowanymi findings w session log
+- [ ] `.gitignore` zawiera `*.mp4` żeby wideo nie wchodziły do gita
+- [ ] (Droga B) `--llm` flag wywołuje Claude vision per klatka
+
+---
 
 ### Sub-cel 1.7: Beta test z 3-5 osobami
 

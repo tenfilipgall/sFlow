@@ -17,3 +17,10 @@ build/
 
 # Reseeder backups
 bundled.json.bak.*
+
+# Video eval recordings (Filip drops MP4s in repo root for AI analysis;
+# they shouldn't enter git history — see audit-phase-1.md sub-cel 1.8)
+*.mp4
+*.mov
+*.MP4
+*.MOV

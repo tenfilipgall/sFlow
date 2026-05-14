@@ -24,6 +24,142 @@ zanim nie ma A+B+E zaprojektowanych jako jedna historia.
 
 ---
 
+## Proces ciągły (rituals i workflow)
+
+> **AI: Przeczytaj tę sekcję na początku każdej sesji. Stosuj się.**
+
+### A. Czytanie kontekstu na start każdej sesji
+
+Pierwsza czynność każdej nowej sesji = **przeczytać 4 pliki równolegle**:
+
+```
+docs/product-vision.md       ← zasady współpracy + wizja produktu
+docs/roadmap.md              ← plan fazowy + ta sekcja
+docs/audit-phase-0.md        ← stan kodu + lista problemów (P-X)
+docs/audit-phase-1.md        ← sub-cele Fazy 1 + statusy
+```
+
+Cel: AI ma wiedzieć **na jakim etapie jesteśmy**, **co zrobione**, **co
+następne**, zanim cokolwiek zaproponuje. Bez tego ryzykuje że poleci robić
+rzecz która już jest zrobiona albo poza obecnym scope'em.
+
+### B. End-of-session protocol (po każdej sesji)
+
+Kiedy sesja kończy się ze zmianami w kodzie, AI MUSI:
+
+1. **Zaktualizować statusy** w `audit-phase-0.md` (problemy P-X) oraz
+   `audit-phase-1.md` (sub-cele). Symbole:
+   - ⬜ pending (nie zaczęte)
+   - 🟡 in-progress (zaczęte, niedokończone — opisać czego brakuje)
+   - 🔵 partial (działa częściowo — opisać co działa a co nie)
+   - 🟢 done (zrobione + zweryfikowane)
+   - 🔴 regression (cofnięte z poprzedniego statusu — opisać dlaczego)
+
+2. **Dopisać wpis do "Session log"** (sekcja niżej) — reverse-chronological,
+   najnowszy na górze.
+
+3. **Scommitować razem** z kodem jednym dodatkowym commitem o nazwie
+   `docs: session log + status update [v.X.Y.Z]` lub w osobnym jeśli
+   commit kodu już istnieje.
+
+### C. Video-based quality eval (okresowo)
+
+Patrz `docs/audit-phase-1.md` Sub-cel 1.8. AI **proaktywnie sugeruje**
+Filipowi nagranie 60-90s screen recordingu jeśli:
+
+- Minęła >1 sesja od ostatniego video evalu
+- Wprowadzono zmianę w `backend/src/prompt.ts` lub `dedup.ts`
+- Reseedowano apkę w `bundled.json`
+
+Filip nagrywa MP4 (CleanShot), wrzuca do repo (gitignored), AI uruchamia
+analizę klatek (Swift+AVFoundation), raportuje:
+
+- ✅ toasty które wystrzeliły poprawnie
+- ❌ kliknięcia bez toasta (chybienia) — porównać z `events.jsonl`
+- ⚠️ toasty z błędnymi keys/hintami (jeśli widać hover-tooltip w klatce)
+
+Wyniki idą do `docs/coverage-report.md` (jeśli istnieje) i jako wpis
+w session log.
+
+### D. Rekomendacje + decyzje
+
+Zasady w `product-vision.md` sekcja 0.2-0.3. Skrót:
+
+- Każda rekomendacja uzasadniona przez cel z roadmap albo decyzję z vision
+- Pytania zawsze multi-choice (`AskUserQuestion`) z rekomendacją w pierwszej opcji
+- Tłumacz jak 12-latkowi (analogie, polski, technika w nawiasach)
+
+### E. Co AI robi samodzielnie vs co pyta
+
+Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
+
+- **Robi sam:** edycje, testy, commit do main, reseed, eksperymenty
+- **Pyta:** deploy backendu, kasowanie historii, zmiany cenowe,
+  rzeczy poza scope obecnego sub-celu
+
+---
+
+## Session log
+
+> **Reverse-chronological — najnowsza sesja na górze.**
+> AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
+
+### 2026-05-14 — Process & context rules dodane (ta sesja)
+
+**Co:** Dodano sekcję "Proces ciągły" do roadmap, "Jak współpracujemy"
+do product-vision (sekcja 0), sub-cel 1.8 do audit-phase-1 (video eval),
+mechanizm status-tracking dla problemów P-X i sub-celów.
+
+**Dlaczego:** Filip zauważył że bez tego każda sesja AI zaczyna się od
+zera, zapomina poprzedni kontekst, czasem buduje rzeczy już zrobione.
+Plus: video eval z poprzedniej sesji okazał się bardzo wartościowy
+(wykrył Slack search ⌘F vs ⌘G bug) — warto sformalizować.
+
+**Wpływ:** Każda następna sesja zaczyna się od **wymuszonej dawki kontekstu**.
+AI musi czytać 4 pliki na start. Decyzje są łatwiejsze (rekomendacje
+z uzasadnieniem). Postęp jest mierzalny (statusy w audytach).
+
+**Commits:** *(ten — uzupełnij SHA przy commit'cie)*
+
+### 2026-05-13 (wieczór) — v1.1.1: wrong-toast fix + audyt dokumentacji
+
+**Co:** 4 fixy: prompt anti-overlap, backend dedup, Swift hotkey-suffix
+tolerance, reseed Slack/Obsidian. Plus update 3 dokumentów (roadmap,
+audyty) z poprawkami fakt'ualnymi.
+
+**Dlaczego:** Wideo Filipa pokazało wrong toast (Slack search bar
+hover ⌘G, toast pokazał ⌘F). Diagnoza: 2 reguły Claude'a z nakładającymi
+się tytułami, hint+keys przemieszane. Plus odkryto pattern "Edit message E"
+(Electron hotkey suffix w AX title).
+
+**Wpływ:** Sub-cel 1.1 (quality gate) częściowo zrealizowany (backend dedup).
+Sub-cel 1.5 (MenuBarIndex bug) NADAL pending — to inny matcher. Bundled.json
+ma teraz Slack+Obsidian w v1.1.1 promtem (avg 4+ wariantów), pozostałe 3
+apki w starym.
+
+**Commits:** `c2c690c` (prompt), `72a4bb2` (dedup), `1f8891c` (Swift),
+`cea1828` (reseed), `ede9c97` (docs).
+
+### 2026-05-13 (popołudnie) — v1.1: miss log + better prompt + auto-reseed
+
+**Co:** 21 commitów. EventLogger.logMiss + Analyzer + sflow-analyze CLI.
+Backend prompt v1.1 z 3-5 wariantami tytułów + few-shot examples. Forward-compat
+`version: 1` field. Auto-reseeder (`SFlow --reseed-all`) z backup'em.
+
+**Dlaczego:** v1.0 manual eval pokazał ~50% hit rate. Cel: 70%+ przez
+multi-variant tytuły. Plus narzędzie do mierzenia (miss log) żeby
+v1.2 mógł być data-driven.
+
+**Wpływ:** Hit rate po reseedzie ~99% w testach na Slack/Obsidian.
+Linear/Cursor skipowane (not installed). Pre-existing 3 MenuBarIndex test
+failures pozostały (nie z tej sesji).
+
+**Commits:** Tag `pre-v1.1-misslog-prompt-2026-05-13` na początku + 21 feat
+commitów. Główne: `ee9bd1c` (EventLogger), `556fe58` (ClickWatcher logMiss),
+`1f0bc12` (Analyzer), `55e3e36` (prompt v1.1), `5666ddb` (reseed result).
+
+---
+
 ## Faza 0: Co już mamy — pełna inwentaryzacja
 
 Zaktualizowana lista (sprawdzona w kodzie, nie z pamięci):

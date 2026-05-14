@@ -2,7 +2,32 @@
 
 > Krytyczna analiza wszystkiego co dziś jest zbudowane. Bazuje na **kodzie**,
 > nie na poprzednich dokumentach. Każdy problem ma odniesienie do pliku i linii.
-> Stan: 2026-05-13.
+> Stan: 2026-05-13, aktualizowany po każdej sesji.
+
+## Legenda statusów problemów (dla AI updatującego po sesji)
+
+- ⬜ **otwarte** — nie tknięte
+- 🟡 **w trakcie** — zaczęte, niedokończone
+- 🔵 **częściowo** — częściowo rozwiązane (opis co zostaje)
+- 🟢 **zamknięte** — rozwiązane + zweryfikowane
+- 🔴 **regresja** — wróciło po poprzednim rozwiązaniu
+
+## Aktualne statusy problemów (krytyczne)
+
+| ID | Status | Komentarz |
+|---|---|---|
+| P-1 Quality gate | 🔵 częściowo | Backend dedup ✅ (v1.1.1). Brakuje client-side filtr confidence/source |
+| P-2 Retry przy fail | ⬜ otwarte | — |
+| P-3 .failed silently | ⬜ otwarte | — |
+| P-4 False-positive feedback | ⬜ otwarte | **Krytyczne** — miss log nie łapie wrong toasts |
+| P-5 MenuBarIndex bug | ⬜ otwarte | NIE rozwiązane przez v1.1.1 (różny matcher) |
+| P-6 AXKeyShortcutsValue | ⬜ otwarte | Łatwy eksperyment 1-2h |
+| P-8 Brak /v1/refresh | 🔵 częściowo | `?fresh=1` ✅. Brakuje pełnego refresh z miss data |
+| P-19 Bundled.json update path | ⬜ otwarte | Krytyczne dla launch'a |
+| P-21 Backend observability | ⬜ otwarte | Częściowo: console.log dropped w dedup (v1.1.1) |
+| P-23 Within-rule title dupes | ⬜ otwarte | Niska severity, łatwy fix w dedup.ts |
+
+Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
 ---
 
@@ -82,14 +107,27 @@ dla setek apek (a nie 4 zweryfikowanych ręcznie).
 
 ### Dokumentacja
 
-- `product-vision.md` — wizja produktu (świeży)
-- `roadmap.md` — plan v2 (świeży)
+- `product-vision.md` — wizja produktu **+ zasady współpracy AI (sekcja 0)**
+- `roadmap.md` — plan v2 **+ Proces ciągły + Session log**
+- `audit-phase-0.md` — ten plik (status problemów)
+- `audit-phase-1.md` — sub-cele Fazy 1 (status sub-celów + sub-cel 1.8 video eval)
 - `layer-1-5-design-brief.md` — design brief dla agentów (historyczny)
 - `deep-think-auto-discovery.md` — deep think prompt (historyczny)
 - `v1.1-roadmap.md` — odłożone idee (5 pomysłów)
 - `wip-web-shortcuts.md` — porzucona próba (web shortcuts)
 - `notion-calendar-todo.md` — stuck items
 - `superpowers/specs/*` + `superpowers/plans/*` — sukcesywne specy
+
+### Dev workflow tools
+
+| Narzędzie | Lokacja | Stan | Cel |
+|---|---|---|---|
+| `sflow-analyze` | `scripts/` | ✅ działa | CLI raport top miss apek + przyciski |
+| `sflow-reseed` / `--reseed[-all]` | `scripts/` + Reseeder.swift | ✅ działa | Wymusza fresh discovery dla bundled apek (z `?fresh=1`) |
+| `promote-to-bundled.sh` | `scripts/` | ✅ działa | Merge cache files → bundled.json z review |
+| `sflow-video-eval` | `scripts/` (PLANOWANY) | ⬜ pending | Extract klatek + analiza wrong toasts. Patrz audit-phase-1.md sub-cel 1.8 |
+| `sflow-video-extract.swift` | `scripts/` (PLANOWANY) | ⬜ pending | Helper dla `sflow-video-eval` używający AVFoundation |
+| AppleScript driver per apka | brak | ⬜ pending (Faza 2) | Headless test runner per Sub-cel 1.8 Droga A |
 
 ---
 
