@@ -53,7 +53,7 @@
 | **8** | Coverage telemetry analysis + iteration (P-31 część 2) | 1.11 część 2 — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, plan rozszerzeń (sdef, GitHub scan, prompt rework) | ~2h analizy + 1-2 dni impl | ⬜ | ✏️ pending (waits on usage data) |
 | **9** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
 | **10** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
-| **11** | Bundled.json update path | P-19 + versioning | ~1 dzień | ⬜ | ✏️ sketch |
+| **11** | Bundled.json update path | P-19 + versioning | ~1 dzień | 🟢 done | Session 8 complete |
 | **12-13** | Coverage eval batch 1+2 | 1.6 (10-15 apek, ~1/dzień) | ~10 mini-sesji 60min | ⬜ | ✏️ sketch (per-batch detail) |
 | **14** | Beta setup | 1.7 (DMG + 5 znajomych) | ~1 dzień | ⬜ | ✏️ sketch |
 | **15** | Beta debrief + decyzja | 1.7 (po 2 tyg.) → go-Faza-2 lub pivot | ~4h | ⬜ | ✏️ sketch (po danych z bety) |
