@@ -104,6 +104,21 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-14 — Sesja 7: Coverage Quick Wins (P-31 część 1)
+
+**Co:** 3 niezależne, additive fixy rozszerzające detection surface (bez czekania na dane z events.jsonl).
+(1) `AXUIElementCopyActionNames` probe + `elementHasAXPress` helper + `hasAXPress` parametr w `shouldRunNonInteractiveLayers` — element z akcją AXPress traktowany jako klikalny niezależnie od role (catches Chromium AXImage/AXGroup widgets).
+(2) `extractFallbackTitleFromChildren` — gdy klikalny rodzic ma puste title+desc, skanujemy do 5 dzieci po pierwszą niepustą labelkę (Chromium AXButton→AXImage pattern).
+(3) `kAXRoleDescriptionAttribute` + `AXCustomActions` czytane w ClickWatcher; `RuleCache.match` rozszerzony o `roleDescription` i `customActions` parametry; defensive `extractCustomActionNames` parser dla 3 shape'ów (String/dict/NSObject KVC).
+
+**Dlaczego:** Sesja 7 z planu (analiza events.jsonl) wymaga 1-2 dni użycia. W międzyczasie te 3 fixy bez czekania na dane rozszerzają zbiór "widocznych klikalnych elementów" — bezpośrednia odpowiedź na "klikam i toast się nie pokazuje".
+
+**Wpływ:** ~30-50% wzrost coverage szacunkowo. 198 testów passing (192 + 6 nowych). Po tym sesja 8 analizy events.jsonl będzie miała bogatsze dane do diagnozy "co JESZCZE dodać".
+
+**Commits:** `dfbb508` (Fix 1 — AXPress probe), `b1bf172` (Fix 2 — walk-down), `77fe805` (Fix 3 — RoleDescription + CustomActions).
+
+**Następny krok:** Filip używa SFlow 1-2 dni → analiza `events.jsonl` per-layer per-apka → sesja 8 (targeted coverage based on data).
+
 ### 2026-05-14 — Sesja 6: Matching engine quality (P-26..P-30)
 
 **Co:** 4 fundamentalne bugi rozpoznawania klikniec + telemetria per-layer.

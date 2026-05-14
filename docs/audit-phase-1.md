@@ -27,7 +27,7 @@
 | 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
-| 1.11 Coverage iteration (P-31) | ⬜ pending | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. |
+| 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
 
 ---
 
@@ -49,7 +49,7 @@
 | **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | 🟢 done | 📋 below |
 | **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | 🟢 done | ✏️ sketch |
 | **6** | Matching engine quality | 1.10 (P-26..P-30 + telemetria per-layer) | ~4h | 🟢 done | 📋 plan: `2026-05-14-matching-engine-quality.md` |
-| **7** | Coverage telemetry analysis + plan | 1.11 prep — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, decyzja co dalej | ~2h analizy + plan | ⬜ | ✏️ pending (waits on usage data) |
+| **7** | Coverage telemetry analysis + plan | 1.11 prep — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, decyzja co dalej | ~2h analizy + plan | 🟢 done | 📋 plan: 2026-05-14-coverage-quick-wins.md |
 | **8** | Coverage iteration | 1.11 implementacja (po sesji 7) — np. AXCustomActions, AppleScript sdef, walk-down, prompt rework | ~1-2 dni | ⬜ | ✏️ sketch (TBD po sesji 7) |
 | **9** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
 | **10** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
