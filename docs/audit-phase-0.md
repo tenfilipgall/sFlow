@@ -21,14 +21,14 @@
 | P-3 .failed silently | ⬜ otwarte | — |
 | P-4 False-positive feedback | ⬜ otwarte | **Krytyczne** — miss log nie łapie wrong toasts |
 | P-5 MenuBarIndex bug | 🟢 zamknięte | Fix + 2 nowe testy + 2 poprawione testy (sesja 2026-05-14) |
-| P-6 AXKeyShortcutsValue | ⬜ otwarte | **Awansowane** — kluczowy quick win dla window elements, Electron. Patrz P-24 |
+| P-6 AXKeyShortcutsValue | 🟢 zamknięte | Layer 0 w ClickWatcher, parseAriaShortcut + 10 testów ✅ (sesja 2026-05-14) |
 | P-8 Brak /v1/refresh | 🔵 częściowo | `?fresh=1` ✅. Brakuje pełnego refresh z miss data |
 | P-19 Bundled.json update path | ⬜ otwarte | Krytyczne dla launch'a |
 | P-15 Permissions check Input Monitoring | 🟢 zamknięte | CGPreflightListenEventAccess() + alert (sesja 2026-05-14) |
 | P-21 Backend observability | 🔵 częściowo | Structured JSON log w /v1/discover (sesja 2026-05-14). Brakuje: dashboard |
 | P-23 Within-rule title dupes | 🟢 zamknięte | Fix w `dedup.ts` + test (sesja 2026-05-14) |
-| P-24 Window element matching pasywne | ⬜ otwarte | **Nowe** — główny powód że okna < menu bar. Brakuje AXKeyShortcutsValue + identifier layer |
-| P-25 AXIdentifier nie w schemacie reguł | ⬜ otwarte | **Nowe** — blokuje language-agnostic matching dla window elements |
+| P-24 Window element matching pasywne | 🔵 częściowo | P-6 (Layer 0) ✅ + P-25 (identifier schema) ✅ (sesja 2026-05-14). Brakuje: backend musi zacząć generować reguły z identifiers (wymaga reseedu apek) |
+| P-25 AXIdentifier nie w schemacie reguł | 🟢 zamknięte | AXIdentifier w AXSkeletonExtractor + LoadedMatch.identifiers + RuleCache.match(identifier:) + backend types+prompt ✅ (sesja 2026-05-14) |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 

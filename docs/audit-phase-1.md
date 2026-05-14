@@ -25,7 +25,7 @@
 | 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
 | 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
-| 1.9 Window element improvements (P-6 + P-25) | ⬜ pending | **Nowe** — AXKeyShortcutsValue Layer 0 + AXIdentifier w regułach. Patrz P-24/P-25 w audit-phase-0.md |
+| 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 
 ---
 
@@ -44,7 +44,7 @@
 | **2** | Bug squashing | 1.5 + P-15 + P-21 | ~4h | 🟢 done | 📋 below |
 | **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | 🟢 done | 📋 below |
 | **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | 🟢 done | 📋 below |
-| **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | ⬜ | 📋 below |
+| **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | 🟢 done | 📋 below |
 | **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | ⬜ | ✏️ sketch |
 | **6** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
 | **7** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
