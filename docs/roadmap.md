@@ -872,22 +872,40 @@ jest mniejsza.
 
 ## Najbliższy krok (tydzień 1)
 
-**AKTUALIZACJA 2026-05-14 (po sesji 6):** Matching engine quality plan UKOŃCZONY ✅.
-P-26..P-30 zamknięte. 192 testy passing. Per-layer telemetry działa — każdy event
-w `events.jsonl` ma teraz pole `"layer"` (L0/L0.5/L1/L2/L3/L4/menu/menu-fallback).
+**AKTUALIZACJA 2026-05-14 (po sesjach 6 i 7):**
 
-**NASTĘPNY KROK (sesja 7):** Filip używa SFlow 1-2 dni normalnie → analiza
+**Sesja 6 — Matching Engine Quality ✅** — P-26..P-30 zamknięte. Word-boundary
+match, depth+isInteractive gate, deterministyczny MenuBarIndex, większe
+skeletony do LLM, per-layer telemetria.
+
+**Sesja 7 — Coverage Quick Wins ✅** — P-31 częściowo: 3 niezależne fixy
+rozszerzające detection surface bez czekania na dane:
+- AXPress probe (element z akcją AXPress = klikalny niezależnie od role)
+- Walk-down z klikalnego rodzica (gdy puste title+desc → szukamy w dzieciach)
+- AXRoleDescription + AXCustomActions czytane i w match() RuleCache
+
+**198 testów passing.** ~30-50% szacunkowy wzrost coverage.
+
+**NASTĘPNY KROK (sesja 8):** Filip używa SFlow 1-2 dni normalnie → analiza
 `events.jsonl` poleceniem `jq` (per-layer hit rate per apka) → na bazie danych
-**plan coverage** (P-31, sub-cel 1.11) targetujący konkretne luki. Nie zgadujemy
-co dodać — mierzymy gdzie tracimy. Komenda do analizy:
+**pełny plan coverage iteration** (P-31 część 2, sub-cel 1.11) — wybór 2-3
+fixów z 12 brainstormowanych źródeł (sdef parser, GitHub scan, Help-scrape,
+prompt rework, etc.) targetujących **konkretne luki Filipa**, nie generyczne.
 
 ```bash
+# Per-layer hit rate per apka (toasty)
 cat ~/Library/Application\ Support/SFlow/events.jsonl | \
   jq -r 'select(.type=="toast") | "\(.bundleId)\t\(.layer)"' | \
   sort | uniq -c | sort -rn
-```
 
-Plus equivalent dla `false_positives.jsonl`.
+# Per-layer false positives
+cat ~/Library/Application\ Support/SFlow/false_positives.jsonl | \
+  jq -r '"\(.bundleId)\t\(.layer)"' | \
+  sort | uniq -c | sort -rn
+
+# Top misses per apka
+./scripts/sflow-analyze
+```
 
 Konkretny, do zrobienia jutro. Kolejność zmieniona po sesji v1.1.1, w której
 ukończono częściowo Fazę 1.1 (dedup na backendzie) oraz dodano tolerancję

@@ -46,20 +46,22 @@ Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 z 7-warstwowym matchingiem (L0/L0.5/L1/L2/L3/L4 + direct menu bar), backend
 Cloudflare Worker generujący reguły przez Claude API, automatyczny pipeline
 discovery przy aktywacji nowej apki, miss log + per-layer telemetry, oraz
-CLI do reseed'owania 5 zweryfikowanych apek. **Word-boundary matching + depth
-gate + MenuBarIndex determinism** (sesja 6, 2026-05-14) wyeliminowały
-fundamentalne bugi rozpoznawania. ~3200 linii Swift, ~600 linii TypeScript,
-~2100 linii testów (192 passing).
+CLI do reseed'owania 5 zweryfikowanych apek. **Word-boundary matching +
+depth gate + MenuBarIndex determinism** (sesja 6) wyeliminowały fundamentalne
+bugi rozpoznawania. **AXPress probe + walk-down + AXRoleDescription/CustomActions**
+(sesja 7) rozszerzyły detection surface. ~3300 linii Swift, ~600 linii TypeScript,
+~2200 linii testów (**198 passing**).
 
 **Co nie działa / nie istnieje:** Brak retry przy nieudanej discovery (P-2),
 brak `/v1/refresh` z miss data (P-8), brak bundled.json update path (P-19),
-brak testów E2E (P-18). **Coverage holes** — zidentyfikowane (P-31) ale
-plan czeka na dane z `events.jsonl` (sesja 7).
+brak testów E2E (P-18). **Coverage holes** — quick wins zrobione w sesji 7
+(P-31 🟡 partial), pełna iteracja czeka na dane z `events.jsonl` (sesja 8).
 
-**Kluczowa diagnoza:** Fundament rozpoznawania jest **stabilny** po sesji 6.
-Infrastruktura klasy produktowej + telemetria per-layer w `events.jsonl`
-odblokowuje **data-driven coverage iteration** (sesja 7 → 8). Następne
-mechanizmy higieny jakości (retry, refresh, bundled update path) — sesje 9-11.
+**Kluczowa diagnoza:** Fundament rozpoznawania jest **stabilny** (sesja 6) +
+detection surface **rozszerzona** (sesja 7). Telemetria per-layer w
+`events.jsonl` odblokowuje **data-driven coverage iteration** (sesja 8 po
+1-2 dniach użycia). Następne mechanizmy higieny jakości (retry, refresh,
+bundled update path) — sesje 9-11.
 
 ---
 

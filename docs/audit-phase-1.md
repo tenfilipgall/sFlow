@@ -49,8 +49,8 @@
 | **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | 🟢 done | 📋 below |
 | **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | 🟢 done | ✏️ sketch |
 | **6** | Matching engine quality | 1.10 (P-26..P-30 + telemetria per-layer) | ~4h | 🟢 done | 📋 plan: `2026-05-14-matching-engine-quality.md` |
-| **7** | Coverage telemetry analysis + plan | 1.11 prep — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, decyzja co dalej | ~2h analizy + plan | 🟢 done | 📋 plan: 2026-05-14-coverage-quick-wins.md |
-| **8** | Coverage iteration | 1.11 implementacja (po sesji 7) — np. AXCustomActions, AppleScript sdef, walk-down, prompt rework | ~1-2 dni | ⬜ | ✏️ sketch (TBD po sesji 7) |
+| **7** | Coverage Quick Wins (P-31 część 1) | 1.11 część 1 — AXPress probe + walk-down + RoleDescription/CustomActions (bez czekania na dane) | ~3.5h | 🟢 done | 📋 plan: `2026-05-14-coverage-quick-wins.md` |
+| **8** | Coverage telemetry analysis + iteration (P-31 część 2) | 1.11 część 2 — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, plan rozszerzeń (sdef, GitHub scan, prompt rework) | ~2h analizy + 1-2 dni impl | ⬜ | ✏️ pending (waits on usage data) |
 | **9** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
 | **10** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
 | **11** | Bundled.json update path | P-19 + versioning | ~1 dzień | ⬜ | ✏️ sketch |

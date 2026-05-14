@@ -192,20 +192,29 @@ Trzy pytania których nie odpowiedzieliśmy:
 - ~70–80% pokrycia dla 4 zweryfikowanych apek (Slack, Obsidian, Linear, Cursor)
 - Miss log + analyzer (v1.1) — wiemy które kliknięcia "uciekły"
 
-**Audyt 2026-05-14 + sesja 6 — fundament naprawiony:** Pełna analiza trybu
-rozpoznawania wykryła 4 fundamentalne bugi (P-26..P-30 w `audit-phase-0.md`):
-matchowanie reguł na rodzicach niezwiązanych z klikiem, substring zamiast
-word-boundary, niedeterministyczny MenuBarIndex, agresywny filtr skeletonu.
-**Wszystkie naprawione w sesji 6 (2026-05-14)** — 9 commitów, 192 testy
-passing. Plus dodana **per-layer telemetria** w `events.jsonl` (pole
-`"layer"`) która odblokowuje data-driven następne iteracje.
+**Audyt 2026-05-14 + sesje 6-7 — fundament naprawiony + coverage rozszerzona:**
 
-**Następny krok (sesja 7):** użycie SFlow 1-2 dni → analiza `events.jsonl`
-per-layer per-apka → **plan coverage** (P-31, sub-cel 1.11) targetujący
-konkretne luki (gdzie SFlow nie pokazuje toasta dla klikalnych elementów).
-Brainstorm zidentyfikował 12 potencjalnych źródeł skrótów których jeszcze
-nie tapamy (AXCustomActions, AppleScript sdef, szersze Electron regex,
-walk-down, AXUIElementCopyActionNames probe, etc.) — wybór po danych.
+**Sesja 6 (matching engine quality):** Pełna analiza trybu rozpoznawania
+wykryła 4 fundamentalne bugi (P-26..P-30 w `audit-phase-0.md`): matchowanie
+reguł na rodzicach niezwiązanych z klikiem, substring zamiast word-boundary,
+niedeterministyczny MenuBarIndex, agresywny filtr skeletonu. **Wszystkie
+naprawione** — 9 commitów. Plus dodana **per-layer telemetria** w
+`events.jsonl` (pole `"layer"`) która odblokowuje data-driven iteracje.
+
+**Sesja 7 (coverage quick wins — P-31 część 1):** 3 niezależne fixy
+rozszerzające detection surface bez czekania na dane:
+- `AXUIElementCopyActionNames` probe — element z akcją AXPress = klikalny
+  niezależnie od role (catches Chromium widgets)
+- Walk-down z klikalnego rodzica — gdy puste title+desc → szukamy w dzieciach
+- AXRoleDescription + AXCustomActions czytane i przekazane do RuleCache.match
+
+**198 testów passing po sesji 7.** Szacunkowy wzrost coverage ~30-50%.
+
+**Następny krok (sesja 8):** użycie SFlow 1-2 dni → analiza `events.jsonl`
+per-layer per-apka → **pełny plan coverage iteration** (P-31 część 2, sub-cel
+1.11) — wybór 2-3 z 12 brainstormowanych źródeł (AppleScript sdef parser,
+GitHub code-search dla OSS apek, Help→Shortcuts auto-scrape, szersze Electron
+regex, prompt rework, etc.) — wybór **na bazie danych Filipa**, nie zgadywanie.
 
 **Czym są toasty dziś:**
 > Toasty służą mi do testowania czy SFlow faktycznie "łapie" elementy które
