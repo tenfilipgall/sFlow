@@ -50,6 +50,22 @@ final class ClickWatcher {
         "AXLink", "AXPopUpButton", "AXComboBox",
     ]
 
+    /// Returns true if at this depth in the AX walk, non-L0 layers (RuleCache, ShortcutRules,
+    /// MenuBarIndex, universal heuristics) are allowed to attempt a match.
+    ///
+    /// Depth 0 is the hit-tested element returned by AXUIElementCopyElementAtPosition —
+    /// always allowed (preserves Chromium AXGroup clickables, AXImage buttons, etc.).
+    /// Depth > 0 is a parent walked via kAXParentAttribute — allowed only for roles in
+    /// `interactiveRoles`. This stops rules from matching structural containers
+    /// (AXWindow, AXScrollArea, AXGroup wrappers, AXStaticText leaves of a click target).
+    ///
+    /// Audit reference: BUG #1 — rules matched on parents caused false-positive toasts
+    /// when clicking inside notes / chat windows whose ancestor had a semantic description.
+    static func shouldRunNonInteractiveLayers(role: String, depth: Int) -> Bool {
+        if depth == 0 { return true }
+        return interactiveRoles.contains(role)
+    }
+
     static func parseAriaShortcut(_ value: String) -> [String]? {
         guard !value.isEmpty else { return nil }
         let tokens = value.split(separator: "+", omittingEmptySubsequences: true).map(String.init)
@@ -115,7 +131,7 @@ final class ClickWatcher {
 
         if result == .success, let element = elemRef {
             var current = element
-            for _ in 0..<6 {
+            for depth in 0..<6 {
                 // Read all AX attributes once per element — shared across all layers.
                 var roleRef: AnyObject?; var descRef: AnyObject?; var titleRef: AnyObject?
                 var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
@@ -156,8 +172,11 @@ final class ClickWatcher {
                     return
                 }
 
+                let runNonInteractive = Self.shouldRunNonInteractiveLayers(role: currentRole, depth: depth)
+
                 // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
-                if let result = ruleCache.match(
+                if runNonInteractive,
+                   let result = ruleCache.match(
                     bundleId: bundleId,
                     role: currentRole,
                     title: currentTitle,
@@ -172,7 +191,8 @@ final class ClickWatcher {
                 }
 
                 // Layer 1: hardcoded per-app rules
-                if let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,
+                if runNonInteractive,
+                   let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,
                                                                   role: roleRef, desc: descRef,
                                                                   title: titleRef, subrole: subroleRef,
                                                                   placeholder: placeholderRef, help: helpRef,

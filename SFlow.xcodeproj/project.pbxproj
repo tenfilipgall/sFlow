@@ -32,6 +32,7 @@
 		7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */; };
 		7F5D426418717DF0A4068F60 /* AnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD31AF5AA81E10DD5676BE5 /* AnalyzerTests.swift */; };
 		838B140FFAE42406744A8033 /* FalsePositiveStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */; };
+		894DDA299F2DD79E74EF5521 /* ClickWatcherLayerGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7196A83CF2B5CA7EAA34B736 /* ClickWatcherLayerGateTests.swift */; };
 		8BF3A8E2AD112898A7A2829F /* FalsePositiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */; };
 		8DA7A33D1FEEFF27C202486F /* AsarReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4927B1309184521DF315A53 /* AsarReaderTests.swift */; };
 		8F6D5FFBC719D36F90CF04BB /* ClickWatcherParseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA4CFF690026DC7D21A29A06 /* ClickWatcherParseTests.swift */; };
@@ -83,6 +84,7 @@
 		645E21ED214998AEA9964EDB /* RuleCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleCacheTests.swift; sourceTree = "<group>"; };
 		696FCA35F867499528AB23A3 /* SFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarCacheTests.swift; sourceTree = "<group>"; };
+		7196A83CF2B5CA7EAA34B736 /* ClickWatcherLayerGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickWatcherLayerGateTests.swift; sourceTree = "<group>"; };
 		74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickWatcher.swift; sourceTree = "<group>"; };
 		75AB6406FDB65C7366C483F8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78F2522A34A64845E2F1A827 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -180,6 +182,7 @@
 				A4927B1309184521DF315A53 /* AsarReaderTests.swift */,
 				EE98E7B09E56ECD2733A8701 /* AsarTestFixture.swift */,
 				88CC46DD09A0AC6D448041DC /* AXSkeletonFilterTests.swift */,
+				7196A83CF2B5CA7EAA34B736 /* ClickWatcherLayerGateTests.swift */,
 				DA4CFF690026DC7D21A29A06 /* ClickWatcherParseTests.swift */,
 				59C12664567D251A0FBC46F4 /* DiscoveryClientTests.swift */,
 				2C3395093F311A70AC8B902D /* ElectronShortcutScannerTests.swift */,
@@ -301,6 +304,7 @@
 				7F5D426418717DF0A4068F60 /* AnalyzerTests.swift in Sources */,
 				8DA7A33D1FEEFF27C202486F /* AsarReaderTests.swift in Sources */,
 				ABF500139EEDDCECFD6387DF /* AsarTestFixture.swift in Sources */,
+				894DDA299F2DD79E74EF5521 /* ClickWatcherLayerGateTests.swift in Sources */,
 				8F6D5FFBC719D36F90CF04BB /* ClickWatcherParseTests.swift in Sources */,
 				59BAD264616362DAB2C151FE /* DiscoveryClientTests.swift in Sources */,
 				66AEDAB8D6B27AC0FB7D50E7 /* ElectronShortcutScannerTests.swift in Sources */,
