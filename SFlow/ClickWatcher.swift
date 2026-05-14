@@ -50,6 +50,42 @@ final class ClickWatcher {
         "AXLink", "AXPopUpButton", "AXComboBox",
     ]
 
+    static func parseAriaShortcut(_ value: String) -> [String]? {
+        guard !value.isEmpty else { return nil }
+        let tokens = value.split(separator: "+", omittingEmptySubsequences: true).map(String.init)
+        guard !tokens.isEmpty else { return nil }
+        var result: [String] = []
+        for token in tokens {
+            switch token {
+            case "Meta":       result.append("meta")
+            case "Control":    result.append("ctrl")
+            case "Alt":        result.append("alt")
+            case "Shift":      result.append("shift")
+            case "Enter":      result.append("enter")
+            case "Space":      result.append("space")
+            case "Escape":     result.append("escape")
+            case "Tab":        result.append("tab")
+            case "Backspace":  result.append("backspace")
+            case "Delete":     result.append("delete")
+            case "ArrowUp":    result.append("up")
+            case "ArrowDown":  result.append("down")
+            case "ArrowLeft":  result.append("left")
+            case "ArrowRight": result.append("right")
+            default:
+                if token.hasPrefix("Key"), token.count == 4, let last = token.last {
+                    result.append(String(last).lowercased())
+                } else if token.hasPrefix("Digit"), token.count == 6, let last = token.last {
+                    result.append(String(last))
+                } else if token.hasPrefix("F"), let n = Int(token.dropFirst()), (1...12).contains(n) {
+                    result.append(token.lowercased())
+                } else {
+                    return nil
+                }
+            }
+        }
+        return result.isEmpty ? nil : result
+    }
+
     func handleMouseDown() {
         guard let frontmost = NSWorkspace.shared.frontmostApplication,
               let bundleId  = frontmost.bundleIdentifier else { return }
@@ -90,11 +126,14 @@ final class ClickWatcher {
                 AXUIElementCopyAttributeValue(current, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
                 AXUIElementCopyAttributeValue(current, kAXHelpAttribute as CFString, &helpRef)
                 AXUIElementCopyAttributeValue(current, kAXIdentifierAttribute as CFString, &identRef)
+                var axksRef: AnyObject?
+                AXUIElementCopyAttributeValue(current, "AXKeyShortcutsValue" as CFString, &axksRef)
                 let currentRole       = roleRef   as? String ?? ""
                 let currentDesc       = (descRef   as? String ?? "").lowercased()
                 let currentTitle      = (titleRef  as? String ?? "").lowercased()
                 let currentHelp       = helpRef   as? String ?? ""
                 let currentIdentifier = (identRef  as? String ?? "").lowercased()
+                let currentKeyShortcuts = axksRef as? String ?? ""
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
 
                 if isInteractive && firstInteractiveMiss == nil {
@@ -105,6 +144,15 @@ final class ClickWatcher {
                         desc:     (descRef as? String) ?? "",
                         help:     currentHelp
                     )
+                }
+
+                // Layer 0: AXKeyShortcutsValue — Electron/Chromium aria-keyshortcuts attribute
+                if !currentKeyShortcuts.isEmpty,
+                   let keys = Self.parseAriaShortcut(currentKeyShortcuts) {
+                    let hint = (titleRef as? String) ?? (descRef as? String) ?? currentKeyShortcuts
+                    let autoId = "axks:\(bundleId):\(keys.joined(separator: "+"))"
+                    emit(bundleId: bundleId, shortcutId: autoId, keys: keys, hint: hint, loc: nsLoc)
+                    return
                 }
 
                 // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
