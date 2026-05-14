@@ -59,14 +59,6 @@ final class AXSkeletonFilterTests: XCTestCase {
         XCTAssertEqual(items.count, 1)
     }
 
-    func testRejectsSingletonNonVerbLed() {
-        // Appears once, doesn't look like a verb
-        let items = AXSkeletonExtractor.filter(rawItems: [
-            RawAXItem(role: "AXButton", title: "Foo Bar"),
-        ])
-        XCTAssertEqual(items.count, 0)
-    }
-
     func testAllowedRoles() {
         let items = AXSkeletonExtractor.filter(rawItems: [
             RawAXItem(role: "AXButton", title: "Send Message"),
@@ -102,5 +94,37 @@ final class AXSkeletonFilterTests: XCTestCase {
         let dict = try JSONSerialization.jsonObject(with: json) as! [String: Any]
         XCTAssertNil(dict["identifier"],
                      "nil identifier must not appear as null in encoded JSON")
+    }
+
+    // MARK: - Single-occurrence noun-led titles must survive (BUG B1)
+
+    func test_filter_keepsSingleOccurrenceNounLedTitle_QuickSwitcher() {
+        let items = [RawAXItem(role: "AXButton", title: "Quick Switcher")]
+        let result = AXSkeletonExtractor.filter(rawItems: items)
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result.first?.title, "Quick Switcher")
+    }
+
+    func test_filter_keepsSingleOccurrencePreferences() {
+        let items = [RawAXItem(role: "AXMenuItem", title: "Preferences")]
+        let result = AXSkeletonExtractor.filter(rawItems: items)
+        XCTAssertEqual(result.count, 1)
+    }
+
+    func test_filter_keepsSingleOccurrenceMentions() {
+        let items = [RawAXItem(role: "AXButton", title: "Mentions & Reactions")]
+        let result = AXSkeletonExtractor.filter(rawItems: items)
+        XCTAssertEqual(result.count, 1)
+    }
+
+    func test_filter_stillDropsEmail() {
+        // Sanity: other filters not affected
+        let items = [RawAXItem(role: "AXButton", title: "user@example.com")]
+        XCTAssertEqual(AXSkeletonExtractor.filter(rawItems: items).count, 0)
+    }
+
+    func test_filter_stillDropsHumanName() {
+        let items = [RawAXItem(role: "AXButton", title: "John Smith")]
+        XCTAssertEqual(AXSkeletonExtractor.filter(rawItems: items).count, 0)
     }
 }

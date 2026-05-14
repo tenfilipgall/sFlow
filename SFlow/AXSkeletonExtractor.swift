@@ -42,12 +42,6 @@ enum AXSkeletonExtractor {
     private static let maxItems = 500
 
     static func filter(rawItems: [RawAXItem]) -> [SkeletonItem] {
-        // Count occurrences before filtering
-        var counts: [RawAXItem: Int] = [:]
-        for item in rawItems where allowedRoles.contains(item.role) {
-            counts[item, default: 0] += 1
-        }
-
         var result: [SkeletonItem] = []
         var seen: Set<RawAXItem> = []
 
@@ -63,9 +57,6 @@ enum AXSkeletonExtractor {
             if looksLikeISODate(title) { continue }
             if looksLikePureDigits(title) { continue }
             if looksLikeHumanName(title) { continue }
-
-            let count = counts[item] ?? 1
-            if count < 2 && !looksVerbLed(title) { continue }
 
             result.append(SkeletonItem(role: item.role, title: title, identifier: item.identifier))
             if result.count >= maxItems { break }
@@ -107,6 +98,8 @@ enum AXSkeletonExtractor {
         // Common non-name first words that match the pattern
         let commonWords: Set<String> = [
             "new", "main", "light", "dark", "use", "choose", "show", "hide",
+            "quick", "recent", "advanced", "general", "default", "custom",
+            "private", "public", "shared", "all", "my", "your",
         ]
         if let first = s.lowercased().split(separator: " ").first,
            commonWords.contains(String(first)) { return false }
