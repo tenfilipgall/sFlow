@@ -85,6 +85,18 @@ final class EventLoggerTests: XCTestCase {
         XCTAssertEqual(json["type"] as? String, "toast")
     }
 
+    func test_logMiss_skipsWriteWhenLogMissesDisabled() throws {
+        try? FileManager.default.removeItem(at: EventLogger.defaultLogURL)
+        UserDefaults.standard.set(false, forKey: "logMisses")
+        defer { UserDefaults.standard.removeObject(forKey: "logMisses") }
+
+        EventLogger.logMiss(event: MissEvent(bundleId: "test", role: "AXButton",
+                                              title: "Foo", desc: "", help: ""))
+        EventLogger.flush()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: EventLogger.defaultLogURL.path),
+                       "logMiss must not write when logMisses is disabled")
+    }
+
     private func makeEvent(bundleId: String = "com.test", shortcutId: String = "test",
                            keys: [String] = ["meta", "k"], hint: String = "Test",
                            mouseX: Double = 0, mouseY: Double = 0) -> ShortcutEvent {

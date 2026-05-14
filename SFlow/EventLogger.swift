@@ -43,6 +43,7 @@ enum EventLogger {
     }
 
     static func logMiss(event: MissEvent) {
+        guard UserDefaults.standard.object(forKey: "logMisses") as? Bool ?? true else { return }
         logMiss(event: event, to: defaultLogURL)
     }
 
