@@ -1,5 +1,6 @@
 import { handleDiscover } from "./handlers/discover";
 import { handleFeedback } from "./handlers/feedback";
+import { handleBundled } from "./handlers/bundled";
 
 export interface Env {
   RULES_CACHE: KVNamespace;
@@ -18,6 +19,10 @@ export default {
 
     if (url.pathname === "/v1/feedback") {
       return handleFeedback(request, env);
+    }
+
+    if (url.pathname === "/v1/bundled") {
+      return handleBundled(request, env);
     }
 
     if (url.pathname === "/" || url.pathname === "/health") {
