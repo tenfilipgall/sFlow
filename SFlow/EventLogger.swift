@@ -46,6 +46,7 @@ enum EventLogger {
             "hint":       event.hint,
             "mouseX":     event.mouseX,
             "mouseY":     event.mouseY,
+            "layer":      event.layer.rawValue,
         ]
         write(entry, to: url)
     }
@@ -82,6 +83,7 @@ enum EventLogger {
             "shortcutId": event.shortcutId,
             "keys":       event.keys,
             "hint":       event.hint,
+            "layer":      event.layer.rawValue,
         ]
         write(entry, to: url)
     }

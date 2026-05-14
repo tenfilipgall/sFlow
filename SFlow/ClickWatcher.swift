@@ -168,7 +168,7 @@ final class ClickWatcher {
                    let keys = Self.parseAriaShortcut(currentKeyShortcuts) {
                     let hint = (titleRef as? String) ?? (descRef as? String) ?? currentKeyShortcuts
                     let autoId = "axks:\(bundleId):\(keys.joined(separator: "+"))"
-                    emit(bundleId: bundleId, shortcutId: autoId, keys: keys, hint: hint, loc: nsLoc)
+                    emit(bundleId: bundleId, shortcutId: autoId, keys: keys, hint: hint, loc: nsLoc, layer: .axKeyShortcuts)
                     return
                 }
 
@@ -186,7 +186,7 @@ final class ClickWatcher {
                 ) {
                     let autoId = "json:\(bundleId):\(result.keys.joined(separator: "+"))"
                     emit(bundleId: bundleId, shortcutId: autoId,
-                         keys: result.keys, hint: result.hint, loc: nsLoc)
+                         keys: result.keys, hint: result.hint, loc: nsLoc, layer: .ruleCache)
                     return
                 }
 
@@ -199,7 +199,7 @@ final class ClickWatcher {
                                                                   identifier: currentIdentifier),
                    confidence >= .threshold {
                     emit(bundleId: bundleId, shortcutId: rule.shortcutId,
-                         keys: rule.keys, hint: rule.hint, loc: nsLoc)
+                         keys: rule.keys, hint: rule.hint, loc: nsLoc, layer: .shortcutRules)
                     return
                 }
 
@@ -210,7 +210,7 @@ final class ClickWatcher {
                        let keys = ShortcutRules.parseShortcut(from: currentHelp) {
                         let autoId = "auto:\(bundleId):\(keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
-                             keys: keys, hint: currentHelp, loc: nsLoc)
+                             keys: keys, hint: currentHelp, loc: nsLoc, layer: .axHelp)
                         return
                     }
                 }
@@ -225,7 +225,7 @@ final class ClickWatcher {
                        confidence >= .threshold {
                         let autoId = "menuindex:\(bundleId):\(entry.keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
-                             keys: entry.keys, hint: entry.hint, loc: nsLoc)
+                             keys: entry.keys, hint: entry.hint, loc: nsLoc, layer: .menuBarIndex)
                         return
                     }
 
@@ -235,7 +235,7 @@ final class ClickWatcher {
                                        subrole: subroleRef as? String ?? "", rule: $0)
                     }) {
                         emit(bundleId: bundleId, shortcutId: rule.shortcutId,
-                             keys: rule.keys, hint: rule.hint, loc: nsLoc)
+                             keys: rule.keys, hint: rule.hint, loc: nsLoc, layer: .universal)
                         return
                     }
                 }
@@ -331,7 +331,7 @@ final class ClickWatcher {
                                                     subrole: subroleRef, placeholder: placeholderRef,
                                                     help: helpRef, identifier: menuIdentifier) {
                 emit(bundleId: bundleId, shortcutId: rule.shortcutId,
-                     keys: rule.keys, hint: rule.hint, loc: nsLoc)
+                     keys: rule.keys, hint: rule.hint, loc: nsLoc, layer: .menuItemFallback)
             }
             return
         }
@@ -350,18 +350,19 @@ final class ClickWatcher {
         let keys      = mods + [cmdKey]
         let hint      = (titleRef as? String) ?? cmdKey.uppercased()
         let shortcutId = "menu:\(bundleId):\(keys.joined(separator: "+"))"
-        emit(bundleId: bundleId, shortcutId: shortcutId, keys: keys, hint: hint, loc: nsLoc)
+        emit(bundleId: bundleId, shortcutId: shortcutId, keys: keys, hint: hint, loc: nsLoc, layer: .menuItem)
     }
 
     private func emit(bundleId: String, shortcutId: String, keys: [String],
-                      hint: String, loc: NSPoint) {
+                      hint: String, loc: NSPoint, layer: RecognitionLayer) {
         let now = Date()
         guard shortcutId != lastShortcutId || now.timeIntervalSince(lastShortcutTime) >= 2.0 else { return }
         lastShortcutId = shortcutId
         lastShortcutTime = now
         let event = ShortcutEvent(bundleId: bundleId, shortcutId: shortcutId,
                                   keys: keys, hint: hint,
-                                  mouseX: loc.x, mouseY: loc.y)
+                                  mouseX: loc.x, mouseY: loc.y,
+                                  layer: layer)
         onEvent(event)
         emitFiredInCurrentClick = true
     }

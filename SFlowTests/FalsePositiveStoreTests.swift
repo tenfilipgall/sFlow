@@ -90,6 +90,7 @@ final class FalsePositiveStoreTests: XCTestCase {
 
     private func makeEvent(shortcutId: String) -> ShortcutEvent {
         ShortcutEvent(bundleId: "com.test", shortcutId: shortcutId,
-                      keys: ["meta", "k"], hint: "Test", mouseX: 0, mouseY: 0)
+                      keys: ["meta", "k"], hint: "Test", mouseX: 0, mouseY: 0,
+                      layer: .ruleCache)
     }
 }

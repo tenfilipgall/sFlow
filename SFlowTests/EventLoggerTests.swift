@@ -132,6 +132,54 @@ final class EventLoggerTests: XCTestCase {
                            keys: [String] = ["meta", "k"], hint: String = "Test",
                            mouseX: Double = 0, mouseY: Double = 0) -> ShortcutEvent {
         ShortcutEvent(bundleId: bundleId, shortcutId: shortcutId,
-                      keys: keys, hint: hint, mouseX: mouseX, mouseY: mouseY)
+                      keys: keys, hint: hint, mouseX: mouseX, mouseY: mouseY,
+                      layer: .ruleCache)
+    }
+
+    func test_log_includesLayerField() throws {
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sflow-test-\(UUID().uuidString).jsonl")
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        let event = ShortcutEvent(
+            bundleId: "com.test", shortcutId: "x", keys: ["meta","k"], hint: "Test",
+            mouseX: 0, mouseY: 0, layer: .ruleCache
+        )
+        EventLogger.log(event: event, to: tempURL)
+        EventLogger.flush()
+
+        let content = try String(contentsOf: tempURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("\"layer\":\"L0.5\""),
+                      "events.jsonl line must contain layer field; got: \(content)")
+    }
+
+    func test_log_includesCorrectLayerForEachVariant() throws {
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sflow-test-\(UUID().uuidString).jsonl")
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        let cases: [(RecognitionLayer, String)] = [
+            (.axKeyShortcuts, "L0"),
+            (.ruleCache, "L0.5"),
+            (.shortcutRules, "L1"),
+            (.axHelp, "L2"),
+            (.menuBarIndex, "L3"),
+            (.universal, "L4"),
+            (.menuItem, "menu"),
+        ]
+        for (layer, _) in cases {
+            let event = ShortcutEvent(
+                bundleId: "com.test", shortcutId: "x", keys: ["k"], hint: "h",
+                mouseX: 0, mouseY: 0, layer: layer
+            )
+            EventLogger.log(event: event, to: tempURL)
+        }
+        EventLogger.flush()
+
+        let content = try String(contentsOf: tempURL, encoding: .utf8)
+        for (_, expected) in cases {
+            XCTAssertTrue(content.contains("\"layer\":\"\(expected)\""),
+                          "missing layer=\(expected) in output: \(content)")
+        }
     }
 }

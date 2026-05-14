@@ -55,7 +55,8 @@ final class FalsePositiveStore: ObservableObject {
         let count = reportCounts[shortcutId, default: 0]
 
         let logEvent = ShortcutEvent(bundleId: bundleId, shortcutId: shortcutId,
-                                     keys: keys, hint: hint, mouseX: 0, mouseY: 0)
+                                     keys: keys, hint: hint, mouseX: 0, mouseY: 0,
+                                     layer: .ruleCache)
         EventLogger.logFalsePositive(event: logEvent, to: falsePosURL)
 
         if let idx = recentToasts.firstIndex(where: { $0.id == shortcutId }) {

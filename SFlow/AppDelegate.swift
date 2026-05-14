@@ -79,7 +79,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let center = NSPoint(x: frame.midX, y: frame.midY)
         let event = ShortcutEvent(bundleId: "test", shortcutId: "test",
                                   keys: ["meta", "k"], hint: "Test Toast",
-                                  mouseX: center.x, mouseY: center.y)
+                                  mouseX: center.x, mouseY: center.y,
+                                  layer: .ruleCache)
         ToastWindow.show(event: event)
     }
 
