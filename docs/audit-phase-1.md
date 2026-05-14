@@ -16,7 +16,7 @@
 
 | Sub-cel | Status | Komentarz |
 |---|---|---|
-| 1.0 Re-seed Terminal/Notion/Claude | ⬜ pending | najszybszy ROI; do zrobienia pierwsze w następnej sesji |
+| 1.0 Re-seed Terminal/Notion/Claude | 🟢 done | Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (sesja 2026-05-14) |
 | 1.1 Quality gate dla auto-discovered rules | 🔵 partial | Backend dedup zrobiony (v1.1.1, `dedup.ts`). Brakuje: client-side filtr po confidence/source, mechanizm "experimental" toggle |
 | 1.2 Retry + backoff dla failed discovery | ⬜ pending | — |
 | 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
@@ -24,7 +24,7 @@
 | 1.5 Naprawa bugu MenuBarIndex.lookup | ⬜ pending | NIE jest tym samym co `RuleCache.stripHotkeySuffix` (v1.1.1) — różne matchery |
 | 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
-| 1.8 Video-based eval protocol | 🔵 partial | Manual proces wykonany raz (sesja 2026-05-13 wieczór). Brakuje automatyzacji |
+| 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
 
 ---
 
@@ -39,7 +39,7 @@
 
 | # | Sesja | Sub-cele / Problemy | Time | Status | Detail |
 |---|---|---|---|---|---|
-| **1** | Sweet wins | 1.0 + P-23 + 1.8 droga C | ~3h | ⬜ next | 📋 below |
+| **1** | Sweet wins | 1.0 + P-23 + 1.8 droga C | ~3h | 🟢 done | 📋 below |
 | **2** | Bug squashing | 1.5 + P-15 + P-21 | ~4h | ⬜ | 📋 below |
 | **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | ⬜ | 📋 below |
 | **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | ⬜ | 📋 below |

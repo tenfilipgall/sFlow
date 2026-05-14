@@ -104,6 +104,16 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-14 (wieczór) — Sesja 1: Sweet wins
+
+**Co:** 3 zadania: (1) Re-seed Terminal/Notion/Claude z v1.1.1 promptem — Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (było 1.05–2.13). (2) Fix P-23 w `dedup.ts` — deduplikacja tytułów within-rule + test. (3) Nowe skrypty `sflow-video-eval` + `sflow-video-extract.swift` (droga C sub-cel 1.8).
+
+**Dlaczego:** Najszybszy ROI: 3 apki w bundled.json miały stary v1.0 prompt z minimalną liczbą wariantów. Teraz wszystkie 5 bundled apek jest na v1.1.1.
+
+**Wpływ:** bundled.json wyrównany (wszystkie apki 3-5 wariantów per regule). P-23 zamknięty. Narzędzie do analizy wideo gotowe.
+
+**Commits:** `0f14e92` (reseed), `28dd50b` (P-23 fix), `c2b171f` (video-eval)
+
 ### 2026-05-14 — Process & context rules dodane (ta sesja)
 
 **Co:** Dodano sekcję "Proces ciągły" do roadmap, "Jak współpracujemy"

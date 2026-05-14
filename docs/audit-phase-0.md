@@ -25,7 +25,7 @@
 | P-8 Brak /v1/refresh | 🔵 częściowo | `?fresh=1` ✅. Brakuje pełnego refresh z miss data |
 | P-19 Bundled.json update path | ⬜ otwarte | Krytyczne dla launch'a |
 | P-21 Backend observability | ⬜ otwarte | Częściowo: console.log dropped w dedup (v1.1.1) |
-| P-23 Within-rule title dupes | ⬜ otwarte | Niska severity, łatwy fix w dedup.ts |
+| P-23 Within-rule title dupes | 🟢 zamknięte | Fix w `dedup.ts` + test (sesja 2026-05-14) |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
