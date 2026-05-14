@@ -1,6 +1,7 @@
 import XCTest
 @testable import SFlow
 
+@MainActor
 final class FalsePositiveStoreTests: XCTestCase {
     private var tempDir: URL!
     private var falsePosURL: URL!

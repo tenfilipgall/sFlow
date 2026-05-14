@@ -10,6 +10,7 @@ struct ToastRecord: Identifiable {
     var isDisabled: Bool
 }
 
+@MainActor
 final class FalsePositiveStore: ObservableObject {
     static let shared = FalsePositiveStore()
 
@@ -51,7 +52,7 @@ final class FalsePositiveStore: ObservableObject {
 
     func report(shortcutId: String, bundleId: String, keys: [String], hint: String) {
         reportCounts[shortcutId, default: 0] += 1
-        let count = reportCounts[shortcutId]!
+        let count = reportCounts[shortcutId, default: 0]
 
         let logEvent = ShortcutEvent(bundleId: bundleId, shortcutId: shortcutId,
                                      keys: keys, hint: hint, mouseX: 0, mouseY: 0)
@@ -80,7 +81,7 @@ final class FalsePositiveStore: ObservableObject {
                   let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let shortcutId = obj["shortcutId"] as? String else { continue }
             reportCounts[shortcutId, default: 0] += 1
-            if reportCounts[shortcutId]! >= 3 {
+            if reportCounts[shortcutId, default: 0] >= 3 {
                 disabledIds.insert(shortcutId)
             }
         }
