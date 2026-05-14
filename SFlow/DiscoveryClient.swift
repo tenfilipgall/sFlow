@@ -6,6 +6,11 @@ enum DiscoveryClientError: Error {
     case rateLimited(retryAfterSeconds: Int)
 }
 
+struct BundledResponse: Codable {
+    let version: String
+    let rules: [StoredRuleSet]
+}
+
 final class DiscoveryClient {
     private let baseURL: URL
     private let clientVersion: String
@@ -81,6 +86,21 @@ final class DiscoveryClient {
     static func parseResponse(_ data: Data) throws -> BackendRuleSet {
         do {
             return try JSONDecoder().decode(BackendRuleSet.self, from: data)
+        } catch {
+            throw DiscoveryClientError.malformedResponse(error.localizedDescription)
+        }
+    }
+
+    func fetchBundled() async throws -> BundledResponse {
+        let url = baseURL.appendingPathComponent("v1/bundled")
+        let (data, response) = try await session.data(for: URLRequest(url: url))
+        guard let http = response as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw DiscoveryClientError.http(code, String(data: data, encoding: .utf8) ?? "")
+        }
+        do {
+            return try JSONDecoder().decode(BundledResponse.self, from: data)
         } catch {
             throw DiscoveryClientError.malformedResponse(error.localizedDescription)
         }

@@ -38,4 +38,26 @@ final class DiscoveryClientTests: XCTestCase {
         XCTAssertEqual(result.bundleId, "com.x")
         XCTAssertEqual(result.rules.count, 1)
     }
+
+    func testParseBundledResponse() throws {
+        let json = #"""
+        {
+          "version": "2026-05-14T00:00:00Z",
+          "rules": [
+            {
+              "bundleId": "com.x",
+              "appVersion": "1.0",
+              "fetchedAt": "2026-05-14T00:00:00Z",
+              "source": "bundled",
+              "rulesVersion": "2026-05-14T00:00:00Z",
+              "rules": []
+            }
+          ]
+        }
+        """#.data(using: .utf8)!
+        let result = try JSONDecoder().decode(BundledResponse.self, from: json)
+        XCTAssertEqual(result.version, "2026-05-14T00:00:00Z")
+        XCTAssertEqual(result.rules.count, 1)
+        XCTAssertEqual(result.rules[0].bundleId, "com.x")
+    }
 }
