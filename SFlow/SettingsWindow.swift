@@ -83,24 +83,62 @@ private struct PrivacyTab: View {
 
 private struct AdvancedTab: View {
     @AppStorage("showExperimental") private var showExperimental: Bool = false
+    @ObservedObject private var store: FalsePositiveStore = .shared
 
     var body: some View {
-        Form {
-            Toggle("Show experimental shortcuts", isOn: $showExperimental)
-                .help("Activates low-confidence auto-discovered rules. May show incorrect shortcuts.")
-            Divider()
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 0) {
+            Form {
+                Toggle("Show experimental shortcuts", isOn: $showExperimental)
+                    .help("Activates low-confidence auto-discovered rules. May show incorrect shortcuts.")
+            }
+            .padding([.horizontal, .top])
+
+            Divider().padding(.top, 8)
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Recent shortcuts")
                     .font(.headline)
-                Text("Last 50 toasts with disable option. Coming in Session 5.")
-                    .foregroundColor(.secondary)
-                    .font(.caption)
+                    .padding([.horizontal, .top])
+
+                if store.recentToasts.isEmpty {
+                    Text("No shortcuts shown yet.")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .padding(.horizontal)
+                } else {
+                    List(store.recentToasts) { record in
+                        HStack(spacing: 8) {
+                            Text(record.keys.map { keySymbol($0) }.joined())
+                                .font(.system(.body, design: .monospaced))
+                                .frame(width: 60, alignment: .leading)
+                            Text(record.hint)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                            Spacer()
+                            if record.isDisabled {
+                                Text("Disabled")
+                                    .foregroundColor(.red)
+                                    .font(.caption)
+                            } else {
+                                Button("Report incorrect") {
+                                    store.report(record: record)
+                                }
+                                .font(.caption)
+                            }
+                        }
+                    }
+                    .frame(height: 140)
+                }
             }
-            Divider()
-            Button("Force re-seed all rules") {}
-                .disabled(true)
-                .help("Coming in Session 6.")
+
+            Divider().padding(.top, 4)
+
+            Form {
+                Button("Force re-seed all rules") {}
+                    .disabled(true)
+                    .help("Coming in Session 6.")
+            }
+            .padding([.horizontal, .bottom])
         }
-        .padding()
     }
 }
