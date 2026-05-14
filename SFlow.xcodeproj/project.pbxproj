@@ -32,6 +32,8 @@
 		7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */; };
 		7F5D426418717DF0A4068F60 /* AnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFD31AF5AA81E10DD5676BE5 /* AnalyzerTests.swift */; };
 		838B140FFAE42406744A8033 /* FalsePositiveStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */; };
+		CAFE0207 /* BundledUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFE0206 /* BundledUpdaterTests.swift */; };
+		CAFE0209 /* BundledUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFE0208 /* BundledUpdater.swift */; };
 		894DDA299F2DD79E74EF5521 /* ClickWatcherLayerGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7196A83CF2B5CA7EAA34B736 /* ClickWatcherLayerGateTests.swift */; };
 		8BF3A8E2AD112898A7A2829F /* FalsePositiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */; };
 		8DA7A33D1FEEFF27C202486F /* AsarReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4927B1309184521DF315A53 /* AsarReaderTests.swift */; };
@@ -101,6 +103,8 @@
 		A0E76880742AF91C4F28EF3B /* MenuBarCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarCache.swift; sourceTree = "<group>"; };
 		A1717B830384FA16E9B82893 /* LoadedRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRuleTests.swift; sourceTree = "<group>"; };
 		A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FalsePositiveStoreTests.swift; sourceTree = "<group>"; };
+		CAFE0206 /* BundledUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdaterTests.swift; sourceTree = "<group>"; };
+		CAFE0208 /* BundledUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdater.swift; sourceTree = "<group>"; };
 		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
 		A59E05FD39B26B00B6EE061F /* KeySymbols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySymbols.swift; sourceTree = "<group>"; };
 		BC83E96D12C283AE32FE30BF /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
@@ -108,7 +112,7 @@
 		C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIndex.swift; sourceTree = "<group>"; };
 		CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRulesTests.swift; sourceTree = "<group>"; };
 		D05919D511DAC8124C848B31 /* ShortcutRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRules.swift; sourceTree = "<group>"; };
-		DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
 		DA4CFF690026DC7D21A29A06 /* ClickWatcherParseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickWatcherParseTests.swift; sourceTree = "<group>"; };
 		DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutEvent.swift; sourceTree = "<group>"; };
 		E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLoggerTests.swift; sourceTree = "<group>"; };
@@ -137,6 +141,7 @@
 				9EE99A377EF3A592EEB73BC6 /* AsarReader.swift */,
 				110969D6FABE7FFCD8115289 /* AXSkeletonExtractor.swift */,
 				FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */,
+				CAFE0208 /* BundledUpdater.swift */,
 				74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */,
 				FFD713F6C318B899F22748A1 /* DiscoveryClient.swift */,
 				4C457892CE0283E887EFC503 /* DiscoveryService.swift */,
@@ -188,6 +193,7 @@
 				2C3395093F311A70AC8B902D /* ElectronShortcutScannerTests.swift */,
 				E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */,
 				A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */,
+				CAFE0206 /* BundledUpdaterTests.swift */,
 				A1717B830384FA16E9B82893 /* LoadedRuleTests.swift */,
 				9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */,
 				71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */,
@@ -259,7 +265,6 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					03F03064784A91D4917B6693 = {
-						DevelopmentTeam = Z8R9KWPK32;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -310,6 +315,7 @@
 				66AEDAB8D6B27AC0FB7D50E7 /* ElectronShortcutScannerTests.swift in Sources */,
 				0941253421DE6EB49F694D21 /* EventLoggerTests.swift in Sources */,
 				838B140FFAE42406744A8033 /* FalsePositiveStoreTests.swift in Sources */,
+				CAFE0207 /* BundledUpdaterTests.swift in Sources */,
 				061463221505D2A6B5533012 /* LoadedRuleTests.swift in Sources */,
 				D8B1CF34485FD3D6842055D5 /* MatchConfidenceTests.swift in Sources */,
 				3870CDD92A623CCC38212BBD /* MenuBarCacheTests.swift in Sources */,
@@ -331,6 +337,7 @@
 				E6062D3A5D10E29C58E2669D /* AppDelegate.swift in Sources */,
 				B3F450355F09FDAD04F0AA40 /* AsarReader.swift in Sources */,
 				FBFAD138C297F1EC3CCECE4C /* BundleStringsScanner.swift in Sources */,
+				CAFE0209 /* BundledUpdater.swift in Sources */,
 				7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */,
 				CF3C198D3BD7A3373FDC5178 /* DiscoveryClient.swift in Sources */,
 				F7B4481B311DAA9A67DB13E0 /* DiscoveryService.swift in Sources */,
@@ -373,7 +380,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Z8R9KWPK32;
+				DEVELOPMENT_TEAM = L2B952623M;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = SFlow/Info.plist;
@@ -410,7 +417,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Z8R9KWPK32;
+				DEVELOPMENT_TEAM = L2B952623M;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = SFlow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
