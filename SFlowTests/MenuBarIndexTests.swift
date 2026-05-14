@@ -109,4 +109,29 @@ final class MenuBarIndexTests: XCTestCase {
         XCTAssertEqual(r?.entry.keys, ["meta", "k"])
         XCTAssertEqual(r?.confidence, .medium)
     }
+
+    func test_lookup_equalLength_alphabeticallyFirstWins() {
+        // When two matching keys have equal length, the alphabetically earlier one wins.
+        // Without stable tie-break, dict iteration order would make this nondeterministic.
+        var index = MenuBarIndex()
+        // Both "find next" and "find prev" are 9 chars, both contain "find n" (6 chars) → no.
+        // Use distinct queries: both keys must word-boundary-contain the query.
+        // Insert keys of same length that both match query "find":
+        index.insert(title: "Find Next", keys: ["meta", "g"])
+        index.insert(title: "Find Prev", keys: ["meta", "shift", "g"])
+        // Both 9 chars. Query "find " (5 chars including space — wait, threshold is 5).
+        // Use a query of length ≥ 5 that matches both: "find " not lowercased-stored.
+        // Both stored as lowercase ("find next", "find prev"). Query "find " (with trailing space) won't appear.
+        // Use query length 5: "find n" no, that's 6. Try storing differently.
+        // Simpler: same length keys, both contain query.
+        // Reset and use a cleaner setup.
+        var idx2 = MenuBarIndex()
+        idx2.insert(title: "Find next entry", keys: ["meta", "g"])
+        idx2.insert(title: "Find prev entry", keys: ["meta", "shift", "g"])
+        // Both 15 chars. Query "find" no (only 4). Query "entry" (5) appears in both at end.
+        let r = idx2.lookup(query: "entry")
+        XCTAssertNotNil(r, "either should match — but result must be deterministic")
+        // Alphabetical: "find next entry" < "find prev entry", so Next wins
+        XCTAssertEqual(r?.entry.keys, ["meta", "g"], "alphabetically earlier key wins on length tie")
+    }
 }

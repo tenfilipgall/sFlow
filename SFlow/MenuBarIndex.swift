@@ -73,10 +73,11 @@ struct MenuBarIndex {
 
         // Collect all keys whose query word-boundary-contains the lookup query.
         // BUG #3: previously used titleMap.first(where:) — dict iteration is unstable.
-        // Sort by key length DESC so the most specific (longest) match wins deterministically.
+        // Sort by key length DESC (longest = most specific). Alphabetical secondary
+        // key ensures deterministic tie-break when two keys have equal length.
         let candidates = titleMap.keys
             .filter { wordBoundaryContains(haystack: $0, needle: q) }
-            .sorted { $0.count > $1.count }
+            .sorted { $0.count != $1.count ? $0.count > $1.count : $0 < $1 }
         if let best = candidates.first, let entry = titleMap[best] {
             return (entry: entry, confidence: .medium)
         }
