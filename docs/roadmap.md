@@ -104,6 +104,24 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-14 — Sesja 6: Matching engine quality (P-26..P-30)
+
+**Co:** 4 fundamentalne bugi rozpoznawania klikniec + telemetria per-layer.
+(1) Nowy `wordBoundaryContains` utility w `TextMatching.swift` + 12 testów (Task 1).
+(2) `RuleCache.match` używa word-boundary zamiast `String.contains` — "search" nie matchuje wewnątrz "research" (Task 2, BUG #2).
+(3) `ClickWatcher.shouldRunNonInteractiveLayers` — L0.5 i L1 nie strzelają na rodziców powyżej depth 0 chyba że role jest interaktywna (Task 3, BUG #1).
+(4) `MenuBarIndex.lookup` deterministyczny — sortuje po długości klucza desc + alfabetycznie ASC dla tie-break, najdłuższy match wygrywa (Task 4, BUG #3).
+(5) `RecognitionLayer` enum + pole `layer` w `ShortcutEvent` i `events.jsonl` — telemetria per-layer dla toastów I false-positives (Tasks 5+6+7).
+(6) `AXSkeletonExtractor.filter` przestaje zrzucać single-occurrence noun-led titles ("Quick Switcher", "Preferences") (Task 8, BUG B1).
+
+**Dlaczego:** audyt 2026-05-14 wskazał te 4 bugi jako fundamentalne dla "wrażenia że niektóre elementy są pomijane lub źle przypisywane". Bez nich Faza 2-6 buduje na piasku. Telemetria per-layer odblokowuje data-driven coverage iteration jako następny krok.
+
+**Wpływ:** Substring false-positives wyeliminowane. Strukturalne rodzice (AXWindow, AXScrollArea, AXGroup-bez-interactive-roli) nie odpalają toastów. Deterministyczne matche w MenuBarIndex. Skeletony obejmują ~30-50% więcej elementów (impact widoczny po następnym discoverze). `events.jsonl` ma teraz `"layer": "L0/L0.5/L1/L2/L3/L4/menu/menu-fallback"` w każdym entry — można zapytać `jq` "która warstwa fire'uje najczęściej dla apki X".
+
+**Commits:** `fab9bd2` (Task 1), `1c9c2ad` (Task 2), `da2e146` (Task 3), `a35f1e4` + `704b561` (Task 4 + tie-break fix), `eb29538` + `4ff4f27` (Tasks 5+6+7 + layer-propagation fix), `3efba77` (Task 8).
+
+**Następny krok:** używać SFlow przez 1-2 dni → przeanalizować `events.jsonl` → plan coverage (P-31+) targetujący konkretne luki per layer per apka.
+
 ### 2026-05-14 (wieczór) — Sesja 2: Bug squashing
 
 **Co:** 3 bugi naprawione: (1) MenuBarIndex.lookup — zmiana kierunku substring + próg 5 znaków, naprawiono 2 failing testy + 2 nowe. (2) Input Monitoring permission check w AppDelegate — `CGPreflightListenEventAccess()` + alert z linkiem. (3) Structured JSON log w `/v1/discover` — `bundleId`, `cacheHit`, `rulesGenerated`, `durationMs` w każdym request.
