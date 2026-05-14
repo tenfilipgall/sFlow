@@ -3,15 +3,21 @@ import AppKit
 final class ToastWindow: NSPanel {
     private static var current: ToastWindow?
 
-    static func show(event: ShortcutEvent) {
+    static func show(event: ShortcutEvent, onFalsePositive: (() -> Void)? = nil) {
         DispatchQueue.main.async {
-            current?.orderOut(nil)
-            current = ToastWindow(event: event)
+            current?.dismiss()
+            current = ToastWindow(event: event, onFalsePositive: onFalsePositive)
             current?.appear()
         }
     }
 
-    private init(event: ShortcutEvent) {
+    var onFalsePositive: (() -> Void)?
+    private var reportBadge: NSTextField!
+    private var keyMonitor: Any?
+    private var clickMonitor: Any?
+
+    private init(event: ShortcutEvent, onFalsePositive: (() -> Void)? = nil) {
+        self.onFalsePositive = onFalsePositive
         let content = Self.buildContent(keys: event.keys, hint: event.hint)
         let padding: CGFloat = 10
         let textSize = content.size()
@@ -34,7 +40,6 @@ final class ToastWindow: NSPanel {
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         alphaValue = 1
 
-        // Visual effect background
         let vfx = NSVisualEffectView(frame: NSRect(origin: .zero, size: CGSize(width: w, height: h)))
         vfx.blendingMode = .behindWindow
         vfx.material = .hudWindow
@@ -43,15 +48,26 @@ final class ToastWindow: NSPanel {
         vfx.layer?.cornerRadius = 8
         vfx.layer?.masksToBounds = true
 
-        // Label
         let label = NSTextField(frame: NSRect(x: padding, y: padding,
                                                width: w - padding * 2, height: h - padding * 2))
         label.attributedStringValue = content
         label.isEditable = false
         label.isBordered = false
         label.drawsBackground = false
-
         vfx.addSubview(label)
+
+        // Report badge — shown when ⌘ is held so user knows they can cmd-click
+        let badge = NSTextField(frame: NSRect(x: w - 22, y: h - 18, width: 18, height: 14))
+        badge.stringValue = "✕"
+        badge.isEditable = false
+        badge.isBordered = false
+        badge.drawsBackground = false
+        badge.textColor = .systemRed
+        badge.font = .systemFont(ofSize: 9, weight: .bold)
+        badge.isHidden = true
+        vfx.addSubview(badge)
+        reportBadge = badge
+
         contentView = vfx
     }
 
@@ -69,28 +85,6 @@ final class ToastWindow: NSPanel {
         return result
     }
 
-    private static func keySymbol(_ key: String) -> String {
-        switch key {
-        case "meta":       return "⌘"
-        case "shift":      return "⇧"
-        case "alt":        return "⌥"
-        case "ctrl":       return "⌃"
-        case "arrowleft":  return "←"
-        case "arrowright": return "→"
-        case "arrowup":    return "↑"
-        case "arrowdown":  return "↓"
-        case "enter":      return "↵"
-        case "space":      return "␣"
-        case "escape":     return "⎋"
-        case "delete":     return "⌫"
-        case "tab":        return "⇥"
-        case "capslock":   return "⇪"
-        case "[":          return "["
-        case "]":          return "]"
-        default:           return key.uppercased()
-        }
-    }
-
     func appear() {
         alphaValue = 0
         orderFrontRegardless()
@@ -98,14 +92,36 @@ final class ToastWindow: NSPanel {
             ctx.duration = 0.15
             animator().alphaValue = 1
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-            NSAnimationContext.runAnimationGroup({ ctx in
-                ctx.duration = 0.3
-                self?.animator().alphaValue = 0
-            }, completionHandler: {
-                self?.orderOut(nil)
-                if ToastWindow.current === self { ToastWindow.current = nil }
-            })
+
+        keyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            guard let self = self else { return }
+            let cmdDown = event.modifierFlags.contains(.command)
+            DispatchQueue.main.async { self.reportBadge.isHidden = !cmdDown }
         }
+
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+            guard let self = self else { return }
+            guard NSEvent.modifierFlags.contains(.command) else { return }
+            guard self.frame.contains(NSEvent.mouseLocation) else { return }
+            let handler = self.onFalsePositive
+            DispatchQueue.main.async { self.dismiss() }
+            handler?()
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+            self?.dismiss()
+        }
+    }
+
+    private func dismiss() {
+        if let m = keyMonitor { NSEvent.removeMonitor(m); keyMonitor = nil }
+        if let m = clickMonitor { NSEvent.removeMonitor(m); clickMonitor = nil }
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 0.3
+            self.animator().alphaValue = 0
+        }, completionHandler: {
+            self.orderOut(nil)
+            if ToastWindow.current === self { ToastWindow.current = nil }
+        })
     }
 }
