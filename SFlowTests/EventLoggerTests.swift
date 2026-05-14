@@ -97,6 +97,33 @@ final class EventLoggerTests: XCTestCase {
                        "logMiss must not write when logMisses is disabled")
     }
 
+    func test_logFalsePositive_createsFileAndWritesType() throws {
+        let event = makeEvent(bundleId: "com.test", shortcutId: "fp-test",
+                              keys: ["meta", "k"], hint: "Test")
+        EventLogger.logFalsePositive(event: event, to: logFile)
+        EventLogger.flush()
+        XCTAssertTrue(FileManager.default.fileExists(atPath: logFile.path))
+        let content = try String(contentsOf: logFile, encoding: .utf8)
+        let line = content.trimmingCharacters(in: .newlines)
+        let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]
+        XCTAssertEqual(json["type"] as? String, "false_positive")
+        XCTAssertEqual(json["bundleId"] as? String, "com.test")
+        XCTAssertEqual(json["shortcutId"] as? String, "fp-test")
+        XCTAssertEqual(json["keys"] as? [String], ["meta", "k"])
+        XCTAssertEqual(json["hint"] as? String, "Test")
+        XCTAssertNotNil(json["timestamp"])
+    }
+
+    func test_logFalsePositive_appendsMultipleLines() throws {
+        EventLogger.logFalsePositive(event: makeEvent(shortcutId: "fp-1"), to: logFile)
+        EventLogger.flush()
+        EventLogger.logFalsePositive(event: makeEvent(shortcutId: "fp-2"), to: logFile)
+        EventLogger.flush()
+        let content = try String(contentsOf: logFile, encoding: .utf8)
+        let lines = content.components(separatedBy: "\n").filter { !$0.isEmpty }
+        XCTAssertEqual(lines.count, 2)
+    }
+
     private func makeEvent(bundleId: String = "com.test", shortcutId: String = "test",
                            keys: [String] = ["meta", "k"], hint: String = "Test",
                            mouseX: Double = 0, mouseY: Double = 0) -> ShortcutEvent {

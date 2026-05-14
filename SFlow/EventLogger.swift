@@ -17,6 +17,14 @@ enum EventLogger {
         return dir.appendingPathComponent("events.jsonl")
     }()
 
+    static let falsePosLogURL: URL = {
+        let appSupport = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let dir = appSupport.appendingPathComponent("SFlow")
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("false_positives.jsonl")
+    }()
+
     private static let writeQueue = DispatchQueue(label: "com.sflow.eventlog", qos: .utility)
 
     static func flush() {
@@ -57,6 +65,23 @@ enum EventLogger {
             "title":     event.title,
             "desc":      event.desc,
             "help":      event.help,
+        ]
+        write(entry, to: url)
+    }
+
+    static func logFalsePositive(event: ShortcutEvent) {
+        logFalsePositive(event: event, to: falsePosLogURL)
+    }
+
+    static func logFalsePositive(event: ShortcutEvent, to url: URL) {
+        let formatter = ISO8601DateFormatter()
+        let entry: [String: Any] = [
+            "type":       "false_positive",
+            "timestamp":  formatter.string(from: Date()),
+            "bundleId":   event.bundleId,
+            "shortcutId": event.shortcutId,
+            "keys":       event.keys,
+            "hint":       event.hint,
         ]
         write(entry, to: url)
     }
