@@ -4,6 +4,33 @@ import { generateRules } from "../claude";
 import { checkRateLimit } from "../ratelimit";
 import type { Env } from "../index";
 
+async function loadFlaggedKeys(
+  feedback: KVNamespace,
+  bundleId: string,
+): Promise<Set<string>> {
+  const raw = await feedback.get(`feedback:${bundleId}`);
+  if (!raw) return new Set();
+  const counts: Record<string, number> = JSON.parse(raw);
+  return new Set(
+    Object.entries(counts)
+      .filter(([, count]) => count >= 3)
+      .map(([key]) => key),
+  );
+}
+
+function applyFeedbackFilter(
+  ruleSet: { bundleId: string; rulesVersion: string; rules: Array<{ keys: string[]; [key: string]: unknown }> },
+  flaggedKeys: Set<string>,
+): typeof ruleSet {
+  if (flaggedKeys.size === 0) return ruleSet;
+  return {
+    ...ruleSet,
+    rules: ruleSet.rules.filter(
+      (rule) => !flaggedKeys.has([...rule.keys].sort().join("+")),
+    ),
+  };
+}
+
 export async function handleDiscover(
   request: Request,
   env: Env,
@@ -34,13 +61,16 @@ export async function handleDiscover(
   if (!skipCache) {
     const cached = await getCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion);
     if (cached) {
-      const c = cached as { rules?: unknown[] };
+      const flaggedKeys = await loadFlaggedKeys(env.FEEDBACK, req.bundleId);
+      const filtered = applyFeedbackFilter(cached as any, flaggedKeys);
+      const c = filtered as { rules?: unknown[] };
       console.log(JSON.stringify({
         type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
         cacheHit: true, fresh: false, rulesGenerated: c.rules?.length ?? 0,
+        flaggedFiltered: flaggedKeys.size,
         durationMs: Date.now() - start,
       }));
-      return jsonResponse(cached);
+      return jsonResponse(filtered);
     }
   }
 
@@ -71,7 +101,9 @@ export async function handleDiscover(
     cacheHit: false, fresh: skipCache, rulesGenerated: rules.rules.length,
     durationMs: Date.now() - start,
   }));
-  return jsonResponse(rules);
+  const flaggedKeys = await loadFlaggedKeys(env.FEEDBACK, req.bundleId);
+  const filtered = applyFeedbackFilter(rules as any, flaggedKeys);
+  return jsonResponse(filtered);
 }
 
 function jsonResponse(data: unknown, status = 200): Response {

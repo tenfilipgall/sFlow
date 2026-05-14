@@ -4,7 +4,7 @@ import * as claudeModule from "../src/claude";
 
 describe("POST /v1/discover", () => {
   beforeEach(async () => {
-    for (const ns of [env.RULES_CACHE, env.RATE_LIMIT]) {
+    for (const ns of [env.RULES_CACHE, env.RATE_LIMIT, env.FEEDBACK]) {
       const list = await ns.list();
       for (const k of list.keys) await ns.delete(k.name);
     }
@@ -117,5 +117,88 @@ describe("POST /v1/discover", () => {
         expect(r.status).toBe(429);
       }
     }
+  });
+
+  it("filters out rules flagged with count >= 3 from cached response", async () => {
+    await env.RULES_CACHE.put(
+      "rules:com.x:1.0",
+      JSON.stringify({
+        bundleId: "com.x",
+        rulesVersion: "2026-05-14T00:00:00Z",
+        rules: [
+          {
+            match: { role: "AXButton", titles: ["Send"] },
+            keys: ["meta", "enter"],
+            hint: "Send",
+            confidence: "high",
+            source: "menu_bar",
+          },
+          {
+            match: { role: "AXButton", titles: ["New Issue"] },
+            keys: ["meta", "k"],
+            hint: "New Issue",
+            confidence: "high",
+            source: "menu_bar",
+          },
+        ],
+      }),
+    );
+    await env.FEEDBACK.put(
+      "feedback:com.x",
+      JSON.stringify({ "k+meta": 3 }),
+    );
+
+    const r = await SELF.fetch("https://example.com/v1/discover", {
+      method: "POST",
+      body: JSON.stringify({
+        bundleId: "com.x",
+        appName: "X",
+        appVersion: "1.0.7",
+        menuBar: [],
+        uiSkeleton: [],
+        clientVersion: "1.0",
+      }),
+    });
+    expect(r.status).toBe(200);
+    const body = await r.json() as any;
+    expect(body.rules).toHaveLength(1);
+    expect(body.rules[0].keys).toEqual(["meta", "enter"]);
+  });
+
+  it("does not filter rules with count < 3", async () => {
+    await env.RULES_CACHE.put(
+      "rules:com.y:1.0",
+      JSON.stringify({
+        bundleId: "com.y",
+        rulesVersion: "2026-05-14T00:00:00Z",
+        rules: [
+          {
+            match: { role: "AXButton", titles: ["Save"] },
+            keys: ["meta", "s"],
+            hint: "Save",
+            confidence: "high",
+            source: "menu_bar",
+          },
+        ],
+      }),
+    );
+    await env.FEEDBACK.put(
+      "feedback:com.y",
+      JSON.stringify({ "meta+s": 2 }),
+    );
+
+    const r = await SELF.fetch("https://example.com/v1/discover", {
+      method: "POST",
+      body: JSON.stringify({
+        bundleId: "com.y",
+        appName: "Y",
+        appVersion: "1.0.7",
+        menuBar: [],
+        uiSkeleton: [],
+        clientVersion: "1.0",
+      }),
+    });
+    const body = await r.json() as any;
+    expect(body.rules).toHaveLength(1);
   });
 });

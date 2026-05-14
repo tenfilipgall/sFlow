@@ -1,4 +1,5 @@
 import { handleDiscover } from "./handlers/discover";
+import { handleFeedback } from "./handlers/feedback";
 
 export interface Env {
   RULES_CACHE: KVNamespace;
@@ -13,6 +14,10 @@ export default {
 
     if (url.pathname === "/v1/discover") {
       return handleDiscover(request, env);
+    }
+
+    if (url.pathname === "/v1/feedback") {
+      return handleFeedback(request, env);
     }
 
     if (url.pathname === "/" || url.pathname === "/health") {

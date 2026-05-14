@@ -46,10 +46,9 @@ export const RuleSetSchema = z.object({
 export type RuleSet = z.infer<typeof RuleSetSchema>;
 
 export const FeedbackSchema = z.object({
-  bundleId: z.string(),
-  rulesVersion: z.string(),
-  ruleIndex: z.number().int().min(0),
-  reportType: z.enum(["wrong_shortcut", "wrong_match", "spam"]),
+  bundleId: z.string().min(1).max(200),
+  keys: z.array(z.string().min(1).max(20)).min(1).max(10),
+  reportType: z.enum(["wrong_shortcut"]),
 });
 
 export type Feedback = z.infer<typeof FeedbackSchema>;
