@@ -55,15 +55,26 @@ final class ClickWatcher {
     ///
     /// Depth 0 is the hit-tested element returned by AXUIElementCopyElementAtPosition —
     /// always allowed (preserves Chromium AXGroup clickables, AXImage buttons, etc.).
-    /// Depth > 0 is a parent walked via kAXParentAttribute — allowed only for roles in
-    /// `interactiveRoles`. This stops rules from matching structural containers
-    /// (AXWindow, AXScrollArea, AXGroup wrappers, AXStaticText leaves of a click target).
+    /// Depth > 0 is a parent walked via kAXParentAttribute — allowed when the role is in
+    /// `interactiveRoles` OR the element exposes `AXPress` as an accessibility action.
+    /// AXPress override catches Chromium widgets (AXImage/AXGroup/AXStaticText) that
+    /// register press actions but don't have interactive roles.
     ///
-    /// Audit reference: BUG #1 — rules matched on parents caused false-positive toasts
-    /// when clicking inside notes / chat windows whose ancestor had a semantic description.
-    static func shouldRunNonInteractiveLayers(role: String, depth: Int) -> Bool {
+    /// Audit reference: BUG #1 (sesja 6) + Coverage QW Fix 1 (sesja 7).
+    static func shouldRunNonInteractiveLayers(role: String, depth: Int, hasAXPress: Bool) -> Bool {
         if depth == 0 { return true }
-        return interactiveRoles.contains(role)
+        return interactiveRoles.contains(role) || hasAXPress
+    }
+
+    /// Returns true if the AX element registers "AXPress" as a supported action.
+    /// AXUIElementCopyActionNames returns actions the element can perform regardless
+    /// of its AXRole. AXPress means "this element responds to being clicked" — catches
+    /// Chromium widgets that wrap clickables as AXGroup/AXImage but register AXPress.
+    static func elementHasAXPress(_ element: AXUIElement) -> Bool {
+        var names: CFArray?
+        let result = AXUIElementCopyActionNames(element, &names)
+        guard result == .success, let arr = names as? [String] else { return false }
+        return arr.contains("AXPress")
     }
 
     static func parseAriaShortcut(_ value: String) -> [String]? {
@@ -172,7 +183,8 @@ final class ClickWatcher {
                     return
                 }
 
-                let runNonInteractive = Self.shouldRunNonInteractiveLayers(role: currentRole, depth: depth)
+                let hasAXPress = Self.elementHasAXPress(current)
+                let runNonInteractive = Self.shouldRunNonInteractiveLayers(role: currentRole, depth: depth, hasAXPress: hasAXPress)
 
                 // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
                 if runNonInteractive,
