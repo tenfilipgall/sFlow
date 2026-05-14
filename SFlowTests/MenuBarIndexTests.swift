@@ -30,15 +30,30 @@ final class MenuBarIndexTests: XCTestCase {
         index.insert(title: "New Message", keys: ["meta", "n"])
         let result = index.lookup(query: "new message")
         XCTAssertEqual(result?.entry.keys, ["meta", "n"])
-        XCTAssertEqual(result?.confidence, .medium)
+        XCTAssertEqual(result?.confidence, .high)
     }
 
     func test_lookup_partialTitle() {
         var index = MenuBarIndex()
         index.insert(title: "Find in Files", keys: ["meta", "shift", "f"])
-        let result = index.lookup(query: "find")
+        // query "files" (5 chars) is a substring of key "find in files" → .medium match
+        let result = index.lookup(query: "files")
         XCTAssertEqual(result?.entry.keys, ["meta", "shift", "f"])
         XCTAssertEqual(result?.confidence, .medium)
+    }
+
+    func test_lookup_copyLink_noFalsePositive() {
+        // Bug P-5: "copy link" should NOT match key "copy" (old bug: q.contains(key) was true)
+        var index = MenuBarIndex()
+        index.insert(title: "Copy", keys: ["meta", "c"])
+        XCTAssertNil(index.lookup(query: "copy link"))
+    }
+
+    func test_lookup_shortQuery_belowThreshold_returnsNil() {
+        // Partial matching requires query.count >= 5 to avoid spurious matches
+        var index = MenuBarIndex()
+        index.insert(title: "Find in Files", keys: ["meta", "shift", "f"])
+        XCTAssertNil(index.lookup(query: "find"))
     }
 
     func test_lookup_noMatch_returnsNil() {

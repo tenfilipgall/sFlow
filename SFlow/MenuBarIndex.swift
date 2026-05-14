@@ -69,7 +69,7 @@ struct MenuBarIndex {
         guard query.count >= 3 else { return nil }
         let q = query.lowercased()
         if let entry = titleMap[q] { return (entry: entry, confidence: .high) }
-        if let pair = titleMap.first(where: { q.contains($0.key) }) {
+        if q.count >= 5, let pair = titleMap.first(where: { $0.key.contains(q) }) {
             return (entry: pair.value, confidence: .medium)
         }
         return nil
