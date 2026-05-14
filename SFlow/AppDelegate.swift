@@ -86,6 +86,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             )
             return
         }
+        if #available(macOS 10.15, *) {
+            if !CGPreflightListenEventAccess() {
+                showAlert(
+                    title: "Input Monitoring Permission Required",
+                    message: "SFlow needs Input Monitoring access to detect mouse clicks.\n\nOpen System Settings → Privacy & Security → Input Monitoring and enable SFlow.",
+                    url: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
+                )
+                return
+            }
+        }
         if isEnabled { startWatcher() }
     }
 
