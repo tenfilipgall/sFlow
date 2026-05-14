@@ -72,11 +72,12 @@ final class ClickWatcher {
             case "ArrowLeft":  result.append("left")
             case "ArrowRight": result.append("right")
             default:
-                if token.hasPrefix("Key"), token.count == 4, let last = token.last {
+                if token.hasPrefix("Key"), token.count == 4, let last = token.last, last.isLetter {
                     result.append(String(last).lowercased())
-                } else if token.hasPrefix("Digit"), token.count == 6, let last = token.last {
+                } else if token.hasPrefix("Digit"), token.count == 6, let last = token.last, last.isNumber {
                     result.append(String(last))
                 } else if token.hasPrefix("F"), let n = Int(token.dropFirst()), (1...12).contains(n) {
+                    // F13–F20 are valid ARIA but outside SFlow's supported key range; omit silently
                     result.append(token.lowercased())
                 } else {
                     return nil

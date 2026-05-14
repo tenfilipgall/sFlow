@@ -38,4 +38,9 @@ final class ClickWatcherParseTests: XCTestCase {
     func testParseEmptyStringReturnsNil() {
         XCTAssertNil(ClickWatcher.parseAriaShortcut(""))
     }
+
+    func testParseInvalidDigitCodeReturnsNil() {
+        XCTAssertNil(ClickWatcher.parseAriaShortcut("DigitX"),
+                     "non-numeric Digit token must return nil")
+    }
 }
