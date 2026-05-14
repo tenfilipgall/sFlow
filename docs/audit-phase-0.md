@@ -20,11 +20,12 @@
 | P-2 Retry przy fail | ⬜ otwarte | — |
 | P-3 .failed silently | ⬜ otwarte | — |
 | P-4 False-positive feedback | ⬜ otwarte | **Krytyczne** — miss log nie łapie wrong toasts |
-| P-5 MenuBarIndex bug | ⬜ otwarte | NIE rozwiązane przez v1.1.1 (różny matcher) |
+| P-5 MenuBarIndex bug | 🟢 zamknięte | Fix + 2 nowe testy + 2 poprawione testy (sesja 2026-05-14) |
 | P-6 AXKeyShortcutsValue | ⬜ otwarte | Łatwy eksperyment 1-2h |
 | P-8 Brak /v1/refresh | 🔵 częściowo | `?fresh=1` ✅. Brakuje pełnego refresh z miss data |
 | P-19 Bundled.json update path | ⬜ otwarte | Krytyczne dla launch'a |
-| P-21 Backend observability | ⬜ otwarte | Częściowo: console.log dropped w dedup (v1.1.1) |
+| P-15 Permissions check Input Monitoring | 🟢 zamknięte | CGPreflightListenEventAccess() + alert (sesja 2026-05-14) |
+| P-21 Backend observability | 🔵 częściowo | Structured JSON log w /v1/discover (sesja 2026-05-14). Brakuje: dashboard |
 | P-23 Within-rule title dupes | 🟢 zamknięte | Fix w `dedup.ts` + test (sesja 2026-05-14) |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.

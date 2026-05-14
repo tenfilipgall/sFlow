@@ -104,6 +104,16 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-14 (wieczór) — Sesja 2: Bug squashing
+
+**Co:** 3 bugi naprawione: (1) MenuBarIndex.lookup — zmiana kierunku substring + próg 5 znaków, naprawiono 2 failing testy + 2 nowe. (2) Input Monitoring permission check w AppDelegate — `CGPreflightListenEventAccess()` + alert z linkiem. (3) Structured JSON log w `/v1/discover` — `bundleId`, `cacheHit`, `rulesGenerated`, `durationMs` w każdym request.
+
+**Dlaczego:** P-5 (fałszywy ⌘C dla "Copy link") był głównym wektorem false-positives. P-15 (milczący brak IM permission) powodował że user nie wiedział dlaczego nic nie działa. P-21 (brak logów) — lataliśmy ślepo.
+
+**Wpływ:** Wyeliminowany główny wektor false-positives w Layer 3. Onboarding nie wymaga zgadywania co jest nie tak z permissions. Backend zaczyna zbierać dane.
+
+**Commits:** `3a960be` (MenuBarIndex), `22ec8e2` (Input Monitoring), `5844285` (backend logs)
+
 ### 2026-05-14 (wieczór) — Sesja 1: Sweet wins
 
 **Co:** 3 zadania: (1) Re-seed Terminal/Notion/Claude z v1.1.1 promptem — Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (było 1.05–2.13). (2) Fix P-23 w `dedup.ts` — deduplikacja tytułów within-rule + test. (3) Nowe skrypty `sflow-video-eval` + `sflow-video-extract.swift` (droga C sub-cel 1.8).
