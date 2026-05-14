@@ -455,4 +455,42 @@ final class RuleCacheTests: XCTestCase {
                                  title: "bookmarks", desc: "", help: "")
         XCTAssertEqual(result?.keys, ["meta", "d"])
     }
+
+    // MARK: - RoleDescription + CustomActions match (Coverage QW Fix 3)
+
+    func testRoleDescriptionMatches() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("compose", keys: ["meta", "n"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        // Empty title/desc, but AXRoleDescription says "compose button"
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "", desc: "", help: "",
+                                 roleDescription: "compose button")
+        XCTAssertEqual(result?.keys, ["meta", "n"])
+    }
+
+    func testCustomActionsMatches() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("send message", keys: ["meta", "enter"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        // Empty title, but registers "Send message" as a custom action name
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "", desc: "", help: "",
+                                 customActions: ["Send message", "Save draft"])
+        XCTAssertEqual(result?.keys, ["meta", "enter"])
+    }
+
+    func testRoleDescriptionWordBoundaryRespected() throws {
+        // Word-boundary still respected for roleDescription
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("search", keys: ["meta", "k"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "", desc: "", help: "",
+                                 roleDescription: "researcher tools")
+        XCTAssertNil(result)
+    }
 }

@@ -75,7 +75,9 @@ final class RuleCache {
     }
 
     func match(bundleId: String, role: String, title: String, desc: String, help: String,
-               identifier: String = "") -> MatchResult? {
+               identifier: String = "",
+               roleDescription: String = "",
+               customActions: [String] = []) -> MatchResult? {
         guard let rules = rulesByBundle[bundleId] else { return nil }
         let isAutoDiscovered = autoDiscoveredBundleIds.contains(bundleId)
         let titleLC = title.lowercased()
@@ -83,6 +85,8 @@ final class RuleCache {
         let helpLC = help.lowercased()
         let identifierLC = identifier.lowercased()
         let titleStripped = Self.stripHotkeySuffix(title)?.lowercased()
+        let roleDescLC = roleDescription.lowercased()
+        let customActionsLC = customActions.map { $0.lowercased() }
 
         for rule in rules {
             if !showExperimental {
@@ -102,10 +106,13 @@ final class RuleCache {
             let titleMatches = rule.match.titles.contains { candidate in
                 let c = candidate.lowercased()
                 if c.isEmpty { return false }
-                if titleLC == c || descLC == c || helpLC == c { return true }
+                if titleLC == c || descLC == c || helpLC == c || roleDescLC == c { return true }
+                if customActionsLC.contains(c) { return true }
                 if wordBoundaryContains(haystack: titleLC, needle: c) { return true }
                 if wordBoundaryContains(haystack: descLC,  needle: c) { return true }
                 if wordBoundaryContains(haystack: helpLC,  needle: c) { return true }
+                if wordBoundaryContains(haystack: roleDescLC, needle: c) { return true }
+                if customActionsLC.contains(where: { wordBoundaryContains(haystack: $0, needle: c) }) { return true }
                 if let stripped = titleStripped {
                     if stripped == c { return true }
                     if wordBoundaryContains(haystack: stripped, needle: c) { return true }

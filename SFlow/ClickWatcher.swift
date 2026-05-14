@@ -100,6 +100,27 @@ final class ClickWatcher {
         return ("", "")
     }
 
+    /// AXCustomActions attribute returns an array whose element shape varies by
+    /// macOS version: sometimes [String], sometimes [NSAccessibilityCustomAction]
+    /// (which has a `.name` property), sometimes a dictionary with "AXName" or "name".
+    /// Try each shape defensively.
+    static func extractCustomActionNames(from raw: AnyObject?) -> [String] {
+        guard let arr = raw as? [Any] else { return [] }
+        var result: [String] = []
+        for item in arr {
+            if let s = item as? String {
+                result.append(s)
+            } else if let d = item as? [String: Any],
+                      let name = (d["AXName"] as? String) ?? (d["name"] as? String) {
+                result.append(name)
+            } else if let obj = item as? NSObject,
+                      let name = obj.value(forKey: "name") as? String {
+                result.append(name)
+            }
+        }
+        return result
+    }
+
     static func parseAriaShortcut(_ value: String) -> [String]? {
         guard !value.isEmpty else { return nil }
         let tokens = value.split(separator: "+", omittingEmptySubsequences: true).map(String.init)
@@ -179,12 +200,18 @@ final class ClickWatcher {
                 AXUIElementCopyAttributeValue(current, kAXIdentifierAttribute as CFString, &identRef)
                 var axksRef: AnyObject?
                 AXUIElementCopyAttributeValue(current, "AXKeyShortcutsValue" as CFString, &axksRef)
+                var roleDescRef: AnyObject?
+                var customActionsRef: AnyObject?
+                AXUIElementCopyAttributeValue(current, kAXRoleDescriptionAttribute as CFString, &roleDescRef)
+                AXUIElementCopyAttributeValue(current, "AXCustomActions" as CFString, &customActionsRef)
                 let currentRole       = roleRef   as? String ?? ""
                 let currentDesc       = (descRef   as? String ?? "").lowercased()
                 let currentTitle      = (titleRef  as? String ?? "").lowercased()
                 let currentHelp       = helpRef   as? String ?? ""
                 let currentIdentifier = (identRef  as? String ?? "").lowercased()
                 let currentKeyShortcuts = axksRef as? String ?? ""
+                let currentRoleDescription = (roleDescRef as? String ?? "").lowercased()
+                let currentCustomActions = Self.extractCustomActionNames(from: customActionsRef)
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
 
                 if isInteractive && firstInteractiveMiss == nil {
@@ -227,7 +254,9 @@ final class ClickWatcher {
                     title: effectiveTitle,
                     desc: effectiveDesc,
                     help: currentHelp.lowercased(),
-                    identifier: currentIdentifier
+                    identifier: currentIdentifier,
+                    roleDescription: currentRoleDescription,
+                    customActions: currentCustomActions
                 ) {
                     let autoId = "json:\(bundleId):\(result.keys.joined(separator: "+"))"
                     emit(bundleId: bundleId, shortcutId: autoId,
