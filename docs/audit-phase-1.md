@@ -17,7 +17,7 @@
 | Sub-cel | Status | Komentarz |
 |---|---|---|
 | 1.0 Re-seed Terminal/Notion/Claude | 🟢 done | Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (sesja 2026-05-14) |
-| 1.1 Quality gate dla auto-discovered rules | 🔵 partial | Backend dedup zrobiony (v1.1.1, `dedup.ts`). Brakuje: client-side filtr po confidence/source, mechanizm "experimental" toggle |
+| 1.1 Quality gate dla auto-discovered rules | 🟡 in-progress | Backend dedup ✅ (v1.1.1). Settings okno z togglem "Show experimental" ✅ (sesja 2026-05-14). Brakuje: client-side filtr po confidence/source w RuleCache (sesja 4) |
 | 1.2 Retry + backoff dla failed discovery | ⬜ pending | — |
 | 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
 | 1.4 False-positive feedback (cmd-klik) | ⬜ pending | Krytyczne — nadal nie wiemy które toasty są błędne |
@@ -25,6 +25,7 @@
 | 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
 | 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
+| 1.9 Window element improvements (P-6 + P-25) | ⬜ pending | **Nowe** — AXKeyShortcutsValue Layer 0 + AXIdentifier w regułach. Patrz P-24/P-25 w audit-phase-0.md |
 
 ---
 
@@ -41,8 +42,9 @@
 |---|---|---|---|---|---|
 | **1** | Sweet wins | 1.0 + P-23 + 1.8 droga C | ~3h | 🟢 done | 📋 below |
 | **2** | Bug squashing | 1.5 + P-15 + P-21 | ~4h | 🟢 done | 📋 below |
-| **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | ⬜ | 📋 below |
+| **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | 🟢 done | 📋 below |
 | **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | ⬜ | 📋 below |
+| **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | ⬜ | 📋 below |
 | **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | ⬜ | ✏️ sketch |
 | **6** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
 | **7** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
@@ -251,6 +253,153 @@ zaufaniem nie są aktywne by default. User może je włączyć przez
 **Statusy do zaktualizowania po sesji:**
 - audit-phase-1.md: Sub-cel 1.1 🔵 → 🟢
 - audit-phase-0.md: P-1 🔵 → 🟢
+
+---
+
+### Sesja 4.5: "Window element wins" (~1 dzień)
+
+**Cel:** Zamknąć główną architektoniczną asymetrię między menu bar (aktywne)
+a window elements (pasywne). Dwa niezależne, czyste kroki.
+
+**Adresowane elementy:**
+- Sub-cel 1.9 → 🟢 done (po sesji)
+- P-6 (AXKeyShortcutsValue) → 🟢 done
+- P-24 Etap 1 → 🔵 partial (P-6 rozwiązuje Etap 1, P-25 to Etap 2)
+- P-25 (identifier w schemacie reguł) → 🟢 done
+
+**Krok 1: AXKeyShortcutsValue jako Layer 0 (~2h)**
+
+W `SFlow/ClickWatcher.swift`, w pętli `for _ in 0..<6` przed Layer 0.5
+(linia 110), dodaj nowe odczytanie:
+
+```swift
+// Layer 0: AXKeyShortcutsValue (Electron/Chromium aria-keyshortcuts)
+var ksRef: AnyObject?
+AXUIElementCopyAttributeValue(current, "AXKeyShortcutsValue" as CFString, &ksRef)
+if let ks = ksRef as? String, !ks.isEmpty,
+   let keys = parseAriaShortcut(ks) {
+    let autoId = "aria:\(bundleId):\(keys.joined(separator: "+"))"
+    let hintText = (titleRef as? String) ?? ks
+    emit(bundleId: bundleId, shortcutId: autoId, keys: keys,
+         hint: hintText, loc: nsLoc)
+    return
+}
+```
+
+Implementuj `parseAriaShortcut(_ s: String) -> [String]?` jako prywatną
+metodę w `ClickWatcher`:
+```swift
+// "Meta+K" → ["meta","k"], "Meta+Shift+M" → ["meta","shift","m"]
+// "c" → ["c"] (single key)
+private func parseAriaShortcut(_ s: String) -> [String]? {
+    let parts = s.lowercased().split(separator: "+").map(String.init)
+    guard !parts.isEmpty else { return nil }
+    // Normalize: "meta" → "meta", "shift" → "shift", "alt" → "alt", "ctrl" → "ctrl"
+    let normalized = parts.map { p -> String in
+        switch p {
+        case "meta", "cmd", "command": return "meta"
+        case "alt", "option":          return "alt"
+        case "ctrl", "control":        return "ctrl"
+        case "shift":                  return "shift"
+        default:                       return p  // single char key
+        }
+    }
+    return normalized
+}
+```
+
+Testy w `ClickWatcherTests.swift` (lub nowym `AXKeyShortcutsValueTests.swift`):
+- `parseAriaShortcut("Meta+K")` → `["meta","k"]`
+- `parseAriaShortcut("Meta+Shift+M")` → `["meta","shift","m"]`
+- `parseAriaShortcut("c")` → `["c"]`
+- `parseAriaShortcut("")` → `nil`
+
+**Krok 2: AXIdentifier w skeletonie i schemacie reguł (~4h)**
+
+2a. `SFlow/AXSkeletonExtractor.swift`:
+```swift
+// W SkeletonItem — dodaj opcjonalne pole
+struct SkeletonItem: Codable, Hashable {
+    let role: String
+    let title: String
+    let identifier: String?  // DOM id — stable, language-agnostic
+}
+
+// W walk() — po odczycie title/desc, dodaj:
+var identRef: AnyObject?
+AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identRef)
+let identifier = (identRef as? String).flatMap { $0.isEmpty ? nil : $0 }
+if !title.isEmpty {
+    raw.append(RawAXItem(role: role, title: title, identifier: identifier))
+}
+```
+
+Uwaga: `RawAXItem` też dostaje opcjonalne `identifier: String?`.
+
+2b. `SFlow/LoadedRule.swift` — rozszerz `LoadedMatch`:
+```swift
+struct LoadedMatch: Codable {
+    let role: String
+    let titles: [String]
+    let identifiers: [String]?  // opcjonalne — istniejące reguły bez tego pola nadal działają
+}
+```
+
+2c. `SFlow/RuleCache.swift` — dodaj identifier matching w `match()`:
+```swift
+func match(bundleId: String, role: String, title: String, desc: String,
+           help: String, identifier: String = "") -> MatchResult? {
+    // ...
+    for rule in rules {
+        // ...
+        // Identifier check (język-agnostic, sprawdź PRZED titles)
+        if let ruleIds = rule.match.identifiers, !identifier.isEmpty {
+            let identLC = identifier.lowercased()
+            if ruleIds.contains(where: { identLC == $0.lowercased() }) {
+                return MatchResult(rule: rule)
+            }
+        }
+        // Existing title match...
+        let titleMatches = rule.match.titles.contains { ... }
+        if titleMatches { return MatchResult(rule: rule) }
+    }
+}
+```
+
+2d. `SFlow/ClickWatcher.swift` — przekaż `identifier` do `ruleCache.match()`:
+```swift
+if let result = ruleCache.match(
+    bundleId: bundleId, role: currentRole,
+    title: currentTitle, desc: currentDesc,
+    help: currentHelp.lowercased(),
+    identifier: currentIdentifier  // już czytany w linii 92
+) { ... }
+```
+
+2e. `backend/src/types.ts` — dodaj do `MatchSchema`:
+```typescript
+identifiers: z.array(z.string()).max(5).optional(),
+```
+
+2f. `backend/src/prompt.ts` — dodaj instrukcję do systemu:
+```
+- "identifiers": optional array of stable DOM ids/AX identifiers for this element.
+  Include when you can identify a stable, language-agnostic identifier from the
+  skeleton (e.g. "compose-btn", "search-input"). Omit if not present in skeleton.
+```
+
+**Testy end-to-end:**
+- Sprawdź Gmail (web w Chrome) — czy `AXKeyShortcutsValue = "c"` na Compose
+- Sprawdź Slack — czy jakiekolwiek przyciski mają `AXKeyShortcutsValue`
+- Sprawdź że istniejące reguły bez `identifiers` nadal działają (null safety)
+
+**Acceptance criteria:**
+- [ ] `parseAriaShortcut` testy pass
+- [ ] Przynajmniej 1 apka (Gmail/Slack) daje toast przez Layer 0 AXKeyShortcutsValue
+- [ ] `SkeletonItem` ma opcjonalne `identifier` i nie łamie istniejących testów
+- [ ] `RuleCache.match()` akceptuje identifier i sprawdza go przed titles
+- [ ] `LoadedMatch` z `identifiers: null` (stare reguły) nadal matchuje poprawnie
+- [ ] Backend `types.ts` akceptuje opcjonalne `identifiers` w regułach
 
 ---
 
@@ -864,6 +1013,69 @@ AVFoundation. Patrz template z sesji 2026-05-13 w session log (commit
 
 ---
 
+### Sub-cel 1.9: Window element improvements — AXKeyShortcutsValue + identifier matching
+
+**Powiązane problemy:** P-6, P-24, P-25 (patrz `audit-phase-0.md`)
+
+**Problem:** Menu bar matching jest aktywne — `checkMenuBar()` odczytuje
+prawdziwy skrót z `kAXMenuItemCmdChar`. Window element matching jest pasywne
+— `ruleCache.match()` porównuje title z LLM-przewidzianymi wariantami.
+Skutek: elementy okna mają systematycznie niższy hit rate niż menu bar items,
+szczególnie dla lokalizowanych apek i apek które update'ują UI.
+
+**Idealny outcome:**
+
+1. Layer 0 w ClickWatcher czyta `AXKeyShortcutsValue` — dla Electron apek
+   z `aria-keyshortcuts` dostajemy skrót bezpośrednio z elementu, bez reguł
+2. `AXIdentifierAttribute` trafia do skeletonu i schematu reguł — backend
+   może generować rules z stabilnymi identifierami
+3. `RuleCache.match()` sprawdza identifier PRZED titles — bardziej stabilne
+
+**Etap 1 (P-6 AXKeyShortcutsValue, ~2h):**
+
+W `ClickWatcher` przed Layer 0.5:
+```swift
+var ksRef: AnyObject?
+AXUIElementCopyAttributeValue(current, "AXKeyShortcutsValue" as CFString, &ksRef)
+if let ks = ksRef as? String, let keys = parseAriaShortcut(ks) {
+    emit(...); return
+}
+```
+
+**Etap 2 (P-25 identifier matching, ~4h):**
+
+Trzy zmiany równoległa:
+- `AXSkeletonExtractor.SkeletonItem` + `walk()` → dodaj `identifier: String?`
+- `LoadedMatch` → dodaj `identifiers: [String]?` (opcjonalne, backward compat)
+- `RuleCache.match()` → sprawdź identifiers przed titles, dodaj parametr `identifier`
+- `ClickWatcher` → przekaż `currentIdentifier` do `ruleCache.match()`
+- `backend/src/types.ts` → `identifiers` opcjonalne w `MatchSchema`
+- `backend/src/prompt.ts` → instrukcja generowania identifiers gdy dostępne
+
+**Atomic plan w sesji 4.5 (powyżej)** zawiera pełny krok-po-kroku z kodem.
+
+**Drogi implementacji:**
+
+**Droga A (oba etapy razem):**
+- Jeden commit: AXKeyShortcutsValue + identifier schema
+- Plus: atomowa zmiana
+- Minus: większy scope, trudniej debug
+
+**Droga B (etap po etapie — rekomendowana):**
+- Commit 1: Layer 0 AXKeyShortcutsValue (2h, standalone)
+- Commit 2: Identifier w schemacie (4h, niezależny)
+- Plus: każdy krok weryfikowalny osobno, łatwy rollback
+
+**Risk:**
+- `identifiers` w starych regułach = null → backward compat jest kluczowa.
+  `LoadedMatch.identifiers: [String]?` (optional) gwarantuje że stare reguły
+  nadal działają — `RuleCache.match()` po prostu skipuje identifier check
+  gdy `rule.match.identifiers == nil`
+- `AXKeyShortcutsValue` może mieć dziwne formaty w edge cases — `parseAriaShortcut`
+  zwraca nil dla nieznanych formatów → fallback do istniejących warstw
+
+---
+
 ### Sub-cel 1.7: Beta test z 3-5 osobami
 
 **Problem:** Nie wiemy czy toast w ogóle uczy. Jeśli nie — pivot przed
@@ -968,22 +1180,18 @@ user_overrides.json NIGDY nie nadpisywany.
 **Decyzja:** zaczynamy od czystego `console.log` + CF Analytics. Logflare
 dodajemy gdy zaczniemy mieć >100 requestów/dzień.
 
-### AXKeyShortcutsValue eksperyment (P-6)
+### AXKeyShortcutsValue + identifier matching (P-6, P-25) → Sub-cel 1.9
 
-**Małe zadanie (1-2h):**
-1. W `ClickWatcher.handleMouseDown`, przed Layer 0.5 dodaj:
-   ```swift
-   var ksRef: AnyObject?
-   AXUIElementCopyAttributeValue(current, "AXKeyShortcutsValue" as CFString, &ksRef)
-   if let ks = ksRef as? String, let parsed = parseAriaShortcut(ks) {
-       emit(...)
-       return
-   }
-   ```
-2. Implementuj `parseAriaShortcut`: "Meta+K" → `["meta", "k"]`
-3. Test na Gmail (web), Notion (znane że eksperymentują), Discord
-4. Jeśli żadna z testowanych nie ma — wyłącz feature flagą i wrócimy do
-   tego w Fazie 2
+**Awansowane z opcjonalnego do "bramki ważne" po analizie kodu (sesja 2026-05-14).**
+
+Pełna implementacja jest opisana w:
+- Sub-cel 1.9 (powyżej) — opis problemu + drogi
+- Sesja 4.5 Atomic plan (powyżej) — krok-po-kroku z kodem
+
+Skrót dla szybkiej referencji:
+- Layer 0 `AXKeyShortcutsValue` → `ClickWatcher` przed L0.5, `parseAriaShortcut()` parser
+- Identifier → `AXSkeletonExtractor` + `LoadedMatch.identifiers?` + `RuleCache.match(identifier:)`
+- Backend → `types.ts` opcjonalne `identifiers` + `prompt.ts` instrukcja
 
 ---
 
