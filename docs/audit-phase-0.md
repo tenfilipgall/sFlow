@@ -29,6 +29,11 @@
 | P-23 Within-rule title dupes | 🟢 zamknięte | Fix w `dedup.ts` + test (sesja 2026-05-14) |
 | P-24 Window element matching pasywne | 🔵 częściowo | P-6 (Layer 0) ✅ + P-25 (identifier schema) ✅ (sesja 2026-05-14). Brakuje: backend musi zacząć generować reguły z identifiers (wymaga reseedu apek) |
 | P-25 AXIdentifier nie w schemacie reguł | 🟢 zamknięte | AXIdentifier w AXSkeletonExtractor + LoadedMatch.identifiers + RuleCache.match(identifier:) + backend types+prompt ✅ (sesja 2026-05-14) |
+| P-26 Layer 0.5/L1 matchuje na rodzicach (parent containers) | 🟡 w trakcie | Audyt 2026-05-14 wskazał że L0.5 i L1 nie mają bramki `isInteractive` — strzelają na AXWindow/AXScrollArea/AXGroup z opisem zawierającym słowo z reguły. Fix: plan `2026-05-14-matching-engine-quality.md` Task 3 |
+| P-27 RuleCache.match używa substring zamiast word-boundary | 🟡 w trakcie | `String.contains` matchuje "search" w "research"/"researcher tools". Fix: `wordBoundaryContains` utility + zamiana w RuleCache.match. Plan Task 1+2 |
+| P-28 MenuBarIndex.lookup niedeterministyczny | 🟡 w trakcie | `titleMap.first(where:)` iteruje słownik Swift w niezdefiniowanym porządku — to samo kliknięcie może dać różne wyniki. Fix: zbierz wszystkie matche, sortuj po długości klucza desc. Plan Task 4 |
+| P-29 AXSkeletonExtractor zrzuca single-occurrence noun-led titles | 🟡 w trakcie | Filtr `count < 2 && !looksVerbLed` zrzuca "Quick Switcher", "Preferences", "Mentions", "Settings" przed wysłaniem do LLM. Fix: usunąć filtr — pozostałe reguły (email/data/digits/imię) wystarczą. Plan Task 8 |
+| P-30 Brak per-layer telemetry w events.jsonl | 🟡 w trakcie | `ShortcutEvent` nie wie którą warstwą został wyprodukowany. Bez tego nie da się policzyć "która warstwa fire'uje najczęściej dla apki X" → ślepe iteracje promptu. Fix: dodać `RecognitionLayer` enum + pole `layer` w ShortcutEvent i events.jsonl. Plan Task 5+6+7 |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -660,6 +665,93 @@ Etap 2 (P-25, ~1 dzień): Dodaj `AXIdentifierAttribute` do skeletonu +
 **Severity:** WYSOKA. Bez tego okna zawsze będą słabsze niż menu bar,
 a każda nowa Electron apka z polskim UI wymaga manualnego rozszerzenia
 listy wariantów tytułów.
+
+---
+
+### P-26 do P-30: bugi rozpoznawania klikniec wykryte przez audyt 2026-05-14
+
+Wszystkie 5 problemów zostały zidentyfikowane podczas pełnego audytu trybu rozpoznawania klikniec (2026-05-14). Mają wspólny mianownik: **fundament SFlow nie jest jeszcze stabilny**. Każdy z nich tłumaczy konkretny objaw "elementy są pomijane lub źle przypisywane" raportowany przez Filipa.
+
+**Implementacja zaplanowana w:** `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków, ~4h pracy, TDD).
+
+#### P-26: Layer 0.5 i L1 strzelają na rodzicach niezwiązanych
+
+**Plik:** `ClickWatcher.swift:159-184`
+
+**Co jest:** Pętla walking-up (`for _ in 0..<6`) sprawdza Layer 0.5 (RuleCache) i Layer 1 (ShortcutRules) na **każdym** rodzicu — bez sprawdzenia czy rodzic jest klikalny (`isInteractive`). Tylko Layer 2/3/4 mają tę bramkę.
+
+**Konsekwencja:** Klikasz w środek tekstu notki w Notion → walking-up trafia na AXGroup którego description = "page content with search results" → L0.5 matchuje regułę z tytułem "search" przez `desc.contains("search")` → toast ⌘K wystrzeli mimo że żaden przycisk nie był kliknięty.
+
+**Fix:** dodać `shouldRunNonInteractiveLayers(role:depth:)` — depth 0 zawsze przepuszcza (preserwuje Chromium AXGroup clickables), depth > 0 tylko gdy role jest w `interactiveRoles`.
+
+**Severity:** **WYSOKA** — to **najbardziej fundamentalny bug** trybu rozpoznawania. Tłumaczy większość raportowanych false-positives.
+
+#### P-27: RuleCache.match używa `String.contains` zamiast word-boundary
+
+**Plik:** `RuleCache.swift:101-109`
+
+**Co jest:** Stara wersja:
+```swift
+if titleLC.contains(c) || descLC.contains(c) { return true }
+```
+Plus `helpLC` ma tylko `==`, bez substring — niespójne.
+
+**Konsekwencja:** Reguła z tytułem `"search"` matchuje **dowolny** element którego tytuł zawiera ciąg liter "s-e-a-r-c-h":
+- "Search Slack" ✅ (chcemy)
+- "Researcher Tools" ❌ (zawiera "search"!)
+- "Vermicotti" ❌ ("micot" zawiera "i" w środku, ale weź gorszy przykład — "research" zawiera "search")
+
+**Fix:** nowa funkcja `wordBoundaryContains(haystack:needle:)` w pliku `TextMatching.swift`. Match wymaga że `needle` jest aligned do word-boundary na lewej stronie (start stringa lub poprzedzający znak nie jest literą/cyfrą). Prawa strona może rozciągać się — "bookmark" dalej matchuje "bookmarks" (plurale OK).
+
+**Severity:** **WYSOKA**. Drugi największy vector false-positives.
+
+#### P-28: MenuBarIndex.lookup niedeterministyczny
+
+**Plik:** `MenuBarIndex.swift:72`
+
+**Co jest:**
+```swift
+if let pair = titleMap.first(where: { $0.key.contains(q) }) {
+    return (entry: pair.value, confidence: .medium)
+}
+```
+`titleMap` to Swift Dictionary. `first(where:)` iteruje go w niezdefiniowanym porządku — **to samo zapytanie może dawać różne wyniki** w różnych instancjach apki.
+
+**Konsekwencja:** Czasem klik na "Find in Files" zwraca regułę z "Find", czasem z "Find Next", czasem z "Find in Files" — losowość.
+
+**Fix:** zbierz **wszystkie** klucze pasujące word-boundary, **sortuj** po długości DESC (najdłuższy = najbardziej specyficzny), pick first. Plus zamiana `contains` na `wordBoundaryContains`.
+
+**Severity:** **WYSOKA**. To tłumaczy wrażenie "czasem działa, czasem nie".
+
+#### P-29: AXSkeletonExtractor zrzuca single-occurrence noun-led titles
+
+**Plik:** `AXSkeletonExtractor.swift:67-68`
+
+**Co jest:**
+```swift
+let count = counts[item] ?? 1
+if count < 2 && !looksVerbLed(title) { continue }
+```
+
+Filtr usuwa każdy element który pojawia się tylko raz I nie zaczyna się od czasownika.
+
+**Konsekwencja:** Tytuły "Quick Switcher", "Preferences", "Mentions & Reactions", "Settings", "Saved Items", "Inbox" — same rzeczowniki — **są wyrzucane przed wysłaniem do LLM**. LLM nie generuje dla nich reguł. Toast nigdy się nie pokazuje dla tych elementów.
+
+**Fix:** usunąć filtr `count < 2 && !looksVerbLed`. Pozostałe filtry (email, data, digits, human-name) wystarczą do oczyszczenia szumu.
+
+**Severity:** ŚREDNIA-WYSOKA. Wpływa na pokrycie dla wszystkich nowych apek auto-discoverowanych.
+
+#### P-30: Brak per-layer telemetry
+
+**Plik:** `ShortcutEvent.swift`, `EventLogger.swift`
+
+**Co nie istnieje:** `ShortcutEvent` nie ma pola "który layer (L0/L0.5/L1/L2/L3/L4/menu) wyprodukował ten event". W `events.jsonl` widzimy tylko że toast się pokazał, ale nie wiemy która z 7 ścieżek go wystrzeliła.
+
+**Konsekwencja:** Ślepe iteracje. Filip pyta "czemu w Slacku zły toast?" — ja nie wiem czy Layer 0.5 (LLM rules) źle matchnęło, czy Layer 4 (universal) źle zgadło, czy Layer 1 (hardcoded) zostało shadowed. Bez tej informacji każda iteracja prompta to strzelanie w ciemno.
+
+**Fix:** nowy enum `RecognitionLayer` z casami L0/L0.5/L1/L2/L3/L4/menu/menu-fallback. Pole `layer: RecognitionLayer` w `ShortcutEvent`. Każdy `emit(...)` w ClickWatcher i checkMenuBar tag'uje layer. `EventLogger.log` zapisuje `"layer": "L0.5"` do JSONL.
+
+**Severity:** ŚREDNIA-WYSOKA. Bez tego nie da się prowadzić data-driven iteracji prompta i fixów reguł.
 
 ---
 

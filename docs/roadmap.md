@@ -839,6 +839,13 @@ jest mniejsza.
 
 ## Najbliższy krok (tydzień 1)
 
+**AKTUALIZACJA 2026-05-14:** Pełny audyt trybu rozpoznawania klikniec wykrył 4 fundamentalne bugi
+(P-26 do P-30 w `audit-phase-0.md`) plus brakującą per-layer telemetrię. Plan implementacji:
+`docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h). Po dokończeniu —
+**otwieramy `events.jsonl` i czytamy które warstwy fire'ują w której apce**, dopiero wtedy planujemy
+"coverage iteration" (jak znaleźć więcej skrótów / więcej apek / więcej elementów). Telemetria
+najpierw, optymalizacja potem.
+
 Konkretny, do zrobienia jutro. Kolejność zmieniona po sesji v1.1.1, w której
 ukończono częściowo Fazę 1.1 (dedup na backendzie) oraz dodano tolerancję
 hotkey-suffix w `RuleCache.match` (klient akceptuje "Edit message E" gdy

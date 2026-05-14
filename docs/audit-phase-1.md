@@ -26,6 +26,7 @@
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
 | 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
+| 1.10 Matching engine quality (P-26..P-30) | 🟡 in-progress | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) |
 
 ---
 

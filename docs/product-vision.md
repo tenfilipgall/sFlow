@@ -185,11 +185,20 @@ Trzy pytania których nie odpowiedzieliśmy:
 
 **Co działa:**
 - Wykrywanie kliknięć (CGEventTap)
-- 4 warstwy reguł (L0.5–L4): bundled LLM rules + auto-parse tooltipów + menu
-  bar fuzzy match + universal heuristics
+- 7 warstw rozpoznawania (L0/L0.5/L1/L2/L3/L4 + direct menu bar): AXKeyShortcuts +
+  bundled LLM rules + hardcoded ShortcutRules + tooltip auto-parse + menu bar fuzzy match
+  + universal heuristics + direct AXMenuItem
 - Backend CF Worker + Claude generuje reguły dla nowych apek na żądanie
 - ~70–80% pokrycia dla 4 zweryfikowanych apek (Slack, Obsidian, Linear, Cursor)
 - Miss log + analyzer (v1.1) — wiemy które kliknięcia "uciekły"
+
+**Audyt 2026-05-14 (krytyczna diagnoza fundamentu):** Pełna analiza
+trybu rozpoznawania wykryła 4 fundamentalne bugi (P-26..P-30 w `audit-phase-0.md`):
+matchowanie reguł na rodzicach niezwiązanych z klikiem, substring zamiast word-boundary,
+niedeterministyczny MenuBarIndex, agresywny filtr skeletonu. Te bugi tłumaczą wrażenie
+"niektóre elementy są pomijane / źle przypisywane". Plan naprawczy + per-layer telemetria:
+`docs/superpowers/plans/2026-05-14-matching-engine-quality.md`. Bez tego coverage iterations
+będą strzelały w ciemno — najpierw telemetria, potem optymalizacja.
 
 **Czym są toasty dziś:**
 > Toasty służą mi do testowania czy SFlow faktycznie "łapie" elementy które
