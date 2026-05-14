@@ -279,4 +279,69 @@ final class RuleCacheTests: XCTestCase {
         XCTAssertNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Maybe", desc: "", help: ""),
                      "low-confidence rules are hidden by default")
     }
+
+    func testAutoDiscoveredMediumRuleHiddenByDefault() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let mediumRule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Maybe"]),
+            keys: ["m"], hint: "Maybe",
+            confidence: .medium, source: .inferredPattern
+        )
+        let set = StoredRuleSet(bundleId: "com.x", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .cloud, rulesVersion: nil, rules: [mediumRule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("cache/com.x.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Maybe", desc: "", help: ""),
+                     "auto-discovered medium+inferred_pattern must be hidden by default")
+    }
+
+    func testAutoDiscoveredHighMenuBarActiveByDefault() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let highRule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Send"]),
+            keys: ["meta", "enter"], hint: "Send",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(bundleId: "com.y", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .cloud, rulesVersion: nil, rules: [highRule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("cache/com.y.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertNotNil(cache.match(bundleId: "com.y", role: "AXButton", title: "Send", desc: "", help: ""),
+                        "auto-discovered high+menu_bar must be active by default")
+    }
+
+    func testExperimentalToggleUnlocksMediumAutoDiscovered() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let mediumRule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Maybe"]),
+            keys: ["m"], hint: "Maybe",
+            confidence: .medium, source: .inferredPattern
+        )
+        let set = StoredRuleSet(bundleId: "com.x", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .cloud, rulesVersion: nil, rules: [mediumRule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("cache/com.x.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        cache.showExperimental = true
+        XCTAssertNotNil(cache.match(bundleId: "com.x", role: "AXButton", title: "Maybe", desc: "", help: ""),
+                        "showExperimental=true must unlock medium auto-discovered rules")
+    }
+
+    func testBundledMediumRuleActiveByDefault() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let mediumRule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Search"]),
+            keys: ["meta", "k"], hint: "Search",
+            confidence: .medium, source: .webDocsThirdParty
+        )
+        let set = StoredRuleSet(bundleId: "com.z", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .bundled, rulesVersion: nil, rules: [mediumRule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("bundled.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertNotNil(cache.match(bundleId: "com.z", role: "AXButton", title: "Search", desc: "", help: ""),
+                        "bundled medium+web_docs_third_party must be active by default")
+    }
 }

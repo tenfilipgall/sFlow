@@ -9,6 +9,7 @@ final class RuleCache {
 
     private let rootDir: URL
     private var rulesByBundle: [String: [LoadedRule]] = [:]
+    private var autoDiscoveredBundleIds: Set<String> = []
     var showExperimental: Bool = false
 
     init(rootDir: URL) {
@@ -17,23 +18,25 @@ final class RuleCache {
 
     func load() throws {
         rulesByBundle.removeAll()
+        autoDiscoveredBundleIds.removeAll()
         // Layer 1: bundled (lowest priority)
-        loadFile(rootDir.appendingPathComponent("bundled.json"))
-        // Layer 2: cache files (override bundled)
+        loadFile(rootDir.appendingPathComponent("bundled.json"), isAutoDiscovered: false)
+        // Layer 2: cache files (auto-discovered, override bundled)
         let cacheDir = rootDir.appendingPathComponent("cache")
         if let entries = try? FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil) {
             for entry in entries where entry.pathExtension == "json" {
-                loadFile(entry)
+                loadFile(entry, isAutoDiscovered: true)
             }
         }
-        // Layer 3: user overrides (highest)
-        loadFile(rootDir.appendingPathComponent("user_overrides.json"))
+        // Layer 3: user overrides (highest, always trusted)
+        loadFile(rootDir.appendingPathComponent("user_overrides.json"), isAutoDiscovered: false)
     }
 
-    private func loadFile(_ url: URL) {
+    private func loadFile(_ url: URL, isAutoDiscovered: Bool) {
         guard let data = try? Data(contentsOf: url) else { return }
         if let set = try? JSONDecoder().decode(StoredRuleSet.self, from: data) {
             rulesByBundle[set.bundleId] = set.rules
+            if isAutoDiscovered { autoDiscoveredBundleIds.insert(set.bundleId) }
             return
         }
         // bundled.json may contain multiple apps wrapped in an array
@@ -41,6 +44,7 @@ final class RuleCache {
             for set in sets {
                 if rulesByBundle[set.bundleId] == nil {
                     rulesByBundle[set.bundleId] = set.rules
+                    if isAutoDiscovered { autoDiscoveredBundleIds.insert(set.bundleId) }
                 }
             }
         }
@@ -72,13 +76,18 @@ final class RuleCache {
 
     func match(bundleId: String, role: String, title: String, desc: String, help: String) -> MatchResult? {
         guard let rules = rulesByBundle[bundleId] else { return nil }
+        let isAutoDiscovered = autoDiscoveredBundleIds.contains(bundleId)
         let titleLC = title.lowercased()
         let descLC = desc.lowercased()
         let helpLC = help.lowercased()
         let titleStripped = Self.stripHotkeySuffix(title)?.lowercased()
 
         for rule in rules {
-            if !showExperimental, rule.confidence == .low { continue }
+            if !showExperimental {
+                if rule.confidence == .low { continue }
+                if isAutoDiscovered && rule.confidence != .high { continue }
+                if isAutoDiscovered && rule.source != .menuBar && rule.source != .webDocsOfficial { continue }
+            }
             if !roleCompatible(ruleRole: rule.match.role, actualRole: role) { continue }
             let titleMatches = rule.match.titles.contains { candidate in
                 let c = candidate.lowercased()
