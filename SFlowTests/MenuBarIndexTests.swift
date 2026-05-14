@@ -67,4 +67,46 @@ final class MenuBarIndexTests: XCTestCase {
         index.insert(title: "New", keys: ["meta", "n"])
         XCTAssertNil(index.lookup(query: ""))
     }
+
+    // MARK: - Determinism + longest-match-wins (BUG #3)
+
+    func test_lookup_longestMatchWins() {
+        var index = MenuBarIndex()
+        index.insert(title: "Find", keys: ["meta", "f"])
+        index.insert(title: "Find in Files", keys: ["meta", "shift", "f"])
+        index.insert(title: "Find Next", keys: ["meta", "g"])
+        // Query "find in files" should pick the longest containing key
+        let r = index.lookup(query: "find in files")
+        XCTAssertEqual(r?.entry.keys, ["meta", "shift", "f"], "longest matching key wins")
+    }
+
+    func test_lookup_deterministic_acrossManyInserts() {
+        // BUG #3 root cause: titleMap.first(where:) iterated a dict — order unstable.
+        // After fix, repeated lookups must return the same value.
+        var index = MenuBarIndex()
+        for i in 1...50 {
+            index.insert(title: "Find variant \(i) text", keys: ["meta", "f"])
+        }
+        index.insert(title: "Find in Files", keys: ["meta", "shift", "f"])
+        let first = index.lookup(query: "find in files")
+        for _ in 0..<20 {
+            let r = index.lookup(query: "find in files")
+            XCTAssertEqual(r?.entry.keys, first?.entry.keys, "lookup must be deterministic")
+        }
+    }
+
+    func test_lookup_wordBoundary_doesNotMatchInsideWord() {
+        var index = MenuBarIndex()
+        index.insert(title: "Researcher Mode", keys: ["meta", "alt", "r"])
+        // Query "search" (6 chars, ≥ 5 threshold) appears inside "researcher" — must NOT match
+        XCTAssertNil(index.lookup(query: "search"))
+    }
+
+    func test_lookup_wordBoundary_matchesAtStart() {
+        var index = MenuBarIndex()
+        index.insert(title: "Search Slack", keys: ["meta", "k"])
+        let r = index.lookup(query: "search")
+        XCTAssertEqual(r?.entry.keys, ["meta", "k"])
+        XCTAssertEqual(r?.confidence, .medium)
+    }
 }

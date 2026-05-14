@@ -69,8 +69,16 @@ struct MenuBarIndex {
         guard query.count >= 3 else { return nil }
         let q = query.lowercased()
         if let entry = titleMap[q] { return (entry: entry, confidence: .high) }
-        if q.count >= 5, let pair = titleMap.first(where: { $0.key.contains(q) }) {
-            return (entry: pair.value, confidence: .medium)
+        guard q.count >= 5 else { return nil }
+
+        // Collect all keys whose query word-boundary-contains the lookup query.
+        // BUG #3: previously used titleMap.first(where:) — dict iteration is unstable.
+        // Sort by key length DESC so the most specific (longest) match wins deterministically.
+        let candidates = titleMap.keys
+            .filter { wordBoundaryContains(haystack: $0, needle: q) }
+            .sorted { $0.count > $1.count }
+        if let best = candidates.first, let entry = titleMap[best] {
+            return (entry: entry, confidence: .medium)
         }
         return nil
     }
