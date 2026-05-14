@@ -6,6 +6,7 @@ struct ToastRecord: Identifiable {
     let bundleId: String
     let keys: [String]
     let hint: String
+    let layer: RecognitionLayer
     var reportCount: Int
     var isDisabled: Bool
 }
@@ -42,6 +43,7 @@ final class FalsePositiveStore: ObservableObject {
             let record = ToastRecord(
                 id: event.shortcutId, bundleId: event.bundleId,
                 keys: event.keys, hint: event.hint,
+                layer: event.layer,
                 reportCount: reportCounts[event.shortcutId] ?? 0,
                 isDisabled: disabledIds.contains(event.shortcutId)
             )
@@ -51,12 +53,18 @@ final class FalsePositiveStore: ObservableObject {
     }
 
     func report(shortcutId: String, bundleId: String, keys: [String], hint: String) {
+        let layer = recentToasts.first(where: { $0.id == shortcutId })?.layer ?? .ruleCache
+        report(shortcutId: shortcutId, bundleId: bundleId, keys: keys, hint: hint, layer: layer)
+    }
+
+    func report(shortcutId: String, bundleId: String, keys: [String], hint: String,
+                layer: RecognitionLayer) {
         reportCounts[shortcutId, default: 0] += 1
         let count = reportCounts[shortcutId, default: 0]
 
         let logEvent = ShortcutEvent(bundleId: bundleId, shortcutId: shortcutId,
                                      keys: keys, hint: hint, mouseX: 0, mouseY: 0,
-                                     layer: .ruleCache)
+                                     layer: layer)
         EventLogger.logFalsePositive(event: logEvent, to: falsePosURL)
 
         if let idx = recentToasts.firstIndex(where: { $0.id == shortcutId }) {
@@ -74,7 +82,7 @@ final class FalsePositiveStore: ObservableObject {
 
     func report(record: ToastRecord) {
         report(shortcutId: record.id, bundleId: record.bundleId,
-               keys: record.keys, hint: record.hint)
+               keys: record.keys, hint: record.hint, layer: record.layer)
     }
 
     private func loadDisabledFromDisk() {

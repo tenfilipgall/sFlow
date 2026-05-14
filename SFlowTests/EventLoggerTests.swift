@@ -166,6 +166,7 @@ final class EventLoggerTests: XCTestCase {
             (.menuBarIndex, "L3"),
             (.universal, "L4"),
             (.menuItem, "menu"),
+            (.menuItemFallback, "menu-fallback"),
         ]
         for (layer, _) in cases {
             let event = ShortcutEvent(
