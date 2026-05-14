@@ -77,6 +77,29 @@ final class ClickWatcher {
         return arr.contains("AXPress")
     }
 
+    /// When a clickable ancestor has empty title/desc, scan its direct children
+    /// for the first non-empty label. Common Chromium pattern: AXButton wraps
+    /// AXImage where the icon's desc has the actual action name.
+    /// Limited to 5 children, no recursion — fast hot-path read.
+    static func extractFallbackTitleFromChildren(_ element: AXUIElement) -> (title: String, desc: String) {
+        var childrenRef: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef)
+        guard let children = childrenRef as? [AXUIElement] else { return ("", "") }
+
+        for child in children.prefix(5) {
+            var titleRef: AnyObject?
+            var descRef: AnyObject?
+            AXUIElementCopyAttributeValue(child, kAXTitleAttribute as CFString, &titleRef)
+            AXUIElementCopyAttributeValue(child, kAXDescriptionAttribute as CFString, &descRef)
+            let title = titleRef as? String ?? ""
+            let desc = descRef as? String ?? ""
+            if !title.isEmpty || !desc.isEmpty {
+                return (title, desc)
+            }
+        }
+        return ("", "")
+    }
+
     static func parseAriaShortcut(_ value: String) -> [String]? {
         guard !value.isEmpty else { return nil }
         let tokens = value.split(separator: "+", omittingEmptySubsequences: true).map(String.init)
@@ -186,13 +209,23 @@ final class ClickWatcher {
                 let hasAXPress = Self.elementHasAXPress(current)
                 let runNonInteractive = Self.shouldRunNonInteractiveLayers(role: currentRole, depth: depth, hasAXPress: hasAXPress)
 
+                var effectiveTitle = currentTitle
+                var effectiveDesc = currentDesc
+                if effectiveTitle.isEmpty, effectiveDesc.isEmpty, runNonInteractive, depth > 0 {
+                    let fallback = Self.extractFallbackTitleFromChildren(current)
+                    if !fallback.title.isEmpty || !fallback.desc.isEmpty {
+                        effectiveTitle = fallback.title.lowercased()
+                        effectiveDesc = fallback.desc.lowercased()
+                    }
+                }
+
                 // Layer 0.5: JSON-loaded rules (bundled / LLM cache / user overrides)
                 if runNonInteractive,
                    let result = ruleCache.match(
                     bundleId: bundleId,
                     role: currentRole,
-                    title: currentTitle,
-                    desc: currentDesc,
+                    title: effectiveTitle,
+                    desc: effectiveDesc,
                     help: currentHelp.lowercased(),
                     identifier: currentIdentifier
                 ) {
