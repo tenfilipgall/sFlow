@@ -22,6 +22,7 @@ Rules:
 - "version" is always the integer 1 (reserved for future use; client ignores it today).
 - DISJOINT TITLES: NEVER produce two rules where any title string (case-insensitive) appears in more than one rule. If you find yourself wanting to generate two rules for the same UI element (e.g. one for "Search current conversation" and one for "Search all of Slack" both with title "Search Slack"), MERGE them into one rule using the keys that ACTUALLY trigger that on-screen button. The on-screen button has exactly one keyboard shortcut — pick it, not both.
 - HOTKEY-SUFFIX VARIANTS (Electron menus only): Slack, Discord, and other Electron apps render their AXMenuItem titles with the access-key letter appended (e.g. "Edit message E", "Mark unread U", "Save message S"). For any rule with role="AXMenuItem" generated from a menu_bar source, include title variants BOTH with and without a trailing space + single uppercase letter — e.g. \`["Edit message", "Edit message E", "edit message"]\`.
+- IDENTIFIERS: When the UI skeleton includes [id=...] for an element, add an "identifiers" field to that rule's match object. Example: { "role": "AXButton", "titles": ["Compose", "New message"], "identifiers": ["compose-button"] }. Identifiers allow the client to match elements by stable DOM id rather than localised title — include them whenever the skeleton provides them.
 - TITLE VARIANTS: every rule's "titles" array MUST include 3-5 variants of the same action, designed to match what an AX element might actually expose. Include:
   1. The verb-led English form (e.g. "Open Quick Switcher").
   2. The noun-only English form (e.g. "Quick Switcher").
@@ -46,7 +47,7 @@ export function buildUserPrompt(req: DiscoverRequest): string {
     .map((m) => `  ${m.path.join(" > ")}${m.shortcut ? ` [${m.shortcut}]` : ""}`)
     .join("\n");
   const skeletonLines = req.uiSkeleton
-    .map((s) => `  ${s.role}: "${s.title}"`)
+    .map((s) => `  ${s.role}: "${s.title}"${s.identifier ? ` [id=${s.identifier}]` : ""}`)
     .join("\n");
   return `App: ${req.appName} (${req.bundleId} v${req.appVersion})
 

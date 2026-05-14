@@ -36,6 +36,18 @@ describe("buildUserPrompt", () => {
     expect(result).toContain("(empty)");
     expect(result).toContain('AXButton: "Send"');
   });
+
+  it("includes [id=…] tag when skeleton item has identifier", () => {
+    const result = buildUserPrompt({
+      bundleId: "com.x",
+      appName: "X",
+      appVersion: "1.0",
+      menuBar: [],
+      uiSkeleton: [{ role: "AXButton", title: "Send", identifier: "send-btn" }],
+      clientVersion: "1.0",
+    });
+    expect(result).toContain("[id=send-btn]");
+  });
 });
 
 describe("buildSystemPrompt v1.1 prompt", () => {

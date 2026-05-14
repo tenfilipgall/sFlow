@@ -38,6 +38,30 @@ describe("DiscoverRequestSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts skeleton item with optional identifier", () => {
+    const result = DiscoverRequestSchema.safeParse({
+      bundleId: "com.x",
+      appName: "X",
+      appVersion: "1.0",
+      menuBar: [],
+      uiSkeleton: [{ role: "AXButton", title: "Send", identifier: "send-btn" }],
+      clientVersion: "1.0.0",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts skeleton item without identifier (backward compat)", () => {
+    const result = DiscoverRequestSchema.safeParse({
+      bundleId: "com.x",
+      appName: "X",
+      appVersion: "1.0",
+      menuBar: [],
+      uiSkeleton: [{ role: "AXButton", title: "Send" }],
+      clientVersion: "1.0.0",
+    });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe("RuleSchema", () => {
@@ -75,5 +99,18 @@ describe("RuleSchema version normalization", () => {
       version: 1,
     });
     expect(parsed.version).toBe(1);
+  });
+});
+
+describe("RuleSchema identifiers", () => {
+  it("accepts rule with optional identifiers in match", () => {
+    const result = RuleSchema.safeParse({
+      match: { role: "AXButton", titles: ["Compose"], identifiers: ["compose-btn"] },
+      keys: ["meta", "n"],
+      hint: "Compose",
+      confidence: "high",
+      source: "menu_bar",
+    });
+    expect(result.success).toBe(true);
   });
 });

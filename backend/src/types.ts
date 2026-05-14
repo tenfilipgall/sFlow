@@ -8,6 +8,7 @@ export const MenuBarItemSchema = z.object({
 export const UISkeletonItemSchema = z.object({
   role: z.string().min(1).max(50),
   title: z.string().min(1).max(80),
+  identifier: z.string().max(100).optional(),
 });
 
 export const DiscoverRequestSchema = z.object({
@@ -25,6 +26,7 @@ export const RuleSchema = z.object({
   match: z.object({
     role: z.string(),
     titles: z.array(z.string()).min(1).max(20),
+    identifiers: z.array(z.string()).max(5).optional(),
   }),
   keys: z.array(z.string()).min(1).max(5),
   hint: z.string().min(1).max(100),
