@@ -28,6 +28,274 @@
 
 ---
 
+## Execution sequence (~10-12 sesji do końca Fazy 1)
+
+> **AI: ta tabela mówi w jakiej kolejności robimy sub-cele i problemy. Po
+> każdej zakończonej sesji aktualizujesz kolumnę Status i jeśli trzeba
+> dopisujesz Atomic plan dla kolejnej sesji.**
+> Pierwsze 4 sesje są rozpisane detalicznie w "Atomic plans" niżej. Sesje
+> 5-12 są szkicowe — zostaną doprecyzowane po sesji 4 (gdy będziemy mieli
+> więcej danych z early sub-celów).
+
+| # | Sesja | Sub-cele / Problemy | Time | Status | Detail |
+|---|---|---|---|---|---|
+| **1** | Sweet wins | 1.0 + P-23 + 1.8 droga C | ~3h | ⬜ next | 📋 below |
+| **2** | Bug squashing | 1.5 + P-15 + P-21 | ~4h | ⬜ | 📋 below |
+| **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | ⬜ | 📋 below |
+| **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | ⬜ | 📋 below |
+| **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | ⬜ | ✏️ sketch |
+| **6** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
+| **7** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
+| **8** | Bundled.json update path | P-19 + versioning | ~1 dzień | ⬜ | ✏️ sketch |
+| **9-10** | Coverage eval batch 1+2 | 1.6 (10-15 apek, ~1/dzień) | ~10 mini-sesji 60min | ⬜ | ✏️ sketch (per-batch detail) |
+| **11** | Beta setup | 1.7 (DMG + 5 znajomych) | ~1 dzień | ⬜ | ✏️ sketch |
+| **12** | Beta debrief + decyzja | 1.7 (po 2 tyg.) → go-Faza-2 lub pivot | ~4h | ⬜ | ✏️ sketch (po danych z bety) |
+
+**Decyzyjny checkpoint po sesji 4:** rewizja sesji 5-12 na podstawie tego co
+nauczyliśmy się o czasie/scope w sesjach 1-4. Możliwe że niektóre sesje
+trzeba rozbić/scalić.
+
+**Decyzyjny checkpoint po sesji 12 (beta debrief):** jeśli toast nie uczy
+(średnia <2 nowych skrótów per user) → PIVOT (droga D lub C z product-vision)
+— sesje 13+ nie istnieją w obecnej formie.
+
+---
+
+## Atomic plans — sesje 1-4 (detal)
+
+### Sesja 1: "Sweet wins" (~3h)
+
+**Cel:** Najszybszy ROI dostępny dziś. Wyrównanie jakości bundled.json,
+usunięcie minor bugu, budowa narzędzia do dalszych ewaluacji.
+
+**Adresowane elementy:**
+- ✅ Sub-cel 1.0 → 🟢 done
+- ✅ P-23 (within-rule dupes) → 🟢 done
+- ✅ Sub-cel 1.8 droga C (sflow-video-eval) → 🔵 partial (skrypt zrobiony,
+  droga B/A nadal pending)
+
+**Kroki:**
+
+1. Quit GUI SFlow: `osascript -e 'tell application "SFlow" to quit'`
+2. Reseed Terminal: `./scripts/sflow-reseed com.apple.Terminal`
+3. Verify cache file: `jq '.rules | map(.match.titles | length) | {avg: (add/length), min, max}' "$HOME/Library/Application Support/SFlow/rules/cache/com.apple.Terminal.json"` — oczekujemy avg ≥3
+4. Reseed Notion + Claude Desktop (powtórz krok 2-3 dla obu)
+5. Promote: `./scripts/promote-to-bundled.sh com.apple.Terminal notion.id com.anthropic.claudefordesktop`
+6. Build + manual sanity: `xcodebuild build -project SFlow.xcodeproj -scheme SFlow`
+7. Commit: `feat(rules): re-seed Terminal/Notion/Claude with v1.1.1 prompt`
+8. Fix P-23 w `backend/src/dedup.ts`: dodać dedupe within-rule titles przed return — `rule.match.titles = Array.from(new Map(rule.match.titles.map(t => [t.toLowerCase(), t])).values())` (preserves case of first occurrence)
+9. Test w `backend/tests/dedup.test.ts`: nowy test "drops duplicate titles within single rule"
+10. `cd backend && npm test && cd ..`, commit: `fix(backend): dedupe duplicate titles within single rule`
+11. Build `scripts/sflow-video-eval` + `scripts/sflow-video-extract.swift` per audit-phase-1.md Sub-cel 1.8 Droga C section (~30 min)
+12. Test: `./scripts/sflow-video-eval <ostatni mp4 Filipa>` — sprawdzić że stripy się tworzą
+13. Commit: `feat(scripts): sflow-video-eval extracts frames + builds montage strips`
+14. Update statusy + session log + commit: `docs: session 1 complete — sweet wins`
+
+**Acceptance criteria:**
+- [ ] 5 apek w bundled.json mają avg ≥3 wariantów per regule (Terminal, Notion, Claude osiągają poziom Slack+Obsidian)
+- [ ] `backend/tests/dedup.test.ts` ma test dla within-rule dupes
+- [ ] `./scripts/sflow-video-eval <mp4>` działa end-to-end
+- [ ] Zero regression w istniejących testach
+
+**Statusy do zaktualizowania po sesji:**
+- audit-phase-1.md: Sub-cel 1.0 ⬜→🟢, Sub-cel 1.8 (status) ⬜→🔵, kolumna Status w Execution sequence dla sesji 1 ⬜→🟢
+- audit-phase-0.md: P-23 ⬜→🟢
+- roadmap.md: nowy wpis w Session log "2026-XX-XX — Sesja 1: Sweet wins"
+
+**Commits oczekiwane:**
+1. `feat(rules): re-seed Terminal/Notion/Claude with v1.1.1 prompt`
+2. `fix(backend): dedupe duplicate titles within single rule`
+3. `feat(scripts): sflow-video-eval extracts frames + builds montage strips`
+4. `docs: session 1 complete — sweet wins`
+
+---
+
+### Sesja 2: "Bug squashing" (~4h)
+
+**Cel:** 3 niezależne, znane bugi/luki naprawione w jednej sesji. Wszystkie
+proste, ale każdy ma realny user impact.
+
+**Adresowane elementy:**
+- ✅ Sub-cel 1.5 (MenuBarIndex.lookup substring direction) → 🟢 done
+- ✅ P-15 (Input Monitoring permission check) → 🟢 done
+- ✅ P-21 (backend console.log observability) → 🔵 partial (basic logs ✅, dashboard później)
+
+**Kroki:**
+
+1. **MenuBarIndex fix** (1-2h):
+   - W `SFlow/MenuBarIndex.swift:72` zamienić `q.contains($0.key)` na hybrid: exact match → .high, OR (`$0.key.contains(q)` AND `q.count >= 5`) → .medium
+   - Naprawić istniejące pre-existing failing tests `MenuBarIndexTests.test_lookup_exactTitle`, `test_lookup_partialTitle`
+   - Dodać test: "Copy link" → no match na .medium z key "copy"
+   - Commit: `fix(client): MenuBarIndex.lookup uses correct substring direction with length threshold`
+2. **Input Monitoring permission check** (~1h):
+   - W `SFlow/AppDelegate.swift` po `AXIsProcessTrustedWithOptions` dodać `IOHIDCheckAccess(.listenEvent)` (lub `CGPreflightListenEventAccess()` jeśli istnieje)
+   - Jeśli `denied` lub `unknown` → pokazać alert "Input Monitoring required" z linkiem `x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent`
+   - Commit: `feat(client): check Input Monitoring permission before starting watcher`
+3. **Backend observability** (~1h):
+   - W `backend/src/handlers/discover.ts` przed return dodać:
+     ```ts
+     console.log(JSON.stringify({
+       type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
+       cacheHit: !!cached, fresh: skipCache,
+       rulesGenerated: rules?.rules?.length ?? 0,
+       dropped: droppedCount, durationMs: Date.now() - start,
+     }));
+     ```
+   - `Date.now()` capture na początku handlera
+   - Commit: `feat(backend): structured /v1/discover logs for observability`
+4. Update statusy + session log + commit
+
+**Acceptance criteria:**
+- [ ] MenuBarIndex tests przechodzą (3 pre-existing failures znikają)
+- [ ] User z odebraną Input Monitoring permission widzi alert
+- [ ] Każdy `/v1/discover` request loguje strukturalny JSON z timing+counts
+
+**Statusy do zaktualizowania po sesji:**
+- audit-phase-1.md: Sub-cel 1.5 ⬜→🟢, kolumna Status dla sesji 2 ⬜→🟢
+- audit-phase-0.md: P-5 ⬜→🟢, P-15 ⬜→🟢, P-21 ⬜→🔵
+- roadmap.md: Session log
+
+---
+
+### Sesja 3: "Settings foundation" (~6h)
+
+**Cel:** Zbudować bazowe okno Settings (SwiftUI) — fundament potrzebny dla
+sesji 4, 5, 7. Bez tego nie da się zrobić "experimental toggle", "Recent
+shortcuts list", "Telemetry toggle".
+
+**Adresowane elementy:**
+- (przygotowanie) Sub-cel 1.1 fundament
+- (przygotowanie) Sub-cel 1.4 fundament (Recent shortcuts list)
+- (przygotowanie) Sub-cel 1.7 fundament (Telemetry settings dla bety)
+
+**Kroki:**
+
+1. Nowy plik `SFlow/SettingsWindow.swift` (~200 linii) — SwiftUI `Window`
+   z TabView (3 zakładki: General / Privacy / Advanced)
+2. Menu bar item dodaje "Settings…" (⌘,) → otwiera okno
+3. **General tab** (pusty preview na razie):
+   - Placeholder "App preferences will appear here"
+4. **Privacy tab**:
+   - Toggle "Log miss events" (default ON) → zapisuje do UserDefaults `logMisses`
+   - Toggle "Telemetry — share aggregates with backend" (default OFF, na razie nie wysyła nic)
+   - Przycisk "Open events.jsonl in Finder"
+   - Przycisk "Clear local data"
+5. **Advanced tab**:
+   - Toggle "Show experimental shortcuts" (default OFF) — zapisuje `RuleCache.showExperimental`
+   - Lista "Recent toasts" (placeholder na razie — pełna w sesji 5)
+   - Przycisk "Force re-seed all rules"
+6. Hookup do `EventLogger` (sprawdza `UserDefaults.logMisses` przed zapisem)
+7. Hookup do `RuleCache` (już ma `showExperimental: Bool`, podpiąć do UserDefaults)
+8. Testy snapshot dla layout'u (opcjonalne)
+9. Build + manual test: każdy toggle działa, settings persistują przez restart
+10. Commit: `feat(client): Settings window with Privacy + Advanced tabs`
+11. Update statusy + session log
+
+**Acceptance criteria:**
+- [ ] Settings okno otwiera się z menu bar + skrótem ⌘,
+- [ ] 3 tabs widoczne, navigation działa
+- [ ] Privacy.logMisses toggle wpływa na EventLogger
+- [ ] Advanced.showExperimental wpływa na RuleCache filter
+- [ ] Persistencja przez restart aplikacji
+
+**Statusy do zaktualizowania po sesji:**
+- audit-phase-1.md: Sub-cel 1.1 🔵 → 🟡 (in-progress, fundament gotowy)
+- (nowy P-24?): "Settings window built but most controls placeholder" → ⬜ docelowo doprecyzowane
+
+---
+
+### Sesja 4: "Client quality gate (1.1 dokończenie)" (~4h)
+
+**Cel:** Dokończyć Sub-cel 1.1 — auto-discoverowane reguły z niskim
+zaufaniem nie są aktywne by default. User może je włączyć przez
+"Show experimental shortcuts" w Settings (z sesji 3).
+
+**Adresowane elementy:**
+- ✅ Sub-cel 1.1 → 🟢 done (po sesji)
+
+**Kroki:**
+
+1. W `SFlow/RuleCache.swift:81` rozszerzyć filtr:
+   ```swift
+   for rule in rules {
+       if !showExperimental {
+           // Bundled apps: zostaw .high i .medium
+           // Auto-discovered (cache/*.json): .high + (menu_bar lub web_docs_official)
+           if rule.confidence == .low { continue }
+           if isAutoDiscovered && rule.confidence != .high { continue }
+           if isAutoDiscovered && rule.source != .menuBar && rule.source != .webDocsOfficial { continue }
+       }
+       // ... reszta
+   }
+   ```
+2. Dodać property `isAutoDiscovered: Bool` per ruleset (wnioskuje z source path
+   — `bundled.json` vs `cache/<bundle>.json`)
+3. Testy w `RuleCacheTests.swift`:
+   - "auto-discovered medium+inferred_pattern not active by default"
+   - "auto-discovered high+menu_bar active by default"
+   - "experimental toggle activates all medium"
+   - "bundled medium+web_docs_third_party active by default (no auto-discovered restriction)"
+4. Manual eval: świeży reseed Figmy (auto-discovery) — sprawdzić że pokazujemy
+   tylko `high + menu_bar/web_docs_official`. `--show-experimental` flag w
+   build dev pokazuje wszystko
+5. Commit: `feat(client): RuleCache filters auto-discovered rules by confidence+source`
+6. Update statusy + session log
+
+**Acceptance criteria:**
+- [ ] Świeża auto-discovery dla NIEzweryfikowanej apki nie pokazuje toastów dla
+      `medium + inferred_pattern` ani niżej
+- [ ] Włączenie "Show experimental" w Settings aktywuje wszystkie medium
+- [ ] Bundled.json bez zmian (wszystkie reguły aktywne jak dziś)
+- [ ] Pełen test suite green (+ 4 nowe testy)
+
+**Statusy do zaktualizowania po sesji:**
+- audit-phase-1.md: Sub-cel 1.1 🔵 → 🟢
+- audit-phase-0.md: P-1 🔵 → 🟢
+
+---
+
+## Atomic plans — sesje 5-12 (szkice, do doprecyzowania po sesji 4)
+
+> Krótki opis każdej sesji. Po sesji 4 wracamy do tego pliku i rozpiszemy
+> sesje 5-12 jak 1-4 (z konkretnymi krokami).
+
+**Sesja 5: False-positive feedback (~2 dni)**  
+Sub-cel 1.4. Cmd-klik na toast → "marked as wrong" + lokalny disable po 3
+zgłoszeniach. Plus Settings → Recent Shortcuts list (z sesji 3) z "Disable"
+button per pozycja. Wymaga ostrożnej modyfikacji `ToastWindow.ignoresMouseEvents`.
+
+**Sesja 6: Retry + backoff (~2 dni)**  
+Sub-cel 1.2. `~/Library/Application Support/SFlow/discovery-state.json`
+persistowany stan: `{attempts, lastAttempt, nextRetryAt, status}`. Backoff
+1m/5m/30m/24h/7d. Settings "Apps without rules" lista + "Retry now" button.
+
+**Sesja 7: Self-healing /v1/refresh (~3 dni)**  
+Sub-cel 1.3. Rozszerzenie `?fresh=1` o opcjonalne `missExamples` w body.
+Backend prompt warunkowy ("here are unmatched elements"). Client
+`NSBackgroundActivityScheduler` co 24h agreguje misses + decyduje czy refresh.
+
+**Sesja 8: Bundled.json update path (~1 dzień)**  
+P-19. Versioning w bundled.json (`fileVersion: Int`). `RuleStorage.seedBundledIfMissing`
+porównuje shipping vs user. Test scenariusza upgrade. User_overrides.json
+NIGDY nadpisywany.
+
+**Sesje 9-10: Coverage eval (10 mini-sesji 60min/apka)**  
+Sub-cel 1.6. Per apka: otwórz → wait auto-discovery → 20 kliknięć → notuj
+hit%+false+ → iteruj prompt jeśli <70% → promote. Build `docs/coverage-report.md`.
+Tier 2 lista: Notion (po sesji 1), Figma, VS Code, Chrome, Arc, Raycast, Mail,
+Finder, Safari, Spotify.
+
+**Sesja 11: Beta setup (~1 dzień)**  
+Sub-cel 1.7. Build DMG signowany. Onboarding doc 3 strony. Rekrutacja 5
+znajomych (network). Email/Slack channel do raportowania. NDA-free.
+
+**Sesja 12: Beta debrief + decyzja (~4h po 2 tyg.)**  
+Sub-cel 1.7 finalny. Analiza danych z 2 tygodni. Ankiety pre/post:
+"ile nowych skrótów teraz używasz?". Decyzja: ≥3 → Faza 2; 1-2 → Faza 2
+agresywniejsza; 0-1 → PIVOT (droga D lub C w vision).
+
+---
+
 ## Executive summary
 
 **Cel Fazy 1:** SFlow działa "dobrze" dla **dowolnej apki którą user
