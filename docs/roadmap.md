@@ -857,12 +857,22 @@ jest mniejsza.
 
 ## Najbliższy krok (tydzień 1)
 
-**AKTUALIZACJA 2026-05-14:** Pełny audyt trybu rozpoznawania klikniec wykrył 4 fundamentalne bugi
-(P-26 do P-30 w `audit-phase-0.md`) plus brakującą per-layer telemetrię. Plan implementacji:
-`docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h). Po dokończeniu —
-**otwieramy `events.jsonl` i czytamy które warstwy fire'ują w której apce**, dopiero wtedy planujemy
-"coverage iteration" (jak znaleźć więcej skrótów / więcej apek / więcej elementów). Telemetria
-najpierw, optymalizacja potem.
+**AKTUALIZACJA 2026-05-14 (po sesji 6):** Matching engine quality plan UKOŃCZONY ✅.
+P-26..P-30 zamknięte. 192 testy passing. Per-layer telemetry działa — każdy event
+w `events.jsonl` ma teraz pole `"layer"` (L0/L0.5/L1/L2/L3/L4/menu/menu-fallback).
+
+**NASTĘPNY KROK (sesja 7):** Filip używa SFlow 1-2 dni normalnie → analiza
+`events.jsonl` poleceniem `jq` (per-layer hit rate per apka) → na bazie danych
+**plan coverage** (P-31, sub-cel 1.11) targetujący konkretne luki. Nie zgadujemy
+co dodać — mierzymy gdzie tracimy. Komenda do analizy:
+
+```bash
+cat ~/Library/Application\ Support/SFlow/events.jsonl | \
+  jq -r 'select(.type=="toast") | "\(.bundleId)\t\(.layer)"' | \
+  sort | uniq -c | sort -rn
+```
+
+Plus equivalent dla `false_positives.jsonl`.
 
 Konkretny, do zrobienia jutro. Kolejność zmieniona po sesji v1.1.1, w której
 ukończono częściowo Fazę 1.1 (dedup na backendzie) oraz dodano tolerancję

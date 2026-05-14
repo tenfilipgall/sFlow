@@ -27,6 +27,7 @@
 | 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
+| 1.11 Coverage iteration (P-31) | ⬜ pending | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. |
 
 ---
 
@@ -47,12 +48,15 @@
 | **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | 🟢 done | 📋 below |
 | **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | 🟢 done | 📋 below |
 | **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | 🟢 done | ✏️ sketch |
-| **6** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
-| **7** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
-| **8** | Bundled.json update path | P-19 + versioning | ~1 dzień | ⬜ | ✏️ sketch |
-| **9-10** | Coverage eval batch 1+2 | 1.6 (10-15 apek, ~1/dzień) | ~10 mini-sesji 60min | ⬜ | ✏️ sketch (per-batch detail) |
-| **11** | Beta setup | 1.7 (DMG + 5 znajomych) | ~1 dzień | ⬜ | ✏️ sketch |
-| **12** | Beta debrief + decyzja | 1.7 (po 2 tyg.) → go-Faza-2 lub pivot | ~4h | ⬜ | ✏️ sketch (po danych z bety) |
+| **6** | Matching engine quality | 1.10 (P-26..P-30 + telemetria per-layer) | ~4h | 🟢 done | 📋 plan: `2026-05-14-matching-engine-quality.md` |
+| **7** | Coverage telemetry analysis + plan | 1.11 prep — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, decyzja co dalej | ~2h analizy + plan | ⬜ | ✏️ pending (waits on usage data) |
+| **8** | Coverage iteration | 1.11 implementacja (po sesji 7) — np. AXCustomActions, AppleScript sdef, walk-down, prompt rework | ~1-2 dni | ⬜ | ✏️ sketch (TBD po sesji 7) |
+| **9** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
+| **10** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
+| **11** | Bundled.json update path | P-19 + versioning | ~1 dzień | ⬜ | ✏️ sketch |
+| **12-13** | Coverage eval batch 1+2 | 1.6 (10-15 apek, ~1/dzień) | ~10 mini-sesji 60min | ⬜ | ✏️ sketch (per-batch detail) |
+| **14** | Beta setup | 1.7 (DMG + 5 znajomych) | ~1 dzień | ⬜ | ✏️ sketch |
+| **15** | Beta debrief + decyzja | 1.7 (po 2 tyg.) → go-Faza-2 lub pivot | ~4h | ⬜ | ✏️ sketch (po danych z bety) |
 
 **Decyzyjny checkpoint po sesji 4:** rewizja sesji 5-12 na podstawie tego co
 nauczyliśmy się o czasie/scope w sesjach 1-4. Możliwe że niektóre sesje

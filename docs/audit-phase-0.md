@@ -34,6 +34,7 @@
 | P-28 MenuBarIndex.lookup niedeterministyczny | 🟢 zamknięte | `titleMap.first(where:)` iteruje słownik Swift w niezdefiniowanym porządku — to samo kliknięcie może dać różne wyniki. Fix: zbierz wszystkie matche, sortuj po długości klucza desc. Plan Task 4 (sesja 6, 2026-05-14) |
 | P-29 AXSkeletonExtractor zrzuca single-occurrence noun-led titles | 🟢 zamknięte | Filtr `count < 2 && !looksVerbLed` zrzuca "Quick Switcher", "Preferences", "Mentions", "Settings" przed wysłaniem do LLM. Fix: usunąć filtr — pozostałe reguły (email/data/digits/imię) wystarczą. Plan Task 8 (sesja 6, 2026-05-14) |
 | P-30 Brak per-layer telemetry w events.jsonl | 🟢 zamknięte | `ShortcutEvent` nie wie którą warstwą został wyprodukowany. Bez tego nie da się policzyć "która warstwa fire'uje najczęściej dla apki X" → ślepe iteracje promptu. Fix: dodać `RecognitionLayer` enum + pole `layer` w ShortcutEvent i events.jsonl. Plan Task 5+6+7 (sesja 6, 2026-05-14) |
+| P-31 Coverage holes — gdzie SFlow nie pokazuje toasta dla klikalnych elementów | ⬜ otwarte | Brainstorm sesji 6 (2026-05-14) zidentyfikował 12 potencjalnych źródeł skrótów których SFlow jeszcze nie tapuje: AXCustomActions, AXRoleDescription, `AXUIElementCopyActionNames` probe, AppleScript sdef, szersze Electron regex (Mousetrap, react-hotkeys, blueprintjs), walk-down z interactive ancestor, AXSkeletonExtractor identyfikatory stable-only, GitHub code-search dla OSS apek, Help→Shortcuts auto-scrape, embedded sqlite, keystroke monitoring (Phase 2.2), crowdsource submission. Konkretny plan czeka na dane z `events.jsonl` (sesja 7 telemetry analysis). |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -42,20 +43,23 @@ Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 ## Executive summary
 
 **Co działa:** SFlow ma w pełni zaimplementowany silnik detekcji kliknięć
-z 5-warstwowym matchingiem (L0.5/L1/L2/L3/L4), backend Cloudflare Worker
-generujący reguły przez Claude API, automatyczny pipeline discovery przy
-aktywacji nowej apki, miss log do analizy luk, oraz CLI do reseed'owania
-4 zweryfikowanych apek. ~3000 linii Swift, ~600 linii TypeScript, ~1900 linii
-testów.
+z 7-warstwowym matchingiem (L0/L0.5/L1/L2/L3/L4 + direct menu bar), backend
+Cloudflare Worker generujący reguły przez Claude API, automatyczny pipeline
+discovery przy aktywacji nowej apki, miss log + per-layer telemetry, oraz
+CLI do reseed'owania 5 zweryfikowanych apek. **Word-boundary matching + depth
+gate + MenuBarIndex determinism** (sesja 6, 2026-05-14) wyeliminowały
+fundamentalne bugi rozpoznawania. ~3200 linii Swift, ~600 linii TypeScript,
+~2100 linii testów (192 passing).
 
-**Co nie działa / nie istnieje:** Brak quality gate dla auto-discovered
-rules, brak retry przy nieudanej discovery, brak mechanizmu false-positive
-feedback, brak `/v1/refresh`, jeden znany bug w fuzzy matching (false
-positives "Copy link" → ⌘C), brak AXKeyShortcutsValue, brak testów E2E.
+**Co nie działa / nie istnieje:** Brak retry przy nieudanej discovery (P-2),
+brak `/v1/refresh` z miss data (P-8), brak bundled.json update path (P-19),
+brak testów E2E (P-18). **Coverage holes** — zidentyfikowane (P-31) ale
+plan czeka na dane z `events.jsonl` (sesja 7).
 
-**Kluczowa diagnoza:** Mamy **infrastrukturę** klasy produktowej, ale brakuje
-**mechanizmów higieny jakości** które są niezbędne gdy zaczynamy działać
-dla setek apek (a nie 4 zweryfikowanych ręcznie).
+**Kluczowa diagnoza:** Fundament rozpoznawania jest **stabilny** po sesji 6.
+Infrastruktura klasy produktowej + telemetria per-layer w `events.jsonl`
+odblokowuje **data-driven coverage iteration** (sesja 7 → 8). Następne
+mechanizmy higieny jakości (retry, refresh, bundled update path) — sesje 9-11.
 
 ---
 

@@ -192,13 +192,20 @@ Trzy pytania których nie odpowiedzieliśmy:
 - ~70–80% pokrycia dla 4 zweryfikowanych apek (Slack, Obsidian, Linear, Cursor)
 - Miss log + analyzer (v1.1) — wiemy które kliknięcia "uciekły"
 
-**Audyt 2026-05-14 (krytyczna diagnoza fundamentu):** Pełna analiza
-trybu rozpoznawania wykryła 4 fundamentalne bugi (P-26..P-30 w `audit-phase-0.md`):
-matchowanie reguł na rodzicach niezwiązanych z klikiem, substring zamiast word-boundary,
-niedeterministyczny MenuBarIndex, agresywny filtr skeletonu. Te bugi tłumaczą wrażenie
-"niektóre elementy są pomijane / źle przypisywane". Plan naprawczy + per-layer telemetria:
-`docs/superpowers/plans/2026-05-14-matching-engine-quality.md`. Bez tego coverage iterations
-będą strzelały w ciemno — najpierw telemetria, potem optymalizacja.
+**Audyt 2026-05-14 + sesja 6 — fundament naprawiony:** Pełna analiza trybu
+rozpoznawania wykryła 4 fundamentalne bugi (P-26..P-30 w `audit-phase-0.md`):
+matchowanie reguł na rodzicach niezwiązanych z klikiem, substring zamiast
+word-boundary, niedeterministyczny MenuBarIndex, agresywny filtr skeletonu.
+**Wszystkie naprawione w sesji 6 (2026-05-14)** — 9 commitów, 192 testy
+passing. Plus dodana **per-layer telemetria** w `events.jsonl` (pole
+`"layer"`) która odblokowuje data-driven następne iteracje.
+
+**Następny krok (sesja 7):** użycie SFlow 1-2 dni → analiza `events.jsonl`
+per-layer per-apka → **plan coverage** (P-31, sub-cel 1.11) targetujący
+konkretne luki (gdzie SFlow nie pokazuje toasta dla klikalnych elementów).
+Brainstorm zidentyfikował 12 potencjalnych źródeł skrótów których jeszcze
+nie tapamy (AXCustomActions, AppleScript sdef, szersze Electron regex,
+walk-down, AXUIElementCopyActionNames probe, etc.) — wybór po danych.
 
 **Czym są toasty dziś:**
 > Toasty służą mi do testowania czy SFlow faktycznie "łapie" elementy które
