@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Extracts frames from a screen recording and builds 3x3 montage strips for AI analysis.
+# Usage: sflow-video-eval <video.mp4> [interval_sec=1.0]
+#
+# Output: /tmp/sflow_video_eval_<timestamp>/
+#   f_0000.png, f_0001.png, ...   individual frames
+#   strip_000.png, ...            3x3 montage strips (requires ImageMagick)
+#
+# Next step: ask AI "read the strips and find wrong toasts"
+set -euo pipefail
+
+VIDEO="${1:?usage: sflow-video-eval <video.mp4> [interval_sec]}"
+INTERVAL="${2:-1.0}"
+OUTDIR="/tmp/sflow_video_eval_$(date +%Y%m%dT%H%M%S)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+mkdir -p "$OUTDIR"
+
+echo "sflow-video-eval: extracting frames from $VIDEO (interval=${INTERVAL}s)"
+echo "sflow-video-eval: output → $OUTDIR"
+
+# Extract frames via Swift+AVFoundation
+swift "$SCRIPT_DIR/sflow-video-extract.swift" "$VIDEO" "$OUTDIR" "$INTERVAL"
+
+FRAME_COUNT=$(ls "$OUTDIR"/f_*.png 2>/dev/null | wc -l | tr -d ' ')
+echo "sflow-video-eval: $FRAME_COUNT frames extracted"
+
+# Build 3x3 montage strips if ImageMagick is available
+if command -v montage >/dev/null 2>&1; then
+    echo "sflow-video-eval: building 3x3 strips..."
+    cd "$OUTDIR"
+    strip_idx=0
+    frames=( f_*.png )
+    i=0
+    while [[ $i -lt ${#frames[@]} ]]; do
+        batch=( "${frames[@]:$i:9}" )
+        out_name=$(printf "strip_%03d.png" "$strip_idx")
+        montage "${batch[@]}" -tile 3x3 -geometry 800x+2+2 "$out_name"
+        (( strip_idx++ ))
+        (( i+=9 ))
+    done
+    STRIP_COUNT=$(ls "$OUTDIR"/strip_*.png 2>/dev/null | wc -l | tr -d ' ')
+    echo "sflow-video-eval: $STRIP_COUNT strips built"
+    echo
+    echo "Gotowe! Pokaż AI:"
+    echo "  $OUTDIR/strip_*.png"
+    echo "i napisz: 'przeczytaj te stripy i znajdź wrong toasts, porównaj z bundled.json'"
+else
+    echo
+    echo "Gotowe! (ImageMagick niedostępny — brak stripów, ale klatki są)"
+    echo "Pokaż AI klatki:"
+    echo "  $OUTDIR/f_*.png"
+    echo "i napisz: 'przejrzyj te klatki i znajdź wrong toasts, porównaj z bundled.json'"
+    echo
+    echo "Aby włączyć stripy 3x3: brew install imagemagick"
+fi
+
+echo
+echo "Klatki: $OUTDIR"
