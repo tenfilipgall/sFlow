@@ -19,6 +19,18 @@ enum Analyzer {
         let appsRanked: [AppReport]
     }
 
+    struct FalsePosEntry: Equatable {
+        let keys: [String]
+        let hint: String
+        let count: Int
+    }
+
+    struct FalsePosAppReport: Equatable {
+        let bundleId: String
+        let totalReports: Int
+        let topEntries: [FalsePosEntry]
+    }
+
     private struct MissKey: Hashable {
         let role: String
         let title: String
@@ -60,7 +72,33 @@ enum Analyzer {
         return Report(totalToasts: toastCount, totalMisses: totalMisses, appsRanked: apps)
     }
 
-    static func format(report: Report) -> String {
+    static func aggregateFalsePositives(lines: [String]) -> [FalsePosAppReport] {
+        var byApp: [String: [String: (keys: [String], hint: String, count: Int)]] = [:]
+
+        for line in lines {
+            guard let data = line.data(using: .utf8),
+                  let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  obj["type"] as? String == "false_positive",
+                  let bundleId = obj["bundleId"] as? String,
+                  let shortcutId = obj["shortcutId"] as? String,
+                  let keys = obj["keys"] as? [String] else { continue }
+            let hint = obj["hint"] as? String ?? ""
+            if byApp[bundleId] == nil { byApp[bundleId] = [:] }
+            let prev = byApp[bundleId]![shortcutId]
+            byApp[bundleId]![shortcutId] = (keys: keys, hint: hint, count: (prev?.count ?? 0) + 1)
+        }
+
+        return byApp.map { (bundleId, entries) in
+            let total = entries.values.reduce(0) { $0 + $1.count }
+            let top = entries.values
+                .map { FalsePosEntry(keys: $0.keys, hint: $0.hint, count: $0.count) }
+                .sorted { $0.count > $1.count }
+                .prefix(10)
+            return FalsePosAppReport(bundleId: bundleId, totalReports: total, topEntries: Array(top))
+        }.sorted { $0.totalReports > $1.totalReports }
+    }
+
+    static func format(report: Report, falsePositives: [FalsePosAppReport] = []) -> String {
         var out = "SFlow Miss Analysis\n===================\n\n"
         if report.appsRanked.isEmpty {
             out += "No miss events logged yet. Use SFlow normally and try again.\n"
@@ -79,16 +117,35 @@ enum Analyzer {
             }
         }
         out += "Total: \(report.totalMisses) misses, \(report.totalToasts) toasts.\n"
+
+        if !falsePositives.isEmpty {
+            out += "\nFalse Positive Reports\n======================\n\n"
+            for app in falsePositives {
+                out += "\(app.bundleId) \u{2014} \(app.totalReports) reports\n"
+                for entry in app.topEntries {
+                    let keysStr = entry.keys.joined(separator: "+")
+                    out += "  \(entry.count)x  \(keysStr)  \"\(entry.hint)\"\n"
+                }
+                out += "\n"
+            }
+        }
         return out
     }
 
-    static func run(logURL: URL = EventLogger.defaultLogURL) {
-        guard let content = try? String(contentsOf: logURL, encoding: .utf8) else {
+    static func run(logURL: URL = EventLogger.defaultLogURL,
+                    falsePosURL: URL = EventLogger.falsePosLogURL) {
+        let eventsContent = (try? String(contentsOf: logURL, encoding: .utf8)) ?? ""
+        let fpContent = (try? String(contentsOf: falsePosURL, encoding: .utf8)) ?? ""
+        let eventLines = eventsContent.components(separatedBy: "\n").filter { !$0.isEmpty }
+        let fpLines = fpContent.components(separatedBy: "\n").filter { !$0.isEmpty }
+
+        if eventLines.isEmpty && fpLines.isEmpty {
             print("SFlow: no events file at \(logURL.path) — nothing to analyze yet.")
             return
         }
-        let lines = content.components(separatedBy: "\n").filter { !$0.isEmpty }
-        let report = aggregate(lines: lines)
-        print(format(report: report))
+
+        let report = aggregate(lines: eventLines)
+        let fpReport = aggregateFalsePositives(lines: fpLines)
+        print(format(report: report, falsePositives: fpReport))
     }
 }

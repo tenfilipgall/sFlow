@@ -76,4 +76,35 @@ final class AnalyzerTests: XCTestCase {
         XCTAssertTrue(text.contains("open quick switcher"))
         XCTAssertTrue(text.contains("1x"))
     }
+
+    func test_aggregateFalsePositives_groupsByAppAndKeys() {
+        let lines = [
+            #"{"type":"false_positive","bundleId":"com.x","shortcutId":"s1","keys":["meta","k"],"hint":"New","timestamp":"2026-05-14T00:00:00Z"}"#,
+            #"{"type":"false_positive","bundleId":"com.x","shortcutId":"s1","keys":["meta","k"],"hint":"New","timestamp":"2026-05-14T00:00:01Z"}"#,
+            #"{"type":"false_positive","bundleId":"com.x","shortcutId":"s2","keys":["meta","enter"],"hint":"Send","timestamp":"2026-05-14T00:00:02Z"}"#,
+            #"{"type":"false_positive","bundleId":"com.y","shortcutId":"s3","keys":["ctrl","w"],"hint":"Close","timestamp":"2026-05-14T00:00:03Z"}"#,
+        ]
+        let fp = Analyzer.aggregateFalsePositives(lines: lines)
+        XCTAssertEqual(fp.count, 2)
+        let comX = fp.first { $0.bundleId == "com.x" }
+        XCTAssertNotNil(comX)
+        XCTAssertEqual(comX?.totalReports, 3)
+        XCTAssertEqual(comX?.topEntries[0].count, 2)
+        XCTAssertEqual(comX?.topEntries[0].keys, ["meta", "k"])
+    }
+
+    func test_format_includesFalsePositiveSection() {
+        let report = Analyzer.Report(totalToasts: 10, totalMisses: 2, appsRanked: [])
+        let fpReport: [Analyzer.FalsePosAppReport] = [
+            Analyzer.FalsePosAppReport(
+                bundleId: "com.x",
+                totalReports: 5,
+                topEntries: [Analyzer.FalsePosEntry(keys: ["meta", "k"], hint: "Test", count: 5)]
+            )
+        ]
+        let output = Analyzer.format(report: report, falsePositives: fpReport)
+        XCTAssertTrue(output.contains("False Positive"))
+        XCTAssertTrue(output.contains("com.x"))
+        XCTAssertTrue(output.contains("meta"))
+    }
 }
