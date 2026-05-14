@@ -16,17 +16,19 @@
 
 | ID | Status | Komentarz |
 |---|---|---|
-| P-1 Quality gate | 🔵 częściowo | Backend dedup ✅ (v1.1.1). Brakuje client-side filtr confidence/source |
+| P-1 Quality gate | 🟢 zamknięte | Backend dedup ✅ + client-side filtr confidence/source ✅ (sesja 2026-05-14) |
 | P-2 Retry przy fail | ⬜ otwarte | — |
 | P-3 .failed silently | ⬜ otwarte | — |
 | P-4 False-positive feedback | ⬜ otwarte | **Krytyczne** — miss log nie łapie wrong toasts |
 | P-5 MenuBarIndex bug | 🟢 zamknięte | Fix + 2 nowe testy + 2 poprawione testy (sesja 2026-05-14) |
-| P-6 AXKeyShortcutsValue | ⬜ otwarte | Łatwy eksperyment 1-2h |
+| P-6 AXKeyShortcutsValue | ⬜ otwarte | **Awansowane** — kluczowy quick win dla window elements, Electron. Patrz P-24 |
 | P-8 Brak /v1/refresh | 🔵 częściowo | `?fresh=1` ✅. Brakuje pełnego refresh z miss data |
 | P-19 Bundled.json update path | ⬜ otwarte | Krytyczne dla launch'a |
 | P-15 Permissions check Input Monitoring | 🟢 zamknięte | CGPreflightListenEventAccess() + alert (sesja 2026-05-14) |
 | P-21 Backend observability | 🔵 częściowo | Structured JSON log w /v1/discover (sesja 2026-05-14). Brakuje: dashboard |
 | P-23 Within-rule title dupes | 🟢 zamknięte | Fix w `dedup.ts` + test (sesja 2026-05-14) |
+| P-24 Window element matching pasywne | ⬜ otwarte | **Nowe** — główny powód że okna < menu bar. Brakuje AXKeyShortcutsValue + identifier layer |
+| P-25 AXIdentifier nie w schemacie reguł | ⬜ otwarte | **Nowe** — blokuje language-agnostic matching dla window elements |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -344,16 +346,27 @@ do toasta.
 
 ### P-6: Brak AXKeyShortcutsValue (Layer 0)
 
-**Co nie istnieje:** Nigdzie nie czytamy `AXKeyShortcutsValue` atrybutu,
-mimo że w `deep-think-auto-discovery.md` jest oznaczony jako "potencjalny
-game-changer". Gmail i prawdopodobnie inne apki ustawiają
-`aria-keyshortcuts="c"` → Chromium eksponuje to jako AX atrybut.
+**Plik:** `SFlow/ClickWatcher.swift:80-178`
 
-**Konsekwencja:** Tracimy zero-config language-agnostic warstwę. Każde
-matching wymaga reguł.
+**Co nie istnieje:** `ClickWatcher.handleMouseDown()` czyta 7 AX atrybutów
+(role, desc, title, subrole, placeholder, help, identifier) — ale
+`AXKeyShortcutsValue` nie jest wśród nich. Nigdzie w kodzie.
 
-**Severity:** ŚREDNIA. Nie wiemy ile apek to faktycznie ustawia (możliwe
-że <10%). Łatwa implementacja (1-2h), warto sprawdzić empirycznie.
+W Electron/Chromium: `<button aria-keyshortcuts="Meta+K">` →
+`AXKeyShortcutsValue = "Meta+K"`. Dostajemy skrót BEZPOŚREDNIO z elementu,
+bez żadnych pregenerowanych reguł. Language-agnostic (nie zależy od title).
+
+Gmail ustawia `aria-keyshortcuts="c"` na Compose. Inne Electron apki
+prawdopodobnie też — zakres nieznany, wymaga empirycznej weryfikacji.
+
+**Konsekwencja:** Tracimy potencjalnie dużą warstwę zero-config detection
+dla window elements. Menu bar dostaje skrót przez `kAXMenuItemCmdChar` —
+to samo podejście aktywne, bezpośrednie. Window elements mogłyby mieć
+analogiczne dzięki AXKeyShortcutsValue.
+
+**Severity:** **WYSOKA** (awansowana z ŚREDNIEJ). To najszybszy win dla
+window element coverage. Implementacja ~2h, potencjalny zwrot ogromny.
+Część rozwiązania P-24. Patrz też P-24.
 
 ### P-7: Auto-discovery triggeruje natychmiast (no debounce)
 
@@ -591,6 +604,102 @@ lub prościej: `rule.match.titles = Array.from(new Set(rule.match.titles))`.
 **Severity:** BARDZO NISKA. Łatwy fix, można zrobić w następnej sesji
 przy okazji innych zmian w `dedup.ts`.
 
+### P-24: Window element matching jest pasywne — główna przyczyna "okna < menu bar"
+
+**Pliki:**
+- `SFlow/ClickWatcher.swift:111-122` — L0.5: `ruleCache.match()` porównuje
+  title z pregenerowanymi wariantami
+- `SFlow/AXSkeletonExtractor.swift:118-146` — `walk()` nie czyta
+  `AXKeyShortcutsValue` ani `AXIdentifierAttribute`
+- `SFlow/LoadedRule.swift:16-19` — `LoadedMatch: {role, titles}` — brak
+  pola `identifiers`
+- `SFlow/RuleCache.swift:73-95` — `match()` nie przyjmuje identifiera
+
+**Problem architektoniczny:**
+
+Menu bar matching jest **aktywne**: `checkMenuBar()` czyta
+`kAXMenuItemCmdCharAttribute` + `kAXMenuItemCmdModifiersAttribute` —
+pobiera PRAWDZIWY skrót z aktualnego menu item w momencie kliknięcia.
+Żadnych pregenerowanych danych, żadnej lokalizacji, żadnego przewidywania.
+
+Window element matching jest **pasywne**: `ruleCache.match()` porównuje
+title z pregenerowanymi wariantami tytułów z reguł LLM (np.
+`["Compose", "Write", "New message", "Utwórz"]`). Reguły muszą z góry
+PRZEWIDZIEĆ jak element będzie się nazywał w runtime.
+
+**Konsekwencje tej asymetrii:**
+1. **Localization problem** — Discord PL: `title = "Wycisz"`, reguła ma
+   `"Mute"` → brak trafienia mimo identycznego elementu
+2. **UI drift** — apka zmienia "Add block" na "Insert" → reguła nie
+   działa do następnego reseedu (który następuje co 90 dni)
+3. **Brak identifier matching** — `kAXIdentifierAttribute` (DOM id, np.
+   `"compose-btn"`) jest stable i language-agnostic, ale nie trafia
+   ani do skeletonu, ani do schematu reguł
+4. **Brak AXKeyShortcutsValue** (P-6) — dla Electron z
+   `aria-keyshortcuts` moglibyśmy dostać skrót bezpośrednio z elementu,
+   jak menu bar dostaje go z `kAXMenuItemCmdChar`
+
+**Konkretne luki w kodzie (potwierdzone inspekcją):**
+
+| Luka | Plik:linia | Status |
+|------|-----------|--------|
+| `AXKeyShortcutsValue` nie czytany | `ClickWatcher.swift:80-92` | ⬜ P-6 |
+| `AXIdentifierAttribute` nie w `AXSkeletonExtractor` | `AXSkeletonExtractor.swift:122-135` | ⬜ P-25 |
+| `LoadedMatch` nie ma pola `identifiers` | `LoadedRule.swift:16-19` | ⬜ P-25 |
+| `RuleCache.match()` nie przyjmuje identifier | `RuleCache.swift:73` | ⬜ P-25 |
+
+**Rozwiązanie (dwa etapy):**
+
+Etap 1 (P-6, ~2h): Czytaj `AXKeyShortcutsValue` jako Layer 0 w ClickWatcher,
+przed L0.5. Dla elementów z tym atrybutem — instant toast, zero reguł.
+
+Etap 2 (P-25, ~1 dzień): Dodaj `AXIdentifierAttribute` do skeletonu +
+`identifiers: [String]?` do `LoadedMatch` + identifier matching w
+`RuleCache.match()`. Backend zaczyna generować rules z identifierami.
+
+**Severity:** WYSOKA. Bez tego okna zawsze będą słabsze niż menu bar,
+a każda nowa Electron apka z polskim UI wymaga manualnego rozszerzenia
+listy wariantów tytułów.
+
+---
+
+### P-25: AXIdentifierAttribute nie jest w schemacie reguł ani w skeletonie
+
+**Pliki:**
+- `SFlow/AXSkeletonExtractor.swift:122-135` — `walk()` czyta tylko
+  `kAXRoleAttribute` + `kAXTitleAttribute` + `kAXDescriptionAttribute`
+- `SFlow/LoadedRule.swift:16-19` — `LoadedMatch: {role: String,
+  titles: [String]}` — brak pola `identifiers: [String]?`
+- `SFlow/RuleCache.swift:73-95` — `match()` nie sprawdza identifiera
+- `SFlow/ClickWatcher.swift:204-218` — `elementQuery()` czyta
+  `kAXIdentifierAttribute` ale TYLKO jako fallback query dla L3
+  (MenuBarIndex), nie dla L0.5
+
+**Co jest:** DOM id jest czytany w ClickWatcher ale użyty tylko do
+generowania query stringa dla fuzzy menu match. Nie ma ścieżki która
+pozwoliłaby regule targetować element przez stable identifier zamiast
+title.
+
+**Co powinno być (w 3 krokach):**
+```
+1. AXSkeletonExtractor.walk() — dodaj kAXIdentifierAttribute do SkeletonItem
+   (jako opcjonalne pole "identifier")
+2. LoadedMatch — dodaj `identifiers: [String]?`
+3. RuleCache.match() — sprawdź identifiers PRZED titles (bardziej stable)
+4. Backend types.ts — dodaj `identifiers` do RuleSchema (opcjonalne)
+5. Backend prompt.ts — powiedz Claude żeby generował identifiers gdy dostępne
+```
+
+**Przykład działania po fix:**
+- Element: `role=AXButton, title="Wycisz", identifier="mute-button"`
+- Reguła: `{role: AXButton, titles: ["Mute", "Toggle Mute"], identifiers: ["mute-button"]}`
+- Match przez `identifier "mute-button"` — działa nawet po polsku ✅
+
+**Severity:** ŚREDNIA. Czysta implementacja (~half day), ale wymaga zmian
+w 3 warstwach (skeleton extractor + LoadedRule schema + RuleCache + backend).
+
+---
+
 ### P-22: Subtelność: Layer 0.5 cache uderza PRZED hardcoded L1
 
 **Plik:** `ClickWatcher.swift:111-122` (L0.5) vs `124-134` (L1)
@@ -649,6 +758,9 @@ to za **feature** ("LLM nadpisuje legacy") — kwestia decyzji architekturalnej.
 6. **Brak mechanizmu update dla bundled.json** (P-19)
 7. **Onboarding UX gap (permissions, status)** (P-15, P-17, P-20)
 8. **Brak `/v1/refresh`** (P-8)
+9. **Window element matching jest pasywne** (P-24, P-6, P-25) — menu bar
+   dostaje skróty aktywnie z `kAXMenuItemCmdChar`, window elements polegają
+   na przewidywaniu tytułów przez LLM. Fundamentalna asymetria quality.
 
 ---
 
@@ -696,21 +808,24 @@ to za **feature** ("LLM nadpisuje legacy") — kwestia decyzji architekturalnej.
 **Bramki krytyczne (bez tego nie ma jak iść dalej):**
 1. **P-1** Quality gate dla auto-discovered rules
 2. **P-2** Retry + backoff dla nieudanej discovery
-3. **P-5** Bug w MenuBarIndex.lookup (substring direction)
+3. **P-5** Bug w MenuBarIndex.lookup (substring direction) — 🟢 DONE
 4. **P-4** False-positive feedback od usera (cmd-klik)
 5. **P-19** Bundled.json update path po SFlow update
 
 **Bramki ważne (powinniśmy mieć przed launch'em):**
 6. **P-3** UI feedback dla `.failed` (retry button)
 7. **P-8** `/v1/refresh` z miss log
-8. **P-15** Permissions check dla Input Monitoring
+8. **P-15** Permissions check dla Input Monitoring — 🟢 DONE
 9. **P-20** Rate limit reform (per anonymous user ID, nie IP)
-10. **P-21** Backend observability (basic metrics)
+10. **P-21** Backend observability (basic metrics) — 🔵 częściowo
+11. **P-6** AXKeyShortcutsValue Layer 0 (~2h, awansowane z opcjonalnych)
+    — główny quick win dla window element coverage, część rozwiązania P-24
+12. **P-24** Window element passive matching — P-6 to Etap 1, P-25 to Etap 2
 
 **Bramki opcjonalne (warto sprawdzić, możliwie pominąć):**
-11. **P-6** AXKeyShortcutsValue (1-2h eksperymentu)
-12. **P-7** Debounce na app activation
-13. **P-13** Lazy MenuBarWatcher (tylko aktywna apka)
+13. **P-25** AXIdentifierAttribute w schemacie reguł (~half day)
+14. **P-7** Debounce na app activation
+15. **P-13** Lazy MenuBarWatcher (tylko aktywna apka)
 
 **Nice-to-have (Faza 2+):**
 14. **P-9, P-10, P-11, P-12, P-14, P-16, P-17, P-18, P-22**

@@ -17,7 +17,7 @@
 | Sub-cel | Status | Komentarz |
 |---|---|---|
 | 1.0 Re-seed Terminal/Notion/Claude | 🟢 done | Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (sesja 2026-05-14) |
-| 1.1 Quality gate dla auto-discovered rules | 🟡 in-progress | Backend dedup ✅ (v1.1.1). Settings okno z togglem "Show experimental" ✅ (sesja 2026-05-14). Brakuje: client-side filtr po confidence/source w RuleCache (sesja 4) |
+| 1.1 Quality gate dla auto-discovered rules | 🟢 done | Backend dedup ✅ (v1.1.1). Settings toggle ✅. Client-side filtr confidence/source w RuleCache ✅ (sesja 2026-05-14) |
 | 1.2 Retry + backoff dla failed discovery | ⬜ pending | — |
 | 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
 | 1.4 False-positive feedback (cmd-klik) | ⬜ pending | Krytyczne — nadal nie wiemy które toasty są błędne |
@@ -43,7 +43,7 @@
 | **1** | Sweet wins | 1.0 + P-23 + 1.8 droga C | ~3h | 🟢 done | 📋 below |
 | **2** | Bug squashing | 1.5 + P-15 + P-21 | ~4h | 🟢 done | 📋 below |
 | **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | 🟢 done | 📋 below |
-| **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | ⬜ | 📋 below |
+| **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | 🟢 done | 📋 below |
 | **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | ⬜ | 📋 below |
 | **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | ⬜ | ✏️ sketch |
 | **6** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
