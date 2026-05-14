@@ -36,6 +36,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(toggleItem)
         menu.addItem(NSMenuItem(title: "Show Test Toast", action: #selector(showTestToast), keyEquivalent: ""))
         menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit SFlow", action: #selector(quit), keyEquivalent: "q"))
         statusItem.menu = menu
     }
@@ -63,6 +65,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func quit() { NSApp.terminate(nil) }
+
+    @objc private func openSettings() {
+        SettingsWindowController.shared.show()
+    }
+
+    @objc private func userDefaultsChanged() {
+        ruleCache?.showExperimental = UserDefaults.standard.bool(forKey: "showExperimental")
+    }
 
     @objc private func showTestToast() {
         let frame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
@@ -120,6 +130,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSLog("SFlow: RuleCache load failed: \(error)")
             ruleCache = RuleCache(rootDir: RuleStorage.userRulesDirectory())
         }
+        ruleCache.showExperimental = UserDefaults.standard.bool(forKey: "showExperimental")
+        NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(userDefaultsChanged),
+            name: UserDefaults.didChangeNotification, object: nil
+        )
 
         let client = DiscoveryClient(
             baseURL: DiscoveryClient.productionURL,
