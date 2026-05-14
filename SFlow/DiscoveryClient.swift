@@ -85,4 +85,22 @@ final class DiscoveryClient {
             throw DiscoveryClientError.malformedResponse(error.localizedDescription)
         }
     }
+
+    func feedback(bundleId: String, keys: [String], reportType: String = "wrong_shortcut") async {
+        let url = baseURL.appendingPathComponent("v1/feedback")
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: Any] = ["bundleId": bundleId, "keys": keys, "reportType": reportType]
+        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        req.timeoutInterval = 10
+        do {
+            let (_, response) = try await session.data(for: req)
+            if let http = response as? HTTPURLResponse {
+                NSLog("SFlow: feedback POST \(http.statusCode) for \(bundleId)")
+            }
+        } catch {
+            NSLog("SFlow: feedback POST failed: \(error.localizedDescription)")
+        }
+    }
 }

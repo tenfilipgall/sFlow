@@ -65,7 +65,9 @@ final class FalsePositiveStore: ObservableObject {
 
         if count >= 3 {
             disabledIds.insert(shortcutId)
-            // backend POST wired in Task 6
+            if let client = client {
+                Task { await client.feedback(bundleId: bundleId, keys: keys) }
+            }
         }
     }
 

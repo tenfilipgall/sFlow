@@ -141,6 +141,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             baseURL: DiscoveryClient.productionURL,
             clientVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
         )
+        MainActor.assumeIsolated { FalsePositiveStore.shared.setClient(client) }
         discoveryService = DiscoveryService(
             client: client,
             ruleCache: ruleCache,
@@ -161,8 +162,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         discoveryService?.observeAppActivation()
 
         clickWatcher = ClickWatcher(ruleCache: ruleCache) { event in
-            ToastWindow.show(event: event)
-            EventLogger.log(event: event)
+            Task { @MainActor in
+                guard !FalsePositiveStore.shared.isDisabled(shortcutId: event.shortcutId) else { return }
+                FalsePositiveStore.shared.toastShown(event: event)
+                ToastWindow.show(event: event, onFalsePositive: {
+                    FalsePositiveStore.shared.report(
+                        shortcutId: event.shortcutId, bundleId: event.bundleId,
+                        keys: event.keys, hint: event.hint
+                    )
+                })
+                EventLogger.log(event: event)
+            }
         }
     }
 
