@@ -97,13 +97,18 @@ final class RuleCache {
                     return MatchResult(rule: rule)
                 }
             }
-            // Title match fallback
+            // Title match — word-boundary for substring to prevent
+            // "search" matching inside "research" (BUG #2 in audit).
             let titleMatches = rule.match.titles.contains { candidate in
                 let c = candidate.lowercased()
-                if titleLC == c || descLC == c || helpLC == c
-                    || titleLC.contains(c) || descLC.contains(c) { return true }
+                if c.isEmpty { return false }
+                if titleLC == c || descLC == c || helpLC == c { return true }
+                if wordBoundaryContains(haystack: titleLC, needle: c) { return true }
+                if wordBoundaryContains(haystack: descLC,  needle: c) { return true }
+                if wordBoundaryContains(haystack: helpLC,  needle: c) { return true }
                 if let stripped = titleStripped {
-                    if stripped == c || stripped.contains(c) { return true }
+                    if stripped == c { return true }
+                    if wordBoundaryContains(haystack: stripped, needle: c) { return true }
                 }
                 return false
             }

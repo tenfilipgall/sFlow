@@ -398,4 +398,61 @@ final class RuleCacheTests: XCTestCase {
             "backward compat: rule without identifiers must match by title with empty identifier"
         )
     }
+
+    // MARK: - Word-boundary match (BUG #2)
+
+    func testTitleSearch_doesNotMatchInsideResearch() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("search", keys: ["meta", "k"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        // "research papers" should NOT match rule with title "search" (substring match was the bug)
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "research papers", desc: "", help: "")
+        XCTAssertNil(result, "title 'search' must not match inside 'research'")
+    }
+
+    func testDescSearch_doesNotMatchInsideResearcher() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("search", keys: ["meta", "k"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "", desc: "researcher tools", help: "")
+        XCTAssertNil(result, "desc 'researcher tools' must not match title 'search'")
+    }
+
+    func testTitleSearch_stillMatchesSearchSlack() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("search", keys: ["meta", "k"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        // "Search Slack" should still match (start of string)
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "Search Slack", desc: "", help: "")
+        XCTAssertEqual(result?.keys, ["meta", "k"])
+    }
+
+    func testHelpAttribute_substringNowChecked() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("compose", keys: ["meta", "n"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        // help="Compose a new message" should match rule title="compose" via word-boundary
+        // (previously help only checked equality, was inconsistent with title/desc paths)
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "", desc: "", help: "Compose a new message")
+        XCTAssertEqual(result?.keys, ["meta", "n"])
+    }
+
+    func testPluralStillMatches() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("bookmark", keys: ["meta", "d"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        // Right-side extension is allowed: "bookmarks" should still match "bookmark"
+        let result = cache.match(bundleId: "com.x", role: "AXButton",
+                                 title: "bookmarks", desc: "", help: "")
+        XCTAssertEqual(result?.keys, ["meta", "d"])
+    }
 }
