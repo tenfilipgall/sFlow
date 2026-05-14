@@ -1,6 +1,10 @@
 import SwiftUI
 import AppKit
 
+extension Notification.Name {
+    static let sflowForceReSeed = Notification.Name("com.sflow.forceReSeed")
+}
+
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     static let shared = SettingsWindowController()
 
@@ -134,9 +138,10 @@ private struct AdvancedTab: View {
             Divider().padding(.top, 4)
 
             Form {
-                Button("Force re-seed all rules") {}
-                    .disabled(true)
-                    .help("Coming in Session 6.")
+                Button("Update built-in rules") {
+                    NotificationCenter.default.post(name: .sflowForceReSeed, object: nil)
+                }
+                .help("Downloads the latest built-in shortcuts from the server.")
             }
             .padding([.horizontal, .bottom])
         }

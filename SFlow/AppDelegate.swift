@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var clickWatcher: ClickWatcher?
     private var ruleCache: RuleCache!
     private var discoveryService: DiscoveryService?
+    private var bundledUpdater: BundledUpdater?
     private var statusIndicatorText: String = ""
 
     private var isEnabled: Bool {
@@ -143,6 +144,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             clientVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
         )
         MainActor.assumeIsolated { FalsePositiveStore.shared.setClient(client) }
+
+        let updater = BundledUpdater(
+            client: client,
+            rulesDir: RuleStorage.userRulesDirectory(),
+            ruleCache: ruleCache
+        )
+        bundledUpdater = updater
+        updater.checkOnStartup()
+
+        NotificationCenter.default.addObserver(
+            forName: .sflowForceReSeed, object: nil, queue: .main
+        ) { [weak updater] _ in
+            Task { await updater?.forceUpdate() }
+        }
+
         discoveryService = DiscoveryService(
             client: client,
             ruleCache: ruleCache,
