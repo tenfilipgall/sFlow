@@ -8,6 +8,8 @@ export async function handleDiscover(
   request: Request,
   env: Env,
 ): Promise<Response> {
+  const start = Date.now();
+
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }
@@ -32,6 +34,12 @@ export async function handleDiscover(
   if (!skipCache) {
     const cached = await getCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion);
     if (cached) {
+      const c = cached as { rules?: unknown[] };
+      console.log(JSON.stringify({
+        type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
+        cacheHit: true, fresh: false, rulesGenerated: c.rules?.length ?? 0,
+        durationMs: Date.now() - start,
+      }));
       return jsonResponse(cached);
     }
   }
@@ -49,10 +57,20 @@ export async function handleDiscover(
   try {
     rules = await generateRules(env.ANTHROPIC_API_KEY, req);
   } catch (e) {
+    console.log(JSON.stringify({
+      type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
+      cacheHit: false, fresh: skipCache, error: (e as Error).message,
+      durationMs: Date.now() - start,
+    }));
     return jsonError(502, `LLM error: ${(e as Error).message}`);
   }
 
   await putCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion, rules);
+  console.log(JSON.stringify({
+    type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
+    cacheHit: false, fresh: skipCache, rulesGenerated: rules.rules.length,
+    durationMs: Date.now() - start,
+  }));
   return jsonResponse(rules);
 }
 
