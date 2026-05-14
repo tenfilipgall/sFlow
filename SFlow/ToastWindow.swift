@@ -104,8 +104,10 @@ final class ToastWindow: NSPanel {
             guard NSEvent.modifierFlags.contains(.command) else { return }
             guard self.frame.contains(NSEvent.mouseLocation) else { return }
             let handler = self.onFalsePositive
-            DispatchQueue.main.async { self.dismiss() }
-            handler?()
+            DispatchQueue.main.async {
+                self.dismiss()
+                handler?()
+            }
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
@@ -114,6 +116,7 @@ final class ToastWindow: NSPanel {
     }
 
     private func dismiss() {
+        guard alphaValue > 0 else { return }
         if let m = keyMonitor { NSEvent.removeMonitor(m); keyMonitor = nil }
         if let m = clickMonitor { NSEvent.removeMonitor(m); clickMonitor = nil }
         NSAnimationContext.runAnimationGroup({ ctx in
