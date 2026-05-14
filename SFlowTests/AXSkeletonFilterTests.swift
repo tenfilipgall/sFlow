@@ -86,4 +86,21 @@ final class AXSkeletonFilterTests: XCTestCase {
         let items = AXSkeletonExtractor.filter(rawItems: many)
         XCTAssertLessThanOrEqual(items.count, 500)
     }
+
+    func testIdentifierPassesThroughToSkeletonItem() {
+        let items = AXSkeletonExtractor.filter(rawItems: [
+            RawAXItem(role: "AXButton", title: "Send Message", identifier: "send-btn"),
+            RawAXItem(role: "AXButton", title: "Send Message", identifier: "send-btn"),
+        ])
+        XCTAssertEqual(items.count, 1)
+        XCTAssertEqual(items[0].identifier, "send-btn")
+    }
+
+    func testSkeletonItemNilIdentifierOmittedFromJSON() throws {
+        let item = SkeletonItem(role: "AXButton", title: "Send")
+        let json = try JSONEncoder().encode(item)
+        let dict = try JSONSerialization.jsonObject(with: json) as! [String: Any]
+        XCTAssertNil(dict["identifier"],
+                     "nil identifier must not appear as null in encoded JSON")
+    }
 }

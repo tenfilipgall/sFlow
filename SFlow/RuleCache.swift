@@ -74,12 +74,14 @@ final class RuleCache {
         return stripped
     }
 
-    func match(bundleId: String, role: String, title: String, desc: String, help: String) -> MatchResult? {
+    func match(bundleId: String, role: String, title: String, desc: String, help: String,
+               identifier: String = "") -> MatchResult? {
         guard let rules = rulesByBundle[bundleId] else { return nil }
         let isAutoDiscovered = autoDiscoveredBundleIds.contains(bundleId)
         let titleLC = title.lowercased()
         let descLC = desc.lowercased()
         let helpLC = help.lowercased()
+        let identifierLC = identifier.lowercased()
         let titleStripped = Self.stripHotkeySuffix(title)?.lowercased()
 
         for rule in rules {
@@ -89,6 +91,13 @@ final class RuleCache {
                 if isAutoDiscovered && rule.source != .menuBar && rule.source != .webDocsOfficial { continue }
             }
             if !roleCompatible(ruleRole: rule.match.role, actualRole: role) { continue }
+            // Identifier fast path — exact match, language-agnostic
+            if let ids = rule.match.identifiers, !identifierLC.isEmpty {
+                if ids.contains(where: { $0.lowercased() == identifierLC }) {
+                    return MatchResult(rule: rule)
+                }
+            }
+            // Title match fallback
             let titleMatches = rule.match.titles.contains { candidate in
                 let c = candidate.lowercased()
                 if titleLC == c || descLC == c || helpLC == c

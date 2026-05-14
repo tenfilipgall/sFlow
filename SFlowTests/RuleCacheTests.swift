@@ -344,4 +344,58 @@ final class RuleCacheTests: XCTestCase {
         XCTAssertNotNil(cache.match(bundleId: "com.z", role: "AXButton", title: "Search", desc: "", help: ""),
                         "bundled medium+web_docs_third_party must be active by default")
     }
+
+    func testIdentifierMatchReturnsRule() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let rule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Completely Different"], identifiers: ["compose-btn"]),
+            keys: ["meta", "n"], hint: "Compose",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(bundleId: "com.id", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .cloud, rulesVersion: nil, rules: [rule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("cache/com.id.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertNotNil(
+            cache.match(bundleId: "com.id", role: "AXButton", title: "xyz", desc: "", help: "", identifier: "compose-btn"),
+            "identifier match must return rule even when title doesn't match"
+        )
+    }
+
+    func testIdentifierMismatchFallsBackToTitle() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let rule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Send"], identifiers: ["wrong-id"]),
+            keys: ["meta", "enter"], hint: "Send",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(bundleId: "com.fb", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .cloud, rulesVersion: nil, rules: [rule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("cache/com.fb.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertNotNil(
+            cache.match(bundleId: "com.fb", role: "AXButton", title: "Send", desc: "", help: "", identifier: "other-btn"),
+            "title match must still work when identifier doesn't match rule's identifiers"
+        )
+    }
+
+    func testRuleWithoutIdentifiersMatchesByTitle() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let rule = LoadedRule(
+            match: LoadedMatch(role: "AXButton", titles: ["Search"]),
+            keys: ["meta", "k"], hint: "Search",
+            confidence: .high, source: .menuBar
+        )
+        let set = StoredRuleSet(bundleId: "com.bc", appVersion: "1.0", fetchedAt: "2026-05-14T00:00:00Z",
+                                source: .cloud, rulesVersion: nil, rules: [rule])
+        try JSONEncoder().encode(set).write(to: tempDir.appendingPathComponent("cache/com.bc.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertNotNil(
+            cache.match(bundleId: "com.bc", role: "AXButton", title: "Search", desc: "", help: "", identifier: ""),
+            "backward compat: rule without identifiers must match by title with empty identifier"
+        )
+    }
 }

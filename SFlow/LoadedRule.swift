@@ -16,6 +16,13 @@ enum LoadedSource: String, Codable {
 struct LoadedMatch: Codable {
     let role: String
     let titles: [String]
+    let identifiers: [String]?
+
+    init(role: String, titles: [String], identifiers: [String]? = nil) {
+        self.role = role
+        self.titles = titles
+        self.identifiers = identifiers
+    }
 }
 
 struct LoadedRule: Codable {

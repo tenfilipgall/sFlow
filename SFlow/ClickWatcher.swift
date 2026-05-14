@@ -162,7 +162,8 @@ final class ClickWatcher {
                     role: currentRole,
                     title: currentTitle,
                     desc: currentDesc,
-                    help: currentHelp.lowercased()
+                    help: currentHelp.lowercased(),
+                    identifier: currentIdentifier
                 ) {
                     let autoId = "json:\(bundleId):\(result.keys.joined(separator: "+"))"
                     emit(bundleId: bundleId, shortcutId: autoId,

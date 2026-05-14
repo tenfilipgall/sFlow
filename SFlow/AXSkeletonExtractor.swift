@@ -5,11 +5,32 @@ import Foundation
 struct RawAXItem: Hashable {
     let role: String
     let title: String
+    let identifier: String?
+
+    init(role: String, title: String, identifier: String? = nil) {
+        self.role = role
+        self.title = title
+        self.identifier = identifier
+    }
 }
 
 struct SkeletonItem: Codable, Hashable {
     let role: String
     let title: String
+    let identifier: String?
+
+    init(role: String, title: String, identifier: String? = nil) {
+        self.role = role
+        self.title = title
+        self.identifier = identifier
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(role, forKey: .role)
+        try c.encode(title, forKey: .title)
+        try c.encodeIfPresent(identifier, forKey: .identifier)
+    }
 }
 
 enum AXSkeletonExtractor {
@@ -46,7 +67,7 @@ enum AXSkeletonExtractor {
             let count = counts[item] ?? 1
             if count < 2 && !looksVerbLed(title) { continue }
 
-            result.append(SkeletonItem(role: item.role, title: title))
+            result.append(SkeletonItem(role: item.role, title: title, identifier: item.identifier))
             if result.count >= maxItems { break }
         }
 
@@ -127,12 +148,16 @@ enum AXSkeletonExtractor {
         if allowedRoles.contains(role) {
             var titleRef: AnyObject?
             var descRef: AnyObject?
+            var identRef: AnyObject?
             AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &titleRef)
             AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef)
+            AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identRef)
             let title = (titleRef as? String).flatMap { $0.isEmpty ? nil : $0 }
                 ?? (descRef as? String) ?? ""
             if !title.isEmpty {
-                raw.append(RawAXItem(role: role, title: title))
+                let ident = identRef as? String
+                raw.append(RawAXItem(role: role, title: title,
+                                     identifier: ident?.isEmpty == false ? ident : nil))
             }
         }
 
