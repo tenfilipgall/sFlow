@@ -20,7 +20,7 @@
 | 1.1 Quality gate dla auto-discovered rules | 🟢 done | Backend dedup ✅ (v1.1.1). Settings toggle ✅. Client-side filtr confidence/source w RuleCache ✅ (sesja 2026-05-14) |
 | 1.2 Retry + backoff dla failed discovery | ⬜ pending | — |
 | 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
-| 1.4 False-positive feedback (cmd-klik) | ⬜ pending | Krytyczne — nadal nie wiemy które toasty są błędne |
+| 1.4 False-positive feedback (cmd-klik) | 🟢 done | cmd-klik na toast + false_positives.jsonl + lokalny disable po 3 zgłoszeniach + Settings Recent Shortcuts list + /v1/feedback backend (sesja 5) |
 | 1.5 Naprawa bugu MenuBarIndex.lookup | 🟢 done | Fix key.contains(q) + próg 5 znaków + 4 testy (sesja 2026-05-14) |
 | 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
@@ -45,7 +45,7 @@
 | **3** | Settings foundation | Nowe okno SwiftUI (baza dla 1.1/1.4/1.7) | ~6h | 🟢 done | 📋 below |
 | **4** | Client quality gate | 1.1 dokończenie (filtr po confidence/source) | ~4h | 🟢 done | 📋 below |
 | **4.5** | Window element wins | 1.9 (P-6 AXKeyShortcutsValue + P-25 identifier) | ~1 dzień | 🟢 done | 📋 below |
-| **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | ⬜ | ✏️ sketch |
+| **5** | False-positive feedback | 1.4 (cmd-klik + Recent shortcuts list w Settings) | ~2 dni | 🟢 done | ✏️ sketch |
 | **6** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
 | **7** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
 | **8** | Bundled.json update path | P-19 + versioning | ~1 dzień | ⬜ | ✏️ sketch |

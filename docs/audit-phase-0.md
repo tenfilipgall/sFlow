@@ -19,7 +19,7 @@
 | P-1 Quality gate | 🟢 zamknięte | Backend dedup ✅ + client-side filtr confidence/source ✅ (sesja 2026-05-14) |
 | P-2 Retry przy fail | ⬜ otwarte | — |
 | P-3 .failed silently | ⬜ otwarte | — |
-| P-4 False-positive feedback | ⬜ otwarte | **Krytyczne** — miss log nie łapie wrong toasts |
+| P-4 False-positive feedback | 🟢 zamknięte | cmd-klik na toast + false_positives.jsonl + lokalny disable po 3 zgłoszeniach + /v1/feedback backend + Settings Recent Shortcuts list (sesja 5) |
 | P-5 MenuBarIndex bug | 🟢 zamknięte | Fix + 2 nowe testy + 2 poprawione testy (sesja 2026-05-14) |
 | P-6 AXKeyShortcutsValue | 🟢 zamknięte | Layer 0 w ClickWatcher, parseAriaShortcut + 10 testów ✅ (sesja 2026-05-14) |
 | P-8 Brak /v1/refresh | 🔵 częściowo | `?fresh=1` ✅. Brakuje pełnego refresh z miss data |
