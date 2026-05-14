@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Uploads SFlow/Resources/bundled.json to Cloudflare KV so clients can auto-update.
+# Run from project root: ./scripts/upload-bundled
+set -euo pipefail
+
+BUNDLED="SFlow/Resources/bundled.json"
+
+if [[ ! -f "$BUNDLED" ]]; then
+  echo "Error: $BUNDLED not found. Run from project root." >&2
+  exit 1
+fi
+
+VERSION=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+echo "Uploading bundled.json (version: $VERSION)..."
+cd backend
+wrangler kv key put "bundled:version" "$VERSION" --binding=RULES_CACHE --remote
+wrangler kv key put "bundled:latest" --path="../$BUNDLED" --binding=RULES_CACHE --remote
+echo "Done. Users will receive the update within 7 days or on next force-update."
