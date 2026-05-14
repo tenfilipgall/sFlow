@@ -86,4 +86,18 @@ describe("dedupOverlappingRules", () => {
     expect(result.bundleId).toBe("x");
     expect(result.rulesVersion).toBe("abc");
   });
+
+  it("drops duplicate titles within a single rule (case-insensitive, keeps first occurrence)", () => {
+    const rule: Rule = {
+      match: { role: "AXButton", titles: ["Close All", "Zamknij", "close all", "Close All"] },
+      keys: ["meta", "w"],
+      hint: "Close All",
+      confidence: "high",
+      source: "menu_bar",
+      version: 1,
+    };
+    const { result } = dedupOverlappingRules(makeSet([rule]));
+    expect(result.rules.length).toBe(1);
+    expect(result.rules[0].match.titles).toEqual(["Close All", "Zamknij"]);
+  });
 });

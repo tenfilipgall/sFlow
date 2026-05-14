@@ -29,7 +29,15 @@ export function dedupOverlappingRules(set: RuleSet): { result: RuleSet; dropped:
     return false; // tie → keep existing (it came first)
   };
 
-  for (const rule of set.rules) {
+  const deduplicatedRules = set.rules.map(rule => ({
+    ...rule,
+    match: {
+      ...rule.match,
+      titles: Array.from(new Map(rule.match.titles.map(t => [t.toLowerCase(), t])).values()),
+    },
+  }));
+
+  for (const rule of deduplicatedRules) {
     const overlaps = new Set<number>();
     for (const t of rule.match.titles) {
       const key = t.toLowerCase();
