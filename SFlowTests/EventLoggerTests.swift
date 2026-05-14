@@ -122,6 +122,10 @@ final class EventLoggerTests: XCTestCase {
         let content = try String(contentsOf: logFile, encoding: .utf8)
         let lines = content.components(separatedBy: "\n").filter { !$0.isEmpty }
         XCTAssertEqual(lines.count, 2)
+        let json0 = try JSONSerialization.jsonObject(with: lines[0].data(using: .utf8)!) as! [String: Any]
+        let json1 = try JSONSerialization.jsonObject(with: lines[1].data(using: .utf8)!) as! [String: Any]
+        XCTAssertEqual(json0["shortcutId"] as? String, "fp-1")
+        XCTAssertEqual(json1["shortcutId"] as? String, "fp-2")
     }
 
     private func makeEvent(bundleId: String = "com.test", shortcutId: String = "test",
