@@ -87,6 +87,7 @@ private struct PrivacyTab: View {
 
 private struct AdvancedTab: View {
     @AppStorage("showExperimental") private var showExperimental: Bool = false
+    @AppStorage("showDeveloperFeatures") private var showDeveloperFeatures: Bool = false
     @ObservedObject private var store: FalsePositiveStore = .shared
 
     var body: some View {
@@ -94,6 +95,8 @@ private struct AdvancedTab: View {
             Form {
                 Toggle("Show experimental shortcuts", isOn: $showExperimental)
                     .help("Activates low-confidence auto-discovered rules. May show incorrect shortcuts.")
+                Toggle("Show developer features", isOn: $showDeveloperFeatures)
+                    .help("Reveals an Apps tab with discovery diagnostics. For beta testing and debugging only.")
             }
             .padding([.horizontal, .top])
 
