@@ -6,6 +6,27 @@ struct MissEvent {
     let title: String
     let desc: String
     let help: String
+    let identifier: String
+    let value: String
+    let roleDescription: String
+    let customActions: [String]
+    let subtreeLabel: String
+
+    init(bundleId: String, role: String, title: String, desc: String, help: String,
+         identifier: String = "", value: String = "",
+         roleDescription: String = "", customActions: [String] = [],
+         subtreeLabel: String = "") {
+        self.bundleId = bundleId
+        self.role = role
+        self.title = title
+        self.desc = desc
+        self.help = help
+        self.identifier = identifier
+        self.value = value
+        self.roleDescription = roleDescription
+        self.customActions = customActions
+        self.subtreeLabel = subtreeLabel
+    }
 }
 
 enum EventLogger {
@@ -59,13 +80,18 @@ enum EventLogger {
     static func logMiss(event: MissEvent, to url: URL) {
         let formatter = ISO8601DateFormatter()
         let entry: [String: Any] = [
-            "type":      "miss",
-            "timestamp": formatter.string(from: Date()),
-            "bundleId":  event.bundleId,
-            "role":      event.role,
-            "title":     event.title,
-            "desc":      event.desc,
-            "help":      event.help,
+            "type":            "miss",
+            "timestamp":       formatter.string(from: Date()),
+            "bundleId":        event.bundleId,
+            "role":            event.role,
+            "title":           event.title,
+            "desc":            event.desc,
+            "help":            event.help,
+            "identifier":      event.identifier,
+            "value":           event.value,
+            "roleDescription": event.roleDescription,
+            "customActions":   event.customActions,
+            "subtreeLabel":    event.subtreeLabel,
         ]
         write(entry, to: url)
     }

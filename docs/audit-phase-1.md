@@ -30,6 +30,9 @@
 | 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
 | 1.12 Backend prompt — ukierunkowany web research (P-32) | 🔵 partial | Część P-34 (streaming + max_tokens 32768) → 🟢 zamknięta w sesji 9a (2026-05-15). Pozostaje: P-32 (web_search queries explicit) + P-35 verification (DisplayTuner) + reseed bundled apek. |
 | 1.13 Synthetic Claude self-eval per regule (P-33) | ⬜ pending | Drugi Claude call po generacji reguł — score 1-5 + alternative shortcut suggestion. Score <3 → experimental flag w schemacie. Honorowane przez quality gate w RuleCache. Skaluje quality eval na 100+ apek bez manual. Sesja 10. |
+| 1.14 Chromium window AX deep fallback (P-36) | 🟢 done | Sesja A (2026-05-15): gate `depth > 0` usunięty, `extractFallbackTitleFromChildren` czyta `kAXValue` + 1-level rekurencja, `kAXValue` czytane na głównym elemencie, `MissEvent` wzbogacony o identifier/value/roleDescription/customActions/subtreeLabel. ~80 LOC. 219 testów passing. Verify-step dla Filipa: Notion Mail click test. |
+| 1.15 Passive tooltip observer + backend ingest (P-37) | ⬜ pending | Sesje B+C (po A). `TooltipObserver` w Swift — wykrywa AXGroup-tooltipy pojawiające się na hoverze w frontmost app (heurystyka rozmiar+pozycja+badge skrótu), filtr prywatności, zapis do `discovered/{bundleId}.jsonl`, click-time fallback (warstwa "L2.5"). Backend `/v1/discovered` endpoint + aggregator → bundled RuleCache updates dla wszystkich userów. Crowdsourced learning ekosystem. |
+| 1.16 Dev-mode seed pre-fetch (opcjonalne) | ⬜ pending | Sesja D (opcjonalna). Tryb `--seed-app <bundleId>` — symulowany hover wszystkich AXButton w aplikacji, harvest tooltipów do seed JSON. **Internal-only** dla zespołu SFlow przed releasem (NIE w user-facing buildach — sztuczny hover może triggerować analytics/animations u userów). Zasila bundled RuleCache dla zimnego startu. |
 
 ---
 
@@ -56,6 +59,10 @@
 | **8.5** | Retry + backoff + Apps tab | 1.2 (P-2/P-3 + Apps tab beta-only) | ~5h | 🟢 done | 📋 `2026-05-15-discovery-retry-and-apps-tab.md` |
 | **9a** | P-34 fix — Claude max_tokens + streaming | P-34 (streaming + max_tokens 32768) | ~1h | 🟢 done | inline (one-line code change + backend deploy) |
 | **9b** | P-32 + P-35 verify + reseed | 1.12 dokończenie (ukierunkowany web research + bundled reseed) | ~3-4h | ⬜ | ✏️ sketch |
+| **A** | Chromium AX deep fallback + miss-log enrichment | 1.14 (P-36) — 4 dziury w `extractFallbackTitleFromChildren` + rich `MissEvent` | ~1.5h | 🟢 done | inline (Notion Mail empty-label fix, 2026-05-15) |
+| **B** | Passive tooltip observer | 1.15 część 1 (P-37) — `TooltipObserver` + click-time L2.5 fallback + lokalny `discovered/{bundleId}.jsonl` + privacy filter | ~1 dzień | ⬜ | ✏️ sketch |
+| **C** | Backend `/v1/discovered` + bundled promotion | 1.15 część 2 — endpoint + agregator + promote do `bundled.json` | ~half dzień | ⬜ | ✏️ sketch |
+| **D** | Dev-mode `--seed-app` (opcjonalne) | 1.16 — synth hover dla internal team | ~3h | ⬜ | ✏️ sketch (only if B+C lessons require) |
 | **10** | Synthetic Claude self-eval | 1.13 (P-33) — score per regule + experimental flag | ~1 dzień | ⬜ | ✏️ sketch |
 | **11** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
 | **12** | Bundled.json update path | P-19 — STATUS: faktycznie zrobione w sesjach `3f85be6`/`a50264c`/`ac81d37` | ~1 dzień | 🟢 done | Session pre-7 complete |

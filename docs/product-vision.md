@@ -216,6 +216,25 @@ per-layer per-apka → **pełny plan coverage iteration** (P-31 część 2, sub-
 GitHub code-search dla OSS apek, Help→Shortcuts auto-scrape, szersze Electron
 regex, prompt rework, etc.) — wybór **na bazie danych Filipa**, nie zgadywanie.
 
+**Sesja 2026-05-15 — diagnoza Notion Mail i nowa droga: tooltip-as-discovery.**
+Empiryczna analiza pokazała że w Electron/Chromium apkach (Notion Mail,
+prawdopodobnie też Linear/nowe Slack/Discord) ikonkowe `AXButton` mają puste
+accessible names — Chromium nie generuje labelek bez `aria-label`. Tekst
+siedzi w `kAXValue` dzieci AXStaticText, 1–2 poziomy głębiej. To problem
+**fundamentalny** dla obecnego stosu warstw — bez labelki żadna z warstw
+0.5/1/3/4 nie ma czego dopasować. Rozwiązanie idzie w dwóch wymiarach:
+
+1. **Sesja A** (~1.5h, P-36) — pogłębić istniejący fallback dzieci (czytać
+   `kAXValue`, schodzić rekurencyjnie 1 poziom, nie blokować depth=0).
+2. **Sesje B+C** (P-37) — **tooltip-as-discovery**: React apki renderują
+   własne tooltipy z parą `(akcja, skrót)` — np. "Compose a new email / C".
+   `TooltipObserver` pasywnie zbiera te dane na hoverze + crowdsource przez
+   backend `/v1/discovered`. Jeden user hoveruje → wszyscy dostają regułę.
+
+To **nowa, asymetryczna droga zdobywania reguł** — niezależna od Claude'a,
+działa dla apek których jeszcze nikt nie eval'ował, samonapędzający się
+ekosystem.
+
 **Czym są toasty dziś:**
 > Toasty służą mi do testowania czy SFlow faktycznie "łapie" elementy które
 > mają skróty.

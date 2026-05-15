@@ -38,3 +38,4 @@ targets:
       TEST_HOST: $(BUILT_PRODUCTS_DIR)/SFlow.app/Contents/MacOS/SFlow
       BUNDLE_LOADER: $(TEST_HOST)
       SWIFT_VERSION: "5.9"
+      GENERATE_INFOPLIST_FILE: YES

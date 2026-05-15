@@ -104,6 +104,39 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-15 — Sesja A (complete): Chromium AX deep fallback + miss-log enrichment
+
+**Co:** Naprawa 4 dziur w `ClickWatcher.swift` plus wzbogacenie `MissEvent` o nowe pola — adresuje P-36 (Notion Mail i podobne Electron-apki, gdzie ikonkowe `AXButton` mają puste accessible names).
+
+(A1) Usunięto gate `depth > 0` w warunku fallbacku w `ClickWatcher.swift:241`. Hit-test depth=0 też schodzi do dzieci, jeśli ma puste title+desc.
+
+(A2) Rozszerzony `extractFallbackTitleFromChildren` o czytanie `kAXValueAttribute` (gdzie AXStaticText trzyma swój widoczny tekst — nie w kAXTitle). `kAXValue` honorowane tylko dla static-text-like ról (AXStaticText/AXLink/AXImage), cap 100 znaków (nie wciągamy textarea'ów).
+
+(A3) 1-level rekurencja w skanie dzieci dla kontenerowych ról (AXGroup/AXImage/AXButton) — Chromium często ma AXButton→AXGroup→AXStaticText.
+
+(A4) `kAXValueAttribute` czytane na głównym elemencie pętli `handleMouseDown`. Gdy effectiveTitle pusty i element to static-text-like rola → `currentValueAsLabel` używany jako effectiveTitle.
+
+(A5) `MissEvent` wzbogacony o pola: `identifier` (kAXIdentifier — `data-testid` z React), `value` (kAXValue), `roleDescription`, `customActions`, `subtreeLabel` (concatenated co znalazł skan dzieci). `EventLogger.logMiss` zapisuje wszystkie do `events.jsonl`. Custom init w MissEvent z defaultami zachowuje backward-compat dla istniejących testów.
+
+**Dodatkowo:** `project.yml` — dopisane `GENERATE_INFOPLIST_FILE: YES` do SFlowTests (build pokazał błąd o brakującym Info.plist).
+
+**Build/test:** 219 testów passing, 0 failed (bez regresji). Pełny build wymaga GUI Xcode (jedyne dostępne signing identity to "Apple Development", xcodebuild wymaga "Mac Development" dla CLI signed buildu).
+
+**Dlaczego:** sesja diagnozy (2026-05-15) potwierdziła empirycznie że w Notion Mail (Electron) toasty pojawiają się tylko z menu bara, nie z okna. `events.jsonl` pokazał missy `{role:"AXButton", title:"", desc:"", help:""}`. Probe żywego drzewa AX potwierdził: Chromium nie eksponuje accessible name na ikonkach bez `aria-label`. Sesja A to tania (~50 LOC) naprawa fundamentu — jeśli zadziała, odblokuje większość ikonkowych przycisków we wszystkich Electron/Chromium apkach. Jeśli częściowo, A5 daje dane do iteracji (Notion `data-testid` widoczny w `identifier`, label w `subtreeLabel`).
+
+**Verification plan dla Filipa:**
+1. Zbuduj z Xcode (Cmd+R)
+2. Otwórz Notion Mail, klikaj różne ikonki w oknie (Compose, Close sidebar, Archive, Search itd.)
+3. Sprawdź czy pojawiają się toasty (powinny dla Compose/Archive/Sidebar — mamy reguły w `ShortcutRules` `notion.mail.id`)
+4. `~/Library/Application Support/SFlow/events.jsonl` — jeśli miss się jednak zdarzy, powinien teraz mieć wypełnione `identifier`, `value`, `subtreeLabel` zamiast pustek
+
+**Dlaczego:** sesja diagnozy (2026-05-15) potwierdziła empirycznie że w Notion Mail (Electron) toasty pojawiają się tylko z menu bara, nie z okna. `events.jsonl` pokazał missy `{role:"AXButton", title:"", desc:"", help:""}`. Probe żywego drzewa AX potwierdził: Chromium nie eksponuje accessible name na ikonkach bez `aria-label`. Sesja A to tania (~50 LOC) naprawa fundamentu — jeśli zadziała, odblokuje większość ikonkowych przycisków we wszystkich Electron/Chromium apkach. Jeśli częściowo, A5 da nam dane do iteracji.
+
+**Plan kontynuacji (B → C → D opcjonalna):**
+- **Sesja B**: `TooltipObserver` — pasywnie wykrywa React-portal tooltipy (np. "Compose a new email / C" z hovera) i wpisuje do `discovered/{bundleId}.jsonl`. Click-time fallback "L2.5" — emit z tooltipa jeśli widoczny.
+- **Sesja C**: backend `/v1/discovered` endpoint + agregator. Crowdsourced: jeden user hoveruje → wszyscy dostają regułę.
+- **Sesja D (opcjonalna)**: dev-only tryb `--seed-app` z syntetycznym hoverem dla zespołu SFlow.
+
 ### 2026-05-15 — Sesja 9a (complete): P-34 Claude streaming + max_tokens
 
 **Co:** Naprawa generacji reguł dla wielkich apek (Android Studio i podobne).

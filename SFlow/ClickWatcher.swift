@@ -77,24 +77,56 @@ final class ClickWatcher {
         return arr.contains("AXPress")
     }
 
-    /// When a clickable ancestor has empty title/desc, scan its direct children
-    /// for the first non-empty label. Common Chromium pattern: AXButton wraps
-    /// AXImage where the icon's desc has the actual action name.
-    /// Limited to 5 children, no recursion — fast hot-path read.
-    static func extractFallbackTitleFromChildren(_ element: AXUIElement) -> (title: String, desc: String) {
+    /// When a clickable element has empty title/desc, scan its descendants
+    /// for the first non-empty label. Common Chromium pattern in Electron apps
+    /// (Notion Mail, Linear, etc.): icon-only AXButton without aria-label →
+    /// no accessible name on the button itself, but visible text sits in
+    /// kAXValue of a nested AXStaticText (often 1–2 levels deep).
+    ///
+    /// Reads kAXTitle, kAXDescription, and kAXValue from each child.
+    /// kAXValue is only treated as a label for static-text-like roles
+    /// (AXStaticText / AXLink / AXImage) — for AXButton/AXCheckBox kAXValue
+    /// is the pressed-state (0/1), not text.
+    ///
+    /// One level of recursion into container-like roles (AXGroup / AXImage /
+    /// AXButton) — covers AXButton→AXGroup→AXStaticText nesting common in
+    /// React + Chromium-rendered DOMs.
+    ///
+    /// Limited to 5 children per level. Values >100 chars rejected
+    /// (textareas / long content, not labels).
+    static func extractFallbackTitleFromChildren(_ element: AXUIElement,
+                                                  recursionDepthLeft: Int = 1) -> (title: String, desc: String) {
         var childrenRef: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef)
         guard let children = childrenRef as? [AXUIElement] else { return ("", "") }
 
         for child in children.prefix(5) {
-            var titleRef: AnyObject?
-            var descRef: AnyObject?
+            var titleRef: AnyObject?; var descRef: AnyObject?
+            var valueRef: AnyObject?; var roleRef: AnyObject?
             AXUIElementCopyAttributeValue(child, kAXTitleAttribute as CFString, &titleRef)
             AXUIElementCopyAttributeValue(child, kAXDescriptionAttribute as CFString, &descRef)
-            let title = titleRef as? String ?? ""
-            let desc = descRef as? String ?? ""
-            if !title.isEmpty || !desc.isEmpty {
-                return (title, desc)
+            AXUIElementCopyAttributeValue(child, kAXValueAttribute as CFString, &valueRef)
+            AXUIElementCopyAttributeValue(child, kAXRoleAttribute as CFString, &roleRef)
+            let kt = titleRef as? String ?? ""
+            let kd = descRef as? String ?? ""
+            let krole = roleRef as? String ?? ""
+            let rawValue = valueRef as? String ?? ""
+            let kv: String = (!rawValue.isEmpty && rawValue.count <= 100
+                              && (krole == "AXStaticText" || krole == "AXLink" || krole == "AXImage"))
+                ? rawValue : ""
+
+            let inferredTitle = !kt.isEmpty ? kt : kv
+            if !inferredTitle.isEmpty || !kd.isEmpty {
+                return (inferredTitle, kd)
+            }
+
+            if recursionDepthLeft > 0,
+               krole == "AXGroup" || krole == "AXImage" || krole == "AXButton" {
+                let nested = extractFallbackTitleFromChildren(child,
+                                                              recursionDepthLeft: recursionDepthLeft - 1)
+                if !nested.title.isEmpty || !nested.desc.isEmpty {
+                    return nested
+                }
             }
         }
         return ("", "")
@@ -190,7 +222,7 @@ final class ClickWatcher {
                 // Read all AX attributes once per element — shared across all layers.
                 var roleRef: AnyObject?; var descRef: AnyObject?; var titleRef: AnyObject?
                 var subroleRef: AnyObject?; var placeholderRef: AnyObject?; var helpRef: AnyObject?
-                var identRef: AnyObject?
+                var identRef: AnyObject?; var valueRef: AnyObject?
                 AXUIElementCopyAttributeValue(current, kAXRoleAttribute as CFString, &roleRef)
                 AXUIElementCopyAttributeValue(current, kAXDescriptionAttribute as CFString, &descRef)
                 AXUIElementCopyAttributeValue(current, kAXTitleAttribute as CFString, &titleRef)
@@ -198,6 +230,7 @@ final class ClickWatcher {
                 AXUIElementCopyAttributeValue(current, kAXPlaceholderValueAttribute as CFString, &placeholderRef)
                 AXUIElementCopyAttributeValue(current, kAXHelpAttribute as CFString, &helpRef)
                 AXUIElementCopyAttributeValue(current, kAXIdentifierAttribute as CFString, &identRef)
+                AXUIElementCopyAttributeValue(current, kAXValueAttribute as CFString, &valueRef)
                 var axksRef: AnyObject?
                 AXUIElementCopyAttributeValue(current, "AXKeyShortcutsValue" as CFString, &axksRef)
                 var roleDescRef: AnyObject?
@@ -212,15 +245,34 @@ final class ClickWatcher {
                 let currentKeyShortcuts = axksRef as? String ?? ""
                 let currentRoleDescription = (roleDescRef as? String ?? "").lowercased()
                 let currentCustomActions = Self.extractCustomActionNames(from: customActionsRef)
+                // kAXValue is label-like only for static-text-like roles; for AXButton/
+                // AXCheckBox it's the pressed-state. Cap at 100 chars to avoid pulling
+                // entire textarea contents.
+                let rawCurrentValue = (valueRef as? String) ?? ""
+                let currentValueAsLabel: String = (!rawCurrentValue.isEmpty
+                                                    && rawCurrentValue.count <= 100
+                                                    && (currentRole == "AXStaticText"
+                                                        || currentRole == "AXLink"
+                                                        || currentRole == "AXImage"))
+                    ? rawCurrentValue.lowercased() : ""
                 let isInteractive     = Self.interactiveRoles.contains(currentRole)
 
                 if isInteractive && firstInteractiveMiss == nil {
+                    let subtreeScan = Self.extractFallbackTitleFromChildren(current)
+                    let subtreeJoined = [subtreeScan.title, subtreeScan.desc]
+                        .filter { !$0.isEmpty }
+                        .joined(separator: " / ")
                     firstInteractiveMiss = MissEvent(
                         bundleId: bundleId,
                         role:     currentRole,
                         title:    (titleRef as? String) ?? "",
                         desc:     (descRef as? String) ?? "",
-                        help:     currentHelp
+                        help:     currentHelp,
+                        identifier: (identRef as? String) ?? "",
+                        value:    rawCurrentValue,
+                        roleDescription: (roleDescRef as? String) ?? "",
+                        customActions: currentCustomActions,
+                        subtreeLabel: subtreeJoined
                     )
                 }
 
@@ -238,11 +290,19 @@ final class ClickWatcher {
 
                 var effectiveTitle = currentTitle
                 var effectiveDesc = currentDesc
-                if effectiveTitle.isEmpty, effectiveDesc.isEmpty, runNonInteractive, depth > 0 {
+                // Fall back to nested children when the current element has no label.
+                // Fires at every depth (including depth=0, the hit-tested element) —
+                // Chromium/Electron apps often expose AXButton with empty title/desc
+                // but the visible label sits in a nested AXStaticText.kAXValue.
+                if effectiveTitle.isEmpty, effectiveDesc.isEmpty, runNonInteractive {
                     let fallback = Self.extractFallbackTitleFromChildren(current)
                     if !fallback.title.isEmpty || !fallback.desc.isEmpty {
                         effectiveTitle = fallback.title.lowercased()
                         effectiveDesc = fallback.desc.lowercased()
+                    } else if !currentValueAsLabel.isEmpty {
+                        // Element is itself a static-text-like node whose visible text
+                        // sits in kAXValue rather than kAXTitle.
+                        effectiveTitle = currentValueAsLabel
                     }
                 }
 
