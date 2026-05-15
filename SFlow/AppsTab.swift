@@ -104,11 +104,25 @@ final class AppsTabViewModel: ObservableObject {
     }
 
     private func appNameFor(bundleId: String) -> String {
+        // Running app — prefer its current localizedName
         if let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).first,
            let name = app.localizedName {
             return name
         }
-        return bundleId.components(separatedBy: ".").last ?? bundleId
+        // Installed but not running — read from Info.plist via Launch Services
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
+            let plistURL = url.appendingPathComponent("Contents/Info.plist")
+            if let dict = NSDictionary(contentsOf: plistURL) {
+                if let name = (dict["CFBundleDisplayName"] as? String), !name.isEmpty { return name }
+                if let name = (dict["CFBundleName"] as? String), !name.isEmpty { return name }
+            }
+            // Fallback to .app bundle filename without extension
+            let appName = url.deletingPathExtension().lastPathComponent
+            if !appName.isEmpty { return appName }
+        }
+        // Last resort — bundleId tail capitalized
+        let tail = bundleId.components(separatedBy: ".").last ?? bundleId
+        return tail.prefix(1).uppercased() + tail.dropFirst()
     }
 }
 
