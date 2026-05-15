@@ -65,25 +65,47 @@ final class DiscoveryService {
                               bundleId: String,
                               appName: String,
                               appVersion: String) {
-        let menuBar = MenuBarDumper.dump(for: app)
-        let skeleton = AXSkeletonExtractor.extract(for: app)
-        Task { [weak self] in
-            guard let self else { return }
-            do {
-                let result = try await self.client.discover(
-                    bundleId: bundleId, appName: appName, appVersion: appVersion,
-                    menuBar: menuBar, skeleton: skeleton
+        var menuBar = MenuBarDumper.dump(for: app)
+        var skeleton = AXSkeletonExtractor.extract(for: app)
+
+        if skeleton.count < 3 && menuBar.isEmpty {
+            // App likely still loading AX tree — wait 15s and retry once
+            NSLog("SFlow: empty AX for \(bundleId), waiting 15s for app to settle")
+            Thread.sleep(forTimeInterval: 15)
+            menuBar = MenuBarDumper.dump(for: app)
+            skeleton = AXSkeletonExtractor.extract(for: app)
+        }
+
+        if skeleton.count < 3 && menuBar.isEmpty {
+            self.attemptStore.recordFailure(bundleId: bundleId, reason: .emptySkeleton)
+            DispatchQueue.main.async {
+                self.onStatusChange?(.failed(
+                    appName: appName,
+                    message: DiscoveryFailureReason.emptySkeleton.displayString
+                ))
+                NotificationCenter.default.post(
+                    name: .sflowDiscoveryStateChanged, object: nil
                 )
-                try self.writeToCache(bundleId: bundleId, appVersion: appVersion, result: result)
-                try self.ruleCache.load()
-                await MainActor.run { self.onStatusChange?(.completed(appName: appName)) }
-            } catch {
-                await MainActor.run {
-                    self.onStatusChange?(.failed(appName: appName, message: "\(error)"))
-                }
             }
             self.inFlight.remove(bundleId)
+            return
         }
+
+        Task { [weak self] in
+            await self?.callBackendAndStore(
+                bundleId: bundleId, appName: appName, appVersion: appVersion,
+                menuBar: menuBar, skeleton: skeleton
+            )
+        }
+    }
+
+    private func callBackendAndStore(
+        bundleId: String, appName: String, appVersion: String,
+        menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem]
+    ) async {
+        // Real implementation in Task 8
+        await MainActor.run { self.onStatusChange?(.idle) }
+        self.inFlight.remove(bundleId)
     }
 
     private func writeToCache(bundleId: String, appVersion: String, result: BackendRuleSet) throws {
