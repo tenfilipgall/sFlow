@@ -74,4 +74,54 @@ final class DiscoveryAttemptStoreTests: XCTestCase {
         XCTAssertEqual(store.allFailures()[0].failureCount, 6)
         XCTAssertEqual(store.allFailures()[0].nextRetryAt.timeIntervalSince(fixedNow), 30 * 86_400, accuracy: 1)
     }
+
+    func test_recordSuccess_removesEntry() {
+        let store = DiscoveryAttemptStore(fileURL: storeFile)
+        store.recordFailure(bundleId: "com.x", reason: .emptySkeleton)
+        store.recordFailure(bundleId: "com.x", reason: .emptySkeleton)
+        XCTAssertEqual(store.allFailures().count, 1)
+
+        store.recordSuccess(bundleId: "com.x")
+
+        XCTAssertTrue(store.allFailures().isEmpty)
+        XCTAssertTrue(store.canAttempt(bundleId: "com.x"))
+    }
+
+    func test_forceRetry_resetsEntry() {
+        let store = DiscoveryAttemptStore(fileURL: storeFile)
+        store.recordFailure(bundleId: "com.x", reason: .httpError)
+
+        store.forceRetry(bundleId: "com.x")
+
+        XCTAssertTrue(store.allFailures().isEmpty)
+        XCTAssertTrue(store.canAttempt(bundleId: "com.x"))
+    }
+
+    func test_canAttempt_falseDuringBackoffWindow() {
+        var fakeNow = Date(timeIntervalSince1970: 1_700_000_000)
+        let store = DiscoveryAttemptStore(fileURL: storeFile, clock: { fakeNow })
+        store.recordFailure(bundleId: "com.x", reason: .httpError)
+
+        XCTAssertFalse(store.canAttempt(bundleId: "com.x"))
+        fakeNow = fakeNow.addingTimeInterval(3_500)  // 58min later — still locked
+        XCTAssertFalse(store.canAttempt(bundleId: "com.x"))
+        fakeNow = fakeNow.addingTimeInterval(200)    // total 1h+ later
+        XCTAssertTrue(store.canAttempt(bundleId: "com.x"))
+    }
+
+    func test_persistence_roundTrip() {
+        let fixedNow = Date(timeIntervalSince1970: 1_700_000_000)
+        do {
+            let store = DiscoveryAttemptStore(fileURL: storeFile, clock: { fixedNow })
+            store.recordFailure(bundleId: "com.a", reason: .emptySkeleton)
+            store.recordFailure(bundleId: "com.b", reason: .rateLimited)
+            store.recordFailure(bundleId: "com.b", reason: .rateLimited)
+        }
+        let reloaded = DiscoveryAttemptStore(fileURL: storeFile, clock: { fixedNow })
+        let entries = reloaded.allFailures()
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries.first(where: { $0.bundleId == "com.a" })?.failureCount, 1)
+        XCTAssertEqual(entries.first(where: { $0.bundleId == "com.b" })?.failureCount, 2)
+        XCTAssertEqual(entries.first(where: { $0.bundleId == "com.b" })?.lastReason, .rateLimited)
+    }
 }

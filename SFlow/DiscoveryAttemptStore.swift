@@ -85,6 +85,22 @@ final class DiscoveryAttemptStore {
         }
     }
 
+    func recordSuccess(bundleId: String) {
+        queue.sync {
+            if attempts.removeValue(forKey: bundleId) != nil {
+                save()
+            }
+        }
+    }
+
+    func forceRetry(bundleId: String) {
+        queue.sync {
+            if attempts.removeValue(forKey: bundleId) != nil {
+                save()
+            }
+        }
+    }
+
     // MARK: - Persistence
 
     private static func load(from url: URL) -> [String: StoredAttempt] {
