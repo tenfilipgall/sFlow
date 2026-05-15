@@ -61,6 +61,7 @@ final class AppsTabViewModel: ObservableObject {
         } else {
             failed = []
         }
+        NSLog("SFlow AppsTab refresh: bundled=\(bundled.count), learned=\(learned.count), failed=\(failed.count), attemptStore=\(AppDelegate.shared?.attemptStore == nil ? "nil" : "set")")
     }
 
     private func loadGroupedRules(from url: URL, source: AppEntry.Source) -> [AppEntry] {

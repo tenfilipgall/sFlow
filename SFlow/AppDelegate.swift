@@ -22,6 +22,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Skip full startup when running unit tests
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
 
+        // Create attemptStore EARLY so AppsTab can always read it even before
+        // permissions are granted and startWatcher() runs.
+        attemptStore = DiscoveryAttemptStore(
+            fileURL: RuleStorage.userRulesDirectory()
+                .deletingLastPathComponent()
+                .appendingPathComponent("attempted.json")
+        )
+
         NSApp.setActivationPolicy(.accessory)
         setupStatusItem()
         checkPermissionsAndStart()
@@ -163,12 +171,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Task { await updater?.forceUpdate() }
         }
 
-        let store = DiscoveryAttemptStore(
-            fileURL: RuleStorage.userRulesDirectory()
-                .deletingLastPathComponent()
-                .appendingPathComponent("attempted.json")
-        )
-        self.attemptStore = store
+        guard let store = self.attemptStore else {
+            NSLog("SFlow: startWatcher called but attemptStore is nil — should not happen")
+            return
+        }
 
         discoveryService = DiscoveryService(
             client: client,
