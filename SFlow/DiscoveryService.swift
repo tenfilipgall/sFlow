@@ -103,9 +103,60 @@ final class DiscoveryService {
         bundleId: String, appName: String, appVersion: String,
         menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem]
     ) async {
-        // Real implementation in Task 8
-        await MainActor.run { self.onStatusChange?(.idle) }
-        self.inFlight.remove(bundleId)
+        defer {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(
+                    name: .sflowDiscoveryStateChanged, object: nil
+                )
+            }
+            self.inFlight.remove(bundleId)
+        }
+
+        let result: BackendRuleSet
+        do {
+            result = try await self.client.discover(
+                bundleId: bundleId, appName: appName, appVersion: appVersion,
+                menuBar: menuBar, skeleton: skeleton
+            )
+        } catch {
+            let reason = DiscoveryFailureReason.from(error: error)
+            self.attemptStore.recordFailure(bundleId: bundleId, reason: reason)
+            await MainActor.run {
+                self.onStatusChange?(.failed(
+                    appName: appName, message: reason.displayString
+                ))
+            }
+            return
+        }
+
+        if result.rules.isEmpty {
+            self.attemptStore.recordFailure(bundleId: bundleId, reason: .noRulesGenerated)
+            await MainActor.run {
+                self.onStatusChange?(.failed(
+                    appName: appName,
+                    message: DiscoveryFailureReason.noRulesGenerated.displayString
+                ))
+            }
+            return
+        }
+
+        do {
+            try self.writeToCache(bundleId: bundleId, appVersion: appVersion, result: result)
+            try self.ruleCache.load()
+            self.attemptStore.recordSuccess(bundleId: bundleId)
+            await MainActor.run {
+                self.onStatusChange?(.completed(appName: appName))
+            }
+        } catch {
+            // Local I/O failure — classify as parseError (closest match) so
+            // the entry persists and backoff applies. Treat as transient.
+            self.attemptStore.recordFailure(bundleId: bundleId, reason: .parseError)
+            await MainActor.run {
+                self.onStatusChange?(.failed(
+                    appName: appName, message: "Failed to write rule cache"
+                ))
+            }
+        }
     }
 
     private func writeToCache(bundleId: String, appVersion: String, result: BackendRuleSet) throws {
