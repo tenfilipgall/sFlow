@@ -24,6 +24,7 @@ final class TooltipObserver {
 
     init(store: DiscoveredStore = .shared) {
         self.store = store
+        NSLog("SFlow[Tooltip]: init — DiscoveredStore at \(DiscoveredStore.defaultDir().path)")
         startPolling()
     }
 
@@ -59,11 +60,19 @@ final class TooltipObserver {
         let axApp = AXUIElementCreateApplication(app.processIdentifier)
 
         var found: (rect: CGRect, badge: String, name: String)? = nil
-        walk(axApp, depth: 0, cursor: cursor, result: &found)
+        var candidatesSeen = 0
+        walk(axApp, depth: 0, cursor: cursor, result: &found, candidatesSeen: &candidatesSeen)
+
+        if candidatesSeen > 0 || found != nil {
+            NSLog("SFlow[Tooltip]: scan in \(bundleId) at (\(Int(cursor.x)),\(Int(cursor.y))) — candidates=\(candidatesSeen) found=\(found?.name ?? "nil")")
+        }
 
         guard let f = found,
               let keys = TooltipShortcutParser.parseBadge(f.badge) else { return }
-        if Self.containsSensitiveText(f.name) { return }
+        if Self.containsSensitiveText(f.name) {
+            NSLog("SFlow[Tooltip]: rejected (privacy filter): \(f.name)")
+            return
+        }
 
         let entry = DiscoveredEntry(
             bundleId: bundleId,
@@ -74,18 +83,22 @@ final class TooltipObserver {
             observedAt: Date()
         )
         store.record(entry)
+        NSLog("SFlow[Tooltip]: recorded — \(f.name) [\(keys.joined(separator: "+"))] in \(bundleId)")
     }
 
     private func walk(_ element: AXUIElement, depth: Int, cursor: CGPoint,
-                       result: inout (rect: CGRect, badge: String, name: String)?) {
+                       result: inout (rect: CGRect, badge: String, name: String)?,
+                       candidatesSeen: inout Int) {
         if depth > 8 || result != nil { return }
         var roleRef: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
         let role = roleRef as? String ?? ""
 
-        if role == "AXGroup" || role == "AXWindow" {
+        if role == "AXGroup" || role == "AXWindow" || role == "AXSheet" || role == "AXSystemDialog" {
             if let f = Self.frame(of: element), Self.isTooltipShape(f, cursor: cursor) {
+                candidatesSeen += 1
                 let texts = Self.collectStaticTexts(element, depth: 0, limit: 8)
+                NSLog("SFlow[Tooltip]: candidate [\(role)] rect=\(Int(f.minX)),\(Int(f.minY)),\(Int(f.width))x\(Int(f.height)) texts=\(texts)")
                 if let parsed = Self.parseTooltipTexts(texts) {
                     result = (rect: f, badge: parsed.badge, name: parsed.name)
                     return
@@ -97,7 +110,8 @@ final class TooltipObserver {
         AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef)
         if let children = childrenRef as? [AXUIElement] {
             for c in children {
-                walk(c, depth: depth + 1, cursor: cursor, result: &result)
+                walk(c, depth: depth + 1, cursor: cursor, result: &result,
+                     candidatesSeen: &candidatesSeen)
                 if result != nil { return }
             }
         }
@@ -108,9 +122,13 @@ final class TooltipObserver {
         AXUIElementCopyAttributeValue(element, kAXPositionAttribute as CFString, &posRef)
         AXUIElementCopyAttributeValue(element, kAXSizeAttribute as CFString, &sizeRef)
         guard let pos = posRef, let sz = sizeRef else { return nil }
+        guard CFGetTypeID(pos) == AXValueGetTypeID(),
+              CFGetTypeID(sz) == AXValueGetTypeID() else { return nil }
         var p = CGPoint.zero; var s = CGSize.zero
-        AXValueGetValue(pos as! AXValue, .cgPoint, &p)
-        AXValueGetValue(sz as! AXValue, .cgSize, &s)
+        let posValue = pos as! AXValue
+        let szValue = sz as! AXValue
+        guard AXValueGetValue(posValue, .cgPoint, &p),
+              AXValueGetValue(szValue, .cgSize, &s) else { return nil }
         guard s.width > 0, s.height > 0 else { return nil }
         return CGRect(origin: p, size: s)
     }

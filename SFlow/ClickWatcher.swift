@@ -215,6 +215,7 @@ final class ClickWatcher {
         // label of their own.
         let cursorAX = CGPoint(x: CGFloat(axX), y: CGFloat(axY))
         if let entry = DiscoveredStore.shared.lookup(near: cursorAX, bundleId: bundleId) {
+            NSLog("SFlow[Tooltip]: L0.3 HIT — \(entry.actionName) [\(entry.keys.joined(separator: "+"))]")
             let autoId = "tooltip:\(bundleId):\(entry.keys.joined(separator: "+"))"
             emit(bundleId: bundleId, shortcutId: autoId,
                  keys: entry.keys, hint: entry.actionName,
