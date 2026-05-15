@@ -104,6 +104,23 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-15 — Sesja 9a (complete): P-34 Claude streaming + max_tokens
+
+**Co:** Naprawa generacji reguł dla wielkich apek (Android Studio i podobne).
+
+(1) `max_tokens: 8192 → 32768` w `backend/src/claude.ts` (commit `16f180d`).
+(2) Switch `client.messages.create()` → `client.messages.stream() + finalMessage()` — Anthropic SDK wymaga streamingu dla operacji z `max_tokens > 8192` (ochrona przed HTTP timeoutami). Bez streamingu SDK natychmiast odrzuca call błędem 502 "Streaming is required for operations that may take longer than 10 minutes". Pozostała część pipeline'u (parseRulesJSON, extractFinalText) niezmieniona — `finalMessage()` zwraca regularny Message.
+
+**Dlaczego:** P-34 oznaczona w sesji 8 jako gating issue dla nowych użytkowników z wielkimi apkami w autostarcie (Android Studio, JetBrains stack, Xcode-like Electron apps). Bez fixu backend zwracał 502 i klient utykał w Failed apps z myląco-brzmiącym "Server error or no internet".
+
+**Manual eval (12:42):** Android Studio → kliknięcie Try again → discovery ~90 sekund streaming → **93 reguły** wygenerowane → apka przeniesiona do Learned ✅.
+
+**Bonus — P-35 prawdopodobnie też naprawione:** poprzednie timeouty (DisplayTuner) najpewniej były tym samym problemem (Anthropic odrzucał calle z innych powodów ale dłuższym czasem). Status P-35 → 🔵 partial pending verification na DisplayTuner.
+
+**Backend deployed:** version `6f489e00-3c59-4f2b-a458-b4692e38f14c` na `https://sflow-rules.shortcutflow.workers.dev`. 50/50 testów backend passing.
+
+**Następny krok (sesja 9b):** P-32 (ukierunkowany web research w backend prompt) + verify P-35 na DisplayTuner + reseed 5 bundled apek nowym promptem.
+
 ### 2026-05-15 — Sesja 8 (complete): P-2/P-3 discovery retry + Apps tab
 
 **Co:** Persistowany retry + backoff dla nieudanej discovery (P-2) plus UI feedback dla failed status (P-3). 13 atomic tasks TDD + 4 follow-up fixes.

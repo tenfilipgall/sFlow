@@ -28,7 +28,7 @@
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
 | 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
-| 1.12 Backend prompt — ukierunkowany web research (P-32) | ⬜ pending | Update prompta: explicit web_search queries per-app (`{appName} keyboard shortcuts cheatsheet`) + per-element dla nieznanych skrótów. PLUS rozwiązanie P-34 (max_tokens 8192→16000+) i P-35 (timeout diagnostyka + ewentualnie split call). Łączone z reseedem (sesja 9, bundle C). |
+| 1.12 Backend prompt — ukierunkowany web research (P-32) | 🔵 partial | Część P-34 (streaming + max_tokens 32768) → 🟢 zamknięta w sesji 9a (2026-05-15). Pozostaje: P-32 (web_search queries explicit) + P-35 verification (DisplayTuner) + reseed bundled apek. |
 | 1.13 Synthetic Claude self-eval per regule (P-33) | ⬜ pending | Drugi Claude call po generacji reguł — score 1-5 + alternative shortcut suggestion. Score <3 → experimental flag w schemacie. Honorowane przez quality gate w RuleCache. Skaluje quality eval na 100+ apek bez manual. Sesja 10. |
 
 ---
@@ -54,7 +54,8 @@
 | **7** | Coverage Quick Wins (P-31 część 1) | 1.11 część 1 — AXPress probe + walk-down + RoleDescription/CustomActions (bez czekania na dane) | ~3.5h | 🟢 done | 📋 plan: `2026-05-14-coverage-quick-wins.md` |
 | **8** | Coverage telemetry analysis + iteration (P-31 część 2) | 1.11 część 2 — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, plan rozszerzeń (sdef, GitHub scan, prompt rework) | ~2h analizy + 1-2 dni impl | ⬜ | ✏️ pending (waits on usage data) |
 | **8.5** | Retry + backoff + Apps tab | 1.2 (P-2/P-3 + Apps tab beta-only) | ~5h | 🟢 done | 📋 `2026-05-15-discovery-retry-and-apps-tab.md` |
-| **9** | Reseed + ukierunkowany web research | 1.12 + reseed 5 bundled apek z nowym promptem | ~1 dzień | ⬜ | ✏️ bundle C |
+| **9a** | P-34 fix — Claude max_tokens + streaming | P-34 (streaming + max_tokens 32768) | ~1h | 🟢 done | inline (one-line code change + backend deploy) |
+| **9b** | P-32 + P-35 verify + reseed | 1.12 dokończenie (ukierunkowany web research + bundled reseed) | ~3-4h | ⬜ | ✏️ sketch |
 | **10** | Synthetic Claude self-eval | 1.13 (P-33) — score per regule + experimental flag | ~1 dzień | ⬜ | ✏️ sketch |
 | **11** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
 | **12** | Bundled.json update path | P-19 — STATUS: faktycznie zrobione w sesjach `3f85be6`/`a50264c`/`ac81d37` | ~1 dzień | 🟢 done | Session pre-7 complete |

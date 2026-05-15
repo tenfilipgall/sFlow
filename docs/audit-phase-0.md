@@ -37,8 +37,8 @@
 | P-31 Coverage holes — gdzie SFlow nie pokazuje toasta dla klikalnych elementów | 🟡 w trakcie | Brainstorm sesji 6 (2026-05-14) zidentyfikował 12 potencjalnych źródeł skrótów których SFlow jeszcze nie tapuje: AXCustomActions, AXRoleDescription, `AXUIElementCopyActionNames` probe, AppleScript sdef, szersze Electron regex (Mousetrap, react-hotkeys, blueprintjs), walk-down z interactive ancestor, AXSkeletonExtractor identyfikatory stable-only, GitHub code-search dla OSS apek, Help→Shortcuts auto-scrape, embedded sqlite, keystroke monitoring (Phase 2.2), crowdsource submission. Konkretny plan czeka na dane z `events.jsonl` (sesja 7 telemetry analysis). Sesja 7 quick wins (AXPress probe, walk-down, RoleDescription/CustomActions) ✅ — patrz `2026-05-14-coverage-quick-wins.md`. Pełna iteracja czeka na analizę `events.jsonl` (sesja 8). |
 | P-32 Web research w backend prompt jest niesterowany | ⬜ otwarte | Dziś Claude sam decyduje kiedy/jak użyć `web_search` (max 4 use). Brak ukierunkowania per element ani per typ apki. Plan: prompt prowadzi Claude'a — najpierw `{appName} keyboard shortcuts cheatsheet`, potem per-element queries dla unknown skrótów. Łączymy z reseedem (sesja 9, C-bundle). |
 | P-33 Quality eval nie skaluje powyżej manualnego (Filip+5 osób) | ⬜ otwarte | Dziś jakość reguł sprawdzamy ręcznie (manual eval per apka) — to nie skaluje na 100+ apek. Plan: synthetic Claude self-eval per regule przy generowaniu (drugi call, ~$0.001/reguła, score 1-5 + reason). Score <3 → experimental flag. Tańsza droga niż AppleScript runner / video eval per apka. Sesja 10. |
-| P-34 Claude max_tokens truncation dla wielkich apek | ⬜ otwarte | Discovery dla Android Studio (500 menu + 500 skeleton + web_search → przekracza 8192 token output) zwraca non-JSON. Backend 502. Fix: max_tokens 8192→16000+ w `backend/src/claude.ts`. Łączy się z Sub-celem 1.12 (Sesja 9). |
-| P-35 Backend timeout (>90s) dla niektórych apek | ⬜ otwarte | DisplayTuner skeleton 149+menu 136 → timeout 90s. Możliwe: Claude rate limit, slow web_search, CF Worker CPU limit. Wymaga: backend latency log inspection + ewentualnie split call. Łączy się z Sub-celem 1.12 (Sesja 9). |
+| P-34 Claude max_tokens truncation dla wielkich apek | 🟢 zamknięte | max_tokens 8192→32768 + switch na `messages.stream()` (Anthropic wymaga streaming dla max_tokens > 8192). Android Studio: 0 → 93 reguł ✅ (sesja 9a, 2026-05-15). |
+| P-35 Backend timeout (>90s) dla niektórych apek | 🔵 częściowo | Prawdopodobnie naprawione przez streaming switch z P-34 — Anthropic odrzucał wcześniej niektóre calle z tego samego powodu. Wymaga weryfikacji na DisplayTuner (`com.benderbureau.displaytuner`) przez Try again. |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -899,6 +899,16 @@ Android Studio discovery zwróciła HTTP 502 z backendu. Claude API skończyło 
 
 **Fix:** Backend — zwiększyć `max_tokens` z 8192 do 16000+ w `backend/src/claude.ts`. Może wymagać przejścia na wariant modelu z dłuższym budżetem wyjściowym. Alternatywnie: streaming / JSON mode jeśli dostępne. Łączy się z Sub-celem 1.12 (Sesja 9, bundle C).
 
+**Status update (Sesja 9a, 2026-05-15):** Zamknięte.
+
+Fix był dwuczęściowy:
+1. `max_tokens: 8192 → 32768` w `backend/src/claude.ts` (commit `16f180d`)
+2. Switch `client.messages.create()` → `client.messages.stream() + finalMessage()` — Anthropic SDK wymaga streamingu dla max_tokens > 8192 z safety check'iem "operations that may take longer than 10 minutes". Bez streamingu SDK natychmiast odrzuca call błędem 502.
+
+Manual eval (2026-05-15 12:42): Android Studio przeszło z Failed → Learned z **93 regułami** po ~90 sekundach streamingu.
+
+Backend deployed: version `6f489e00-3c59-4f2b-a458-b4692e38f14c` na production.
+
 ---
 
 ### P-35: Backend timeout (>90s) dla niektórych apek
@@ -926,6 +936,10 @@ DisplayTuner (`com.benderbureau.displaytuner`) — skeleton 149, menuBar 136 —
 - Lub split Claude call: najpierw reguły tylko z menu-bar (szybko), potem wzbogacenie przez web_search asynchronicznie
 
 Łączy się z Sub-celem 1.12 (Sesja 9, bundle C) — ta sama sesja iteracji promptu.
+
+**Status update (Sesja 9a, 2026-05-15):** Częściowo rozwiązane.
+
+Najprawdopodobniej P-34 fix (streaming switch) naprawia również P-35 — niektóre calle Anthropic odrzucał wcześniej z tym samym streaming-required errorem (a klient widział to jako timeout 90s bo backend zwracał 502 dopiero po próbie reasoningu). Wymaga weryfikacji: kliknij Try again na `com.benderbureau.displaytuner` w SFlow Apps tab po deployu sesji 9a. Jeśli zadziała — flip do 🟢.
 
 ---
 
