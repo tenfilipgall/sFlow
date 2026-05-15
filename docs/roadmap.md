@@ -104,6 +104,25 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-15 (wieczór) — Sesja B verified + 4 iteracje fix'ów
+
+**Verified end-to-end** na 2 apkach:
+- **Notion Mail** (5/5 testowanych ikonek): Compose [c], Archive [e], Close sidebar [meta+\\], Reply [r], Forward [f] — wszystkie emit'ują toast via warstwę L0.3 po hoverze.
+- **Notion Calendar**: również działa po dorobieniu split-badge parser (Notion Calendar wystawia `["⌘", "\\"]` jako 2 osobne AXStaticText, nie jeden `"⌘+\\"` jak Notion Mail).
+
+**4 fix'y iteracyjne (z empirycznych testów Filipa):**
+
+1. `+` separator w parserze badge'a (`⌘+\\` → meta+\\). Notion Mail tooltipe piszą explicit `+` między modyfikatorem a klawiszem. Plus zmiana max length 6→8.
+2. Hit-test pod kursorem zamiast tooltip-rect — tooltip flot'uje obok przycisku, click coords land'ują na przycisku. Hit-test `AXUIElementCopyElementAtPosition` zwraca frame przycisku (typowo 22×23 px) używany jako rect zapisany w DiscoveredStore.
+3. Sanity-check rect size >200×200 → fallback 36×36 cursor-centered. Chromium czasami zwraca cały kontener paneli widoku (810×809) jako hit-test response; bez sanity check'a fałszywie strzela Reply toastem dla każdego kliku w panelu.
+4. Split-badge parser — łączy WSZYSTKIE krótkie AXStaticText fragmenty przed parsowaniem (Notion Calendar wystawia modyfikator i klawisz osobno).
+
+**Tests:** 256 passing (+37 vs baseline 219), 0 failed.
+
+**Verbose debug toggle:** `defaults write com.filip.sflow tooltipDebug -bool true|false`. Bez verbose, production logi to: init / candidate / recorded / rejected / L0.3 HIT.
+
+**Decyzja na następną sesję:** Filip ma przetestować B na innych Chromium apkach (Linear, Discord, Slack-nowy, Notion main) zanim zaczniemy Sesję C (backend crowdsource). Jeśli B = generic killer feature → C uzasadniona, jeśli tylko Notion-rodzina → C czeka. Patrz memory `project_next_session_2026_05_16` dla pełnego planu.
+
 ### 2026-05-15 — Sesja B (complete): TooltipObserver — passive React-portal tooltip scraping
 
 **Co:** Nowa warstwa rozpoznawania `L0.3 tooltipObserver` — pasywnie obserwuje React-portal tooltipy w focused app i emit'uje toast przy kliku w obszar, gdzie wcześniej był tooltip. Adresuje P-37: Notion Mail (i każda inna Chromium-bazowana React-app z własnymi tooltipami) nie wystawia accessible name dla ikonkowych przycisków, ale **renderuje tooltipy** zawierające parę (nazwa akcji + skrót). Te tooltipy żyją w drzewie AX jako floating AXGroup z dwoma AXStaticText.
