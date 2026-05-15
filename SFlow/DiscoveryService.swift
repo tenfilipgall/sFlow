@@ -1,6 +1,11 @@
 import AppKit
 import Foundation
 
+extension Notification.Name {
+    static let sflowDiscoveryStateChanged =
+        Notification.Name("com.sflow.discoveryStateChanged")
+}
+
 /// Status changes emitted to the UI indicator.
 enum DiscoveryStatus {
     case idle
@@ -13,15 +18,19 @@ final class DiscoveryService {
     private let client: DiscoveryClient
     private let ruleCache: RuleCache
     private let rulesDir: URL
+    private let attemptStore: DiscoveryAttemptStore
     private var inFlight: Set<String> = []
-    private var attempted: Set<String> = []
     private let queue = DispatchQueue(label: "com.filip.sflow.discovery", qos: .utility)
     var onStatusChange: ((DiscoveryStatus) -> Void)?
 
-    init(client: DiscoveryClient, ruleCache: RuleCache, rulesDir: URL) {
+    init(client: DiscoveryClient,
+         ruleCache: RuleCache,
+         rulesDir: URL,
+         attemptStore: DiscoveryAttemptStore) {
         self.client = client
         self.ruleCache = ruleCache
         self.rulesDir = rulesDir
+        self.attemptStore = attemptStore
     }
 
     func observeAppActivation() {
@@ -37,9 +46,9 @@ final class DiscoveryService {
                 as? NSRunningApplication else { return }
         guard let bundleId = app.bundleIdentifier else { return }
         if ruleCache.hasRules(bundleId: bundleId) { return }
-        if attempted.contains(bundleId) { return }
         if inFlight.contains(bundleId) { return }
-        attempted.insert(bundleId)
+        if !attemptStore.canAttempt(bundleId: bundleId) { return }
+
         inFlight.insert(bundleId)
 
         let appName = app.localizedName ?? bundleId
@@ -47,26 +56,33 @@ final class DiscoveryService {
         onStatusChange?(.running(appName: appName))
 
         queue.async { [weak self] in
+            self?.runDiscovery(app: app, bundleId: bundleId,
+                               appName: appName, appVersion: appVersion)
+        }
+    }
+
+    private func runDiscovery(app: NSRunningApplication,
+                              bundleId: String,
+                              appName: String,
+                              appVersion: String) {
+        let menuBar = MenuBarDumper.dump(for: app)
+        let skeleton = AXSkeletonExtractor.extract(for: app)
+        Task { [weak self] in
             guard let self else { return }
-            let menuBar = MenuBarDumper.dump(for: app)
-            let skeleton = AXSkeletonExtractor.extract(for: app)
-            Task { [weak self] in
-                guard let self else { return }
-                do {
-                    let result = try await self.client.discover(
-                        bundleId: bundleId, appName: appName, appVersion: appVersion,
-                        menuBar: menuBar, skeleton: skeleton
-                    )
-                    try self.writeToCache(bundleId: bundleId, appVersion: appVersion, result: result)
-                    try self.ruleCache.load()
-                    await MainActor.run { self.onStatusChange?(.completed(appName: appName)) }
-                } catch {
-                    await MainActor.run {
-                        self.onStatusChange?(.failed(appName: appName, message: "\(error)"))
-                    }
+            do {
+                let result = try await self.client.discover(
+                    bundleId: bundleId, appName: appName, appVersion: appVersion,
+                    menuBar: menuBar, skeleton: skeleton
+                )
+                try self.writeToCache(bundleId: bundleId, appVersion: appVersion, result: result)
+                try self.ruleCache.load()
+                await MainActor.run { self.onStatusChange?(.completed(appName: appName)) }
+            } catch {
+                await MainActor.run {
+                    self.onStatusChange?(.failed(appName: appName, message: "\(error)"))
                 }
-                self.inFlight.remove(bundleId)
             }
+            self.inFlight.remove(bundleId)
         }
     }
 

@@ -159,10 +159,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Task { await updater?.forceUpdate() }
         }
 
+        let _attemptStore = DiscoveryAttemptStore(
+            fileURL: RuleStorage.userRulesDirectory()
+                .deletingLastPathComponent()
+                .appendingPathComponent("attempted.json")
+        )
         discoveryService = DiscoveryService(
             client: client,
             ruleCache: ruleCache,
-            rulesDir: RuleStorage.userRulesDirectory()
+            rulesDir: RuleStorage.userRulesDirectory(),
+            attemptStore: _attemptStore
         )
         discoveryService?.onStatusChange = { [weak self] status in
             switch status {
