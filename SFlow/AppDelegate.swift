@@ -2,11 +2,14 @@ import AppKit
 import ApplicationServices
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    static var shared: AppDelegate?
+
     private var statusItem: NSStatusItem!
     private var clickWatcher: ClickWatcher?
     private var ruleCache: RuleCache!
-    private var discoveryService: DiscoveryService?
+    var discoveryService: DiscoveryService?
     private var bundledUpdater: BundledUpdater?
+    var attemptStore: DiscoveryAttemptStore?
     private var statusIndicatorText: String = ""
 
     private var isEnabled: Bool {
@@ -15,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppDelegate.shared = self
         // Skip full startup when running unit tests
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
 
@@ -159,16 +163,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Task { await updater?.forceUpdate() }
         }
 
-        let _attemptStore = DiscoveryAttemptStore(
+        let store = DiscoveryAttemptStore(
             fileURL: RuleStorage.userRulesDirectory()
                 .deletingLastPathComponent()
                 .appendingPathComponent("attempted.json")
         )
+        self.attemptStore = store
+
         discoveryService = DiscoveryService(
             client: client,
             ruleCache: ruleCache,
             rulesDir: RuleStorage.userRulesDirectory(),
-            attemptStore: _attemptStore
+            attemptStore: store
         )
         discoveryService?.onStatusChange = { [weak self] status in
             switch status {
