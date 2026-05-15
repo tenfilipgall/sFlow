@@ -229,20 +229,36 @@ final class TooltipObserver {
 
     /// Identifies which text is the badge (short, parseable as shortcut) and
     /// which is the action name (3-80 chars). Returns (badge, name) or nil.
+    ///
+    /// Notion Mail packs badge as one AXStaticText `"⌘+\\"`. Notion Calendar
+    /// splits it across multiple AXStaticText nodes — one per modifier and
+    /// key — e.g. `["⌘", "\\"]`. We try the joined fragments first so split
+    /// badges still parse correctly; falling back to per-fragment parsing
+    /// catches the packed case.
     static func parseTooltipTexts(_ texts: [String]) -> (badge: String, name: String)? {
-        var badge: String? = nil
         var name: String? = nil
+        var badgeFragments: [String] = []
         for raw in texts {
             let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
             if t.isEmpty { continue }
-            if t.count <= 5, badge == nil, TooltipShortcutParser.parseBadge(t) != nil {
-                badge = t
-            } else if t.count >= 3, t.count <= 80, name == nil {
+            if t.count >= 3, t.count <= 80, name == nil {
                 name = t
+            } else if t.count <= 5 {
+                badgeFragments.append(t)
             }
         }
-        guard let b = badge, let n = name else { return nil }
-        return (b, n)
+        guard let n = name, !badgeFragments.isEmpty else { return nil }
+
+        let combined = badgeFragments.joined()
+        if TooltipShortcutParser.parseBadge(combined) != nil {
+            return (combined, n)
+        }
+        for frag in badgeFragments {
+            if TooltipShortcutParser.parseBadge(frag) != nil {
+                return (frag, n)
+            }
+        }
+        return nil
     }
 
     /// Privacy filter — reject text that looks like user data (emails, URLs,

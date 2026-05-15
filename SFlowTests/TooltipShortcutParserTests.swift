@@ -86,6 +86,24 @@ final class TooltipObserverParseTests: XCTestCase {
         XCTAssertEqual(result?.name, "Compose a new email")
     }
 
+    func test_parseTooltipTexts_notionCalendarSplitBadge() {
+        // Notion Calendar splits "⌘\\" into 2 AXStaticText children.
+        // Parser should combine them rather than picking only the (unparseable)
+        // first "⌘" fragment or only the (modifier-less) second "\\".
+        let texts = ["Close sidebar", "⌘", "\\"]
+        let result = TooltipObserver.parseTooltipTexts(texts)
+        XCTAssertEqual(result?.badge, "⌘\\")
+        XCTAssertEqual(result?.name, "Close sidebar")
+    }
+
+    func test_parseTooltipTexts_splitThreeWayModifiers() {
+        // Hypothetical ⌘⇧K split across three AXStaticText
+        let texts = ["Quick search", "⌘", "⇧", "K"]
+        let result = TooltipObserver.parseTooltipTexts(texts)
+        XCTAssertEqual(result?.badge, "⌘⇧K")
+        XCTAssertEqual(result?.name, "Quick search")
+    }
+
     func test_parseTooltipTexts_badgeFirst() {
         let texts = ["⌘\\", "Close sidebar"]
         let result = TooltipObserver.parseTooltipTexts(texts)
