@@ -61,6 +61,30 @@ final class DiscoveryAttemptStore {
         }
     }
 
+    // MARK: - Mutations
+
+    func recordFailure(bundleId: String, reason: DiscoveryFailureReason) {
+        queue.sync {
+            let now = clock()
+            let previousCount = attempts[bundleId]?.failureCount ?? 0
+            let newCount = previousCount + 1
+            let delay: TimeInterval
+            switch newCount {
+            case 1:  delay = 3_600          // 1h
+            case 2:  delay = 86_400         // 24h
+            case 3:  delay = 7 * 86_400     // 7d
+            default: delay = 30 * 86_400    // 30d (cap)
+            }
+            attempts[bundleId] = StoredAttempt(
+                lastAttemptAt: now,
+                failureCount: newCount,
+                lastReason: reason.rawValue,
+                nextRetryAt: now.addingTimeInterval(delay)
+            )
+            save()
+        }
+    }
+
     // MARK: - Persistence
 
     private static func load(from url: URL) -> [String: StoredAttempt] {
