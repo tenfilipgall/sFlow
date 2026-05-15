@@ -54,6 +54,12 @@ final class TooltipObserver {
         }
     }
 
+    /// Set to true via `defaults write com.filip.sflow tooltipDebug -bool true`
+    /// to log every AXGroup/AXWindow near cursor, not just shape-matching ones.
+    private static var verboseDebug: Bool {
+        UserDefaults.standard.bool(forKey: "tooltipDebug")
+    }
+
     private func scanForTooltip(at cursor: CGPoint) {
         guard let app = NSWorkspace.shared.frontmostApplication,
               let bundleId = app.bundleIdentifier else { return }
@@ -61,11 +67,11 @@ final class TooltipObserver {
 
         var found: (rect: CGRect, badge: String, name: String)? = nil
         var candidatesSeen = 0
-        walk(axApp, depth: 0, cursor: cursor, result: &found, candidatesSeen: &candidatesSeen)
+        var groupsSeen = 0
+        walk(axApp, depth: 0, cursor: cursor, result: &found,
+             candidatesSeen: &candidatesSeen, groupsSeen: &groupsSeen)
 
-        if candidatesSeen > 0 || found != nil {
-            NSLog("SFlow[Tooltip]: scan in \(bundleId) at (\(Int(cursor.x)),\(Int(cursor.y))) — candidates=\(candidatesSeen) found=\(found?.name ?? "nil")")
-        }
+        NSLog("SFlow[Tooltip]: scan in \(bundleId) at (\(Int(cursor.x)),\(Int(cursor.y))) — groups=\(groupsSeen) candidates=\(candidatesSeen) found=\(found?.name ?? "nil")")
 
         guard let f = found,
               let keys = TooltipShortcutParser.parseBadge(f.badge) else { return }
@@ -88,20 +94,32 @@ final class TooltipObserver {
 
     private func walk(_ element: AXUIElement, depth: Int, cursor: CGPoint,
                        result: inout (rect: CGRect, badge: String, name: String)?,
-                       candidatesSeen: inout Int) {
-        if depth > 8 || result != nil { return }
+                       candidatesSeen: inout Int, groupsSeen: inout Int) {
+        if depth > 10 || result != nil { return }
         var roleRef: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
         let role = roleRef as? String ?? ""
 
-        if role == "AXGroup" || role == "AXWindow" || role == "AXSheet" || role == "AXSystemDialog" {
-            if let f = Self.frame(of: element), Self.isTooltipShape(f, cursor: cursor) {
-                candidatesSeen += 1
-                let texts = Self.collectStaticTexts(element, depth: 0, limit: 8)
-                NSLog("SFlow[Tooltip]: candidate [\(role)] rect=\(Int(f.minX)),\(Int(f.minY)),\(Int(f.width))x\(Int(f.height)) texts=\(texts)")
-                if let parsed = Self.parseTooltipTexts(texts) {
-                    result = (rect: f, badge: parsed.badge, name: parsed.name)
-                    return
+        let containerRoles: Set<String> = [
+            "AXGroup", "AXWindow", "AXSheet", "AXSystemDialog",
+            "AXHelpTag", "AXPopover", "AXLayoutItem", "AXUnknown"
+        ]
+        if containerRoles.contains(role) {
+            groupsSeen += 1
+            if let f = Self.frame(of: element) {
+                let dx = f.midX - cursor.x; let dy = f.midY - cursor.y
+                let dist = sqrt(dx*dx + dy*dy)
+                if Self.isTooltipShape(f, cursor: cursor) {
+                    candidatesSeen += 1
+                    let texts = Self.collectStaticTexts(element, depth: 0, limit: 8)
+                    NSLog("SFlow[Tooltip]: candidate [\(role)] rect=\(Int(f.minX)),\(Int(f.minY)),\(Int(f.width))x\(Int(f.height)) texts=\(texts)")
+                    if let parsed = Self.parseTooltipTexts(texts) {
+                        result = (rect: f, badge: parsed.badge, name: parsed.name)
+                        return
+                    }
+                } else if Self.verboseDebug, dist < 500 {
+                    let texts = Self.collectStaticTexts(element, depth: 0, limit: 8)
+                    NSLog("SFlow[Tooltip][verbose]: nearby [\(role)] rect=\(Int(f.minX)),\(Int(f.minY)),\(Int(f.width))x\(Int(f.height)) dist=\(Int(dist)) texts=\(texts)")
                 }
             }
         }
@@ -111,7 +129,7 @@ final class TooltipObserver {
         if let children = childrenRef as? [AXUIElement] {
             for c in children {
                 walk(c, depth: depth + 1, cursor: cursor, result: &result,
-                     candidatesSeen: &candidatesSeen)
+                     candidatesSeen: &candidatesSeen, groupsSeen: &groupsSeen)
                 if result != nil { return }
             }
         }
