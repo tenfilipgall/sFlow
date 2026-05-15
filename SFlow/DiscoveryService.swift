@@ -159,6 +159,43 @@ final class DiscoveryService {
         }
     }
 
+    /// User-initiated retry triggered from Apps tab.
+    /// Resets the backoff entry and runs the discovery pipeline immediately.
+    /// If the app is not currently running, emits a `.failed` status with
+    /// guidance to launch the app first.
+    func forceRetry(bundleId: String) {
+        attemptStore.forceRetry(bundleId: bundleId)
+
+        guard let app = NSRunningApplication.runningApplications(
+            withBundleIdentifier: bundleId
+        ).first else {
+            DispatchQueue.main.async {
+                self.onStatusChange?(.failed(
+                    appName: bundleId,
+                    message: "Launch the app first, then try again"
+                ))
+                NotificationCenter.default.post(
+                    name: .sflowDiscoveryStateChanged, object: nil
+                )
+            }
+            return
+        }
+
+        if inFlight.contains(bundleId) { return }
+        inFlight.insert(bundleId)
+
+        let appName = app.localizedName ?? bundleId
+        let appVersion = readAppVersion(app) ?? "unknown"
+        DispatchQueue.main.async {
+            self.onStatusChange?(.running(appName: appName))
+        }
+
+        queue.async { [weak self] in
+            self?.runDiscovery(app: app, bundleId: bundleId,
+                               appName: appName, appVersion: appVersion)
+        }
+    }
+
     private func writeToCache(bundleId: String, appVersion: String, result: BackendRuleSet) throws {
         let cacheDir = rulesDir.appendingPathComponent("cache")
         try RuleStorage.ensureDirectory(cacheDir)
