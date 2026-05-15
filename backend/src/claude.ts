@@ -14,7 +14,7 @@ export async function generateRules(
 
   const message = await client.messages.create({
     model: MODEL,
-    max_tokens: 8192,
+    max_tokens: 32768,
     system: buildSystemPrompt(),
     // TODO: update tool type identifier if SDK version changes
     tools: [{ type: "web_search_20250305" as const, name: "web_search", max_uses: 4 }],
