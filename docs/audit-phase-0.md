@@ -35,6 +35,8 @@
 | P-29 AXSkeletonExtractor zrzuca single-occurrence noun-led titles | 🟢 zamknięte | Filtr `count < 2 && !looksVerbLed` zrzuca "Quick Switcher", "Preferences", "Mentions", "Settings" przed wysłaniem do LLM. Fix: usunąć filtr — pozostałe reguły (email/data/digits/imię) wystarczą. Plan Task 8 (sesja 6, 2026-05-14) |
 | P-30 Brak per-layer telemetry w events.jsonl | 🟢 zamknięte | `ShortcutEvent` nie wie którą warstwą został wyprodukowany. Bez tego nie da się policzyć "która warstwa fire'uje najczęściej dla apki X" → ślepe iteracje promptu. Fix: dodać `RecognitionLayer` enum + pole `layer` w ShortcutEvent i events.jsonl. Plan Task 5+6+7 (sesja 6, 2026-05-14) |
 | P-31 Coverage holes — gdzie SFlow nie pokazuje toasta dla klikalnych elementów | 🟡 w trakcie | Brainstorm sesji 6 (2026-05-14) zidentyfikował 12 potencjalnych źródeł skrótów których SFlow jeszcze nie tapuje: AXCustomActions, AXRoleDescription, `AXUIElementCopyActionNames` probe, AppleScript sdef, szersze Electron regex (Mousetrap, react-hotkeys, blueprintjs), walk-down z interactive ancestor, AXSkeletonExtractor identyfikatory stable-only, GitHub code-search dla OSS apek, Help→Shortcuts auto-scrape, embedded sqlite, keystroke monitoring (Phase 2.2), crowdsource submission. Konkretny plan czeka na dane z `events.jsonl` (sesja 7 telemetry analysis). Sesja 7 quick wins (AXPress probe, walk-down, RoleDescription/CustomActions) ✅ — patrz `2026-05-14-coverage-quick-wins.md`. Pełna iteracja czeka na analizę `events.jsonl` (sesja 8). |
+| P-32 Web research w backend prompt jest niesterowany | ⬜ otwarte | Dziś Claude sam decyduje kiedy/jak użyć `web_search` (max 4 use). Brak ukierunkowania per element ani per typ apki. Plan: prompt prowadzi Claude'a — najpierw `{appName} keyboard shortcuts cheatsheet`, potem per-element queries dla unknown skrótów. Łączymy z reseedem (sesja 9, C-bundle). |
+| P-33 Quality eval nie skaluje powyżej manualnego (Filip+5 osób) | ⬜ otwarte | Dziś jakość reguł sprawdzamy ręcznie (manual eval per apka) — to nie skaluje na 100+ apek. Plan: synthetic Claude self-eval per regule przy generowaniu (drugi call, ~$0.001/reguła, score 1-5 + reason). Score <3 → experimental flag. Tańsza droga niż AppleScript runner / video eval per apka. Sesja 10. |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -795,6 +797,84 @@ title.
 
 **Severity:** ŚREDNIA. Czysta implementacja (~half day), ale wymaga zmian
 w 3 warstwach (skeleton extractor + LoadedRule schema + RuleCache + backend).
+
+---
+
+### P-32: Web research w backend prompt jest niesterowany
+
+**Plik:** `backend/src/prompt.ts`, `backend/src/claude.ts`
+
+**Co jest:** Claude w backendzie ma dostęp do `web_search` tool (max 4 uses
+per call). Sam decyduje kiedy go użyć i jakie zapytania wpisać. Działa dla
+popularnych apek (Slack — wyszukuje cheatsheet i znajduje ⌘K), ale **nie ma
+gwarancji** że zrobi to dla niche apek ani że pokryje konkretne elementy.
+
+**Brakuje:**
+1. **Ukierunkowanie per-app:** prompt nie mówi "najpierw wyszukaj
+   `{appName} keyboard shortcuts cheatsheet` i `{appName} hotkey list`"
+2. **Ukierunkowanie per-element:** gdy widzimy w skeletonie nieznany przycisk
+   "Toggle Sidebar" bez menu bar entry — moglibyśmy wymusić dedicated search
+   `{appName} {elementName} shortcut`
+3. **Więcej uses:** dziś max 4. Dla nowej apki gdzie Claude nic nie wie z
+   pretrenowania, 6-8 dałoby mu szansę.
+
+**Severity:** ŚREDNIA-WYSOKA. Bezpośrednio wpływa na hit rate dla apek
+których Claude nie ma "w głowie" (indie apki, regional apki).
+
+**Wpływ Faza 1:** Łączymy z reseedem bundled.json (sesja 9) — update prompt
++ reseed 5 apek + porównanie liczby reguł / coverage przed-po.
+
+---
+
+### P-33: Quality eval nie skaluje powyżej manualnego (Filip + 5 osób)
+
+**Plik:** Brak — nie istnieje.
+
+**Co nie istnieje:** Dziś jakość reguł sprawdzamy ręcznie — Filip otwiera apkę,
+klika 10 elementów, notuje hit% / false+. To zajmuje 30-60 min per apka.
+Beta z 3-5 osobami doda real-world signal, ale 5 osób fizycznie nie obkliknie
+100 apek.
+
+**Konsekwencja:** Auto-discovery zadziała dla setek apek, ale **nie wiemy które
+działają dobrze a które źle**. Wisemy między "zaufaj Claude'owi" (ryzyko
+halucynacji u userów) a "pozwól tylko zweryfikowanym apkom" (zaprzecza
+auto-discovery flow).
+
+**Rozwiązanie — synthetic Claude self-eval per regule:**
+
+Po wygenerowaniu reguł przez `claude.ts`, drugi call (~$0.001/regule):
+
+```
+PROMPT: "Oto reguła którą wygenerowałeś dla apki {appName}:
+  { titles: ['Duplicate'], keys: ['meta','d'], source: '...' }
+
+Oto element ze skeletonu UI:
+  { role: AXButton, title: 'Duplicate Frame' }
+
+Pytanie 1: Czy ta reguła pasuje do tego elementu?
+Pytanie 2: Czy istnieje INNY powszechniej znany skrót Figma dla
+'Duplicate' który byłby lepszy?
+Zwróć JSON: { score: 1-5, reason: '...', alternative: '...' | null }"
+```
+
+Reguły z `score < 3` → flag `experimental: true` w response. Klient wie że
+ma je traktować ostrożniej (np. nie pokazywać w pierwszym tygodniu onboarding).
+
+**Koszt:** ~$0.001 × 30 reguł × 100 apek = ~$3 łącznie (jednorazowo per apka,
+cache'owane razem z regułami).
+
+**Wpływ:**
+- Łapie halucynacje Claude'a przed dotarciem do usera
+- Skaluje na nieograniczoną liczbę apek bez Filipa
+- Daje signal "this rule is uncertain" do UI / quality gate
+- Komplementarny z P-4 (crowdsourced false-positives — to działa tylko gdy
+  mamy userów)
+
+**Severity:** ŚREDNIA-WYSOKA. Krytyczne dla launch'a z 100+ supported apks.
+
+**Wpływ Faza 1:** Sesja 10. Implementacja: 2nd Claude call w `claude.ts`,
+nowe pole `score` + `experimental` w schemacie reguł. Wymaga adjust client-side
+quality gate (P-1) żeby honorowała `experimental` flag.
 
 ---
 

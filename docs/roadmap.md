@@ -104,6 +104,32 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-15 — Sesja 8 (in design): P-2/P-3 retry + Apps tab + P-32/P-33 added
+
+**Co:** Brainstorm sesji 8 — retry + backoff dla failed discovery (P-2)
++ UI feedback dla failed status (P-3). Design: `DiscoveryAttemptStore`
+persistowany do `attempted.json`, backoff 1h/24h/7d/30d, pre-check 15s
+gdy skeleton<3 + menu empty, failure reasons enum. Apps tab w Settings
+(za toggle `showDeveloperFeatures` w Advanced) — lista discovered/failed
+apek z "Try again" button per apka.
+
+**Dlaczego:** P-2/P-3 oznaczone w audycie jako WYSOKA priorytet — "pierwsza
+rzecz która się zepsuje u prawdziwego usera". Bez tego beta z 3-5 osobami
+ryzykowna.
+
+**Bonus — nowe problemy zidentyfikowane:**
+- **P-32** Web research w backend prompt niesterowany (Claude sam decyduje
+  kiedy/jak użyć web_search). Plan: prompt prowadzi Claude'a, max_uses 4→8.
+- **P-33** Quality eval nie skaluje powyżej manualnego (Filip + 5 osób).
+  Plan: synthetic Claude self-eval per regule (haiku, ~$0.001/regule), score
+  1-5, experimental flag dla score<3.
+
+**Status:** design fazaza ukończona, pisanie spec'a kontynuuje. Implementacja
+po user-review spec'a.
+
+**Wpływ:** zaplanowane sesje 9 (bundle C: P-32 + reseed) i 10 (P-33 synthetic
+eval). Execution sequence w audit-phase-1.md zaktualizowany.
+
 ### 2026-05-14 — Sesja 7: Coverage Quick Wins (P-31 część 1)
 
 **Co:** 3 niezależne, additive fixy rozszerzające detection surface (bez czekania na dane z events.jsonl).
@@ -263,6 +289,12 @@ Zaktualizowana lista (sprawdzona w kodzie, nie z pamięci):
 - ❌ Wykrywanie **false positives** (toast pokazany dla błędnego skrótu)
 - ❌ `AXKeyShortcutsValue` jako Layer 0 (zero-config dla apek z aria-keyshortcuts)
 - ❌ Manualnie zweryfikowane coverage report dla 20 apek
+- ❌ **Ukierunkowany web research w backend prompt** (P-32) — Claude sam
+  decyduje czy/kiedy szukać w necie. Brak per-element search dla nieznanych
+  skrótów. Sub-cel 1.12.
+- ❌ **Synthetic Claude self-eval per regule** (P-33) — quality eval skaluje
+  się dziś tylko do liczby apek które fizycznie obklikamy. Auto-discovery dla
+  100+ apek bez eval = ślepe ufanie Claude'owi. Sub-cel 1.13.
 
 ---
 
@@ -427,6 +459,38 @@ if let ks = readAttribute(element, "AXKeyShortcutsValue") as? String,
 **Risk:** nieznane jak szeroko adoptowane. Sprawdzić empirycznie podczas
 1.6 (beta) — jeśli żadna apka tego nie używa, możemy odpiąć. Koszt
 implementacji niski (~1h), warto spróbować.
+
+### 1.5.5 Ukierunkowany web research w backend prompt (NOWY, P-32)
+
+**Problem:** Claude w backendzie ma `web_search` tool (max 4 uses) ale sam
+decyduje czy/jak go użyć. Dla popularnych apek (Slack ⌘K) działa, dla niche
+i regional apek może w ogóle nie sięgnąć po niego.
+
+**Rozwiązanie:** prompt prowadzi Claude'a — najpierw `{appName} keyboard
+shortcuts cheatsheet`, potem per-element queries dla nieznanych skrótów.
+Plus zwiększamy `max_uses` z 4 na 8.
+
+**Łączymy ze sesją reseedu (sesja 9, bundle C):** zmiana prompta + reseed
+5 bundled apek + diff sprawdzający że liczba reguł nie spadła. Sub-cel 1.12
+w `audit-phase-1.md`.
+
+### 1.5.6 Synthetic Claude self-eval per regule (NOWY, P-33)
+
+**Problem ujawniony w brainstormie 2026-05-15:** manual eval per apka
+(60min/apka) nie skaluje na 100+ apek które auto-discovery wygeneruje.
+Beta z 3-5 osobami pokryje ~10 apek. Resta = ślepe ufanie Claude'owi.
+
+**Rozwiązanie:** drugi Claude call po generacji — `claude-haiku-4-5` ocenia
+każdą regułę 1-5 z reasoning + alternative suggestion. Score <3 → flag
+`experimental: true`. Klient honoruje przez quality gate (z Sub-celu 1.1):
+experimental rules ukryte przez default, widoczne po toggle.
+
+**Koszt:** ~$3 łącznie dla 100 apek (jednorazowo per apka, cache'owane).
+
+**Wpływ:** quality eval skaluje **bez Filipa**. Real-world signal nadal
+przychodzi z P-4 (false-positive feedback) w Fazie 2 — synthetic eval jest
+**pre-flight**, FP feedback jest **post-flight**. Komplementarne. Sub-cel
+1.13 w `audit-phase-1.md`.
 
 ### 1.6 Coverage eval — 20 zweryfikowanych apek
 

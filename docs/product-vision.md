@@ -410,6 +410,29 @@ To że dane są lokalne nie znaczy że user się nie wystraszy. Sama myśl
 i widoczność: w menu bar zawsze pokazywać "loguję X kliknięć dziś", przycisk
 "wyczyść wszystko" w widocznym miejscu, raport co user wie o sobie.
 
+### 5e2. "Jakość pokrycia da się zweryfikować dla 100+ apek" — fałsz bez automatyki
+
+Auto-discovery przez Claude'a generuje reguły dla **dowolnej apki**. To
+fundament wartości SFlow. **ALE:** manual eval (Filip + 5 beta-testerów)
+fizycznie nie obklika 100+ apek żeby sprawdzić czy każda reguła jest
+poprawna. To znaczy że bez **automatycznego mechanizmu quality eval** SFlow
+przy 100 supportowanych apkach **uczy userów halucynacji Claude'a** na
+nieznanej skali.
+
+**Implikacja:** zanim ogłosimy "SFlow działa dla każdej apki", musimy mieć
+mechanizm sprawdzający każdą wygenerowaną regułę automatycznie.
+
+**Plan w fazie 1:**
+- **P-33 / Sub-cel 1.13** — synthetic Claude self-eval per regule (drugi
+  call, ~$0.001/regule, score 1-5 + alternative suggestion). Pre-flight check.
+- **P-4 / Sub-cel 1.4** ✅ — false-positive feedback od userów (cmd-klik
+  na toast). Post-flight signal po pojawieniu się userów.
+- **P-32 / Sub-cel 1.12** — ukierunkowany web research w backend prompt
+  żeby reguły miały lepszą bazę source'ową przed eval.
+
+Bez tych 3 elementów hasła "auto-discovery dla wszystkich apek" są obietnicą
+której nie utrzymamy. To **gating issue** dla launch'a.
+
 ### 5f. "Konkurencja jest słaba" — nieprawdziwe
 
 KeyCue, CheatSheet, KeyCombiner, Mouseless — kilka apek już istnieje. Część

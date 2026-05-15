@@ -28,6 +28,8 @@
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
 | 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
+| 1.12 Backend prompt — ukierunkowany web research (P-32) | ⬜ pending | Update prompta: explicit web_search queries per-app (`{appName} keyboard shortcuts cheatsheet`) + per-element dla nieznanych skrótów. Łączone z reseedem (sesja 9, bundle C). |
+| 1.13 Synthetic Claude self-eval per regule (P-33) | ⬜ pending | Drugi Claude call po generacji reguł — score 1-5 + alternative shortcut suggestion. Score <3 → experimental flag w schemacie. Honorowane przez quality gate w RuleCache. Skaluje quality eval na 100+ apek bez manual. Sesja 10. |
 
 ---
 
@@ -51,12 +53,14 @@
 | **6** | Matching engine quality | 1.10 (P-26..P-30 + telemetria per-layer) | ~4h | 🟢 done | 📋 plan: `2026-05-14-matching-engine-quality.md` |
 | **7** | Coverage Quick Wins (P-31 część 1) | 1.11 część 1 — AXPress probe + walk-down + RoleDescription/CustomActions (bez czekania na dane) | ~3.5h | 🟢 done | 📋 plan: `2026-05-14-coverage-quick-wins.md` |
 | **8** | Coverage telemetry analysis + iteration (P-31 część 2) | 1.11 część 2 — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, plan rozszerzeń (sdef, GitHub scan, prompt rework) | ~2h analizy + 1-2 dni impl | ⬜ | ✏️ pending (waits on usage data) |
-| **9** | Retry + backoff | 1.2 (persisted state, exponential backoff) | ~2 dni | ⬜ | ✏️ sketch |
-| **10** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
-| **11** | Bundled.json update path | P-19 + versioning | ~1 dzień | 🟢 done | Session 8 complete |
-| **12-13** | Coverage eval batch 1+2 | 1.6 (10-15 apek, ~1/dzień) | ~10 mini-sesji 60min | ⬜ | ✏️ sketch (per-batch detail) |
-| **14** | Beta setup | 1.7 (DMG + 5 znajomych) | ~1 dzień | ⬜ | ✏️ sketch |
-| **15** | Beta debrief + decyzja | 1.7 (po 2 tyg.) → go-Faza-2 lub pivot | ~4h | ⬜ | ✏️ sketch (po danych z bety) |
+| **8.5** | Retry + backoff + Apps tab | 1.2 (P-2/P-3 + Apps tab beta-only) | ~3-4h | 🟡 design | 📋 sesja 8 obecna |
+| **9** | Reseed + ukierunkowany web research | 1.12 + reseed 5 bundled apek z nowym promptem | ~1 dzień | ⬜ | ✏️ bundle C |
+| **10** | Synthetic Claude self-eval | 1.13 (P-33) — score per regule + experimental flag | ~1 dzień | ⬜ | ✏️ sketch |
+| **11** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
+| **12** | Bundled.json update path | P-19 — STATUS: faktycznie zrobione w sesjach `3f85be6`/`a50264c`/`ac81d37` | ~1 dzień | 🟢 done | Session pre-7 complete |
+| **13-14** | Coverage eval batch 1+2 | 1.6 (10-15 apek, ~1/dzień) | ~10 mini-sesji 60min | ⬜ | ✏️ sketch (per-batch detail) |
+| **15** | Beta setup | 1.7 (DMG + 5 znajomych) | ~1 dzień | ⬜ | ✏️ sketch |
+| **16** | Beta debrief + decyzja | 1.7 (po 2 tyg.) → go-Faza-2 lub pivot | ~4h | ⬜ | ✏️ sketch (po danych z bety) |
 
 **Decyzyjny checkpoint po sesji 4:** rewizja sesji 5-12 na podstawie tego co
 nauczyliśmy się o czasie/scope w sesjach 1-4. Możliwe że niektóre sesje
@@ -1117,6 +1121,139 @@ core mechaniki.
   - Droga D (blocker) jako core
   - Albo Droga C (drill) jako oddzielna apka
   - Albo całkowite porzucenie B2C → pivot do B2B (Faza 7 wcześniej)
+
+---
+
+### Sub-cel 1.12: Backend prompt — ukierunkowany web research (NOWY)
+
+**Adresuje:** P-32 (Web research w backend prompt jest niesterowany)
+
+**Dziś:** Claude w backendzie ma `web_search` tool (max 4 uses). Sam decyduje
+kiedy i jak go użyć. Dla popularnych apek (Slack/Notion) działa — Claude wie z
+pretrenowania jakie wpisać query. Dla niche/regional apek może w ogóle nie
+sięgnąć po web_search.
+
+**Co robimy:**
+
+1. **Update `backend/src/prompt.ts`** — dodać explicit instrukcję:
+   ```
+   STEP 1: Use web_search with these queries IN ORDER:
+   1. "{appName} keyboard shortcuts cheatsheet"
+   2. "{appName} hotkey list"
+   3. For each visible UI element without obvious shortcut:
+      "{appName} {elementTitle} shortcut"
+   ```
+
+2. **Zwiększyć `max_uses` web_search z 4 → 8** w `backend/src/claude.ts`.
+
+3. **Test:** reseed Slack/Notion/Cursor/Figma — porównać:
+   - Czy `source: web_docs_*` jest częściej w wynikach
+   - Czy avg liczba reguł per apka rośnie
+   - Czy hit rate w manual eval rośnie
+
+**Decyzje:**
+- Sticking with web_search tool (Anthropic) — nie wymieniamy na własną
+  integrację z Brave/Google. Mniejszy moving part.
+- Per-element search tylko gdy element nie ma `kAXMenuItemCmdChar` ani
+  AXKeyShortcutsValue — żeby nie marnować budgetu
+
+**Acceptance:**
+- 5 bundled apek po reseedzie ma ≥ tej samej liczby reguł co przed
+- Spot-check 3 nieznanych apek (np. Cron, Linear, Raycast) → ≥10 reguł
+  per apka
+- Koszt: średni `usage.search_uses` rośnie z ~1.5 do ~3-4 per call.
+  Akceptujemy: ~$0.01 extra per discovery
+
+**Risk:** Claude może spammować search dla każdego elementu i przekroczyć
+8 uses. Mitigacja: instrukcja "use STRATEGIC searches, prioritize cheatsheets".
+
+**Realizacja:** Sesja 9 — bundle z reseedem (jeden workflow: zmiana prompta +
+reseed + diff sprawdzający efekt).
+
+---
+
+### Sub-cel 1.13: Synthetic Claude self-eval per regule (NOWY)
+
+**Adresuje:** P-33 (Quality eval nie skaluje powyżej manualnego)
+
+**Dziś:** Hit rate i false-positive rate sprawdzamy manualnie. 60 min per apka.
+Beta z 3-5 osobami doda real-world signal po 2 tygodniach. Nie skaluje na
+100+ apek.
+
+**Co robimy — 2-stage Claude pipeline:**
+
+**Stage 1 (już istnieje):** `claude.ts` → `claude-sonnet-4-6` generuje reguły
+z menu bar + skeleton + web_search.
+
+**Stage 2 (NOWY):** Dla każdej reguły **drugi call** do tańszego modelu
+(`claude-haiku-4-5`, ~$0.001 per regule):
+
+```
+SYSTEM: "Jesteś evaluatorem reguł skrótów klawiszowych. Sprawdzasz czy
+reguła pasuje do elementu UI i czy proponowany skrót jest powszechnie
+znany dla tej apki."
+
+USER: "Apka: {appName}
+Reguła:
+  { titles: ['Duplicate'], keys: ['meta','d'], source: 'menu_bar' }
+Element ze skeletonu:
+  { role: AXButton, title: 'Duplicate Frame' }
+
+Pytania:
+1. Czy reguła pasuje do elementu? (semantic match)
+2. Czy {keys} jest standardowym skrótem dla {titles[0]} w {appName}?
+3. Czy istnieje INNY powszechnie znany skrót dla {titles[0]} który byłby
+   lepszy?
+
+Zwróć JSON:
+{
+  score: 1-5,                  // 1=zły match, 5=pewny match
+  reason: 'short explanation',
+  alternative_keys: ['...'] | null
+}"
+```
+
+**Schema zmiana w `backend/src/types.ts`:**
+```typescript
+const RuleSchema = z.object({
+  // ... existing fields
+  score: z.number().min(1).max(5).optional(),
+  experimental: z.boolean().optional(),
+});
+```
+
+Reguły z `score < 3` → `experimental: true`. Klient (RuleCache quality gate
+z 1.1) traktuje je inaczej:
+- `experimental: false` → toast jak zwykle
+- `experimental: true` + `showExperimental: true` → toast pokazany
+- `experimental: true` + `showExperimental: false` (default) → toast ukryty
+
+**Plus: alternative_keys w log/metrics** — gdy Claude wskazuje że
+"prawdopodobnie powinno być ⌘⇧D zamiast ⌘D", logujemy to do backend
+observability. Sygnał do dalszej iteracji prompta.
+
+**Koszt:** ~30 reguł × $0.001 × 100 apek = ~$3 łącznie (jednorazowo per
+apka, cache'owane). Sustaining cost zero (po pierwszym discoveryczeniu).
+
+**Acceptance:**
+- 5 bundled apek reseed'owanych z eval → każdy `cache/*.json` ma `score`
+  field per regule
+- Manual sanity check: reguły z `score=5` brzmią poprawnie, reguły z
+  `score≤2` są oczywiście błędne
+- Manual eval na 1 niche apce (np. Cron) — czy `experimental` flag łapie
+  reguły które Filip uznałby za "niepewne"
+
+**Risk 1:** Haiku może być za słaby do oceny — dawać score=4 wszystkiemu.
+Mitigacja: kalibracja na 10 reguł z known-good i 10 known-bad, sprawdzić
+distribution.
+
+**Risk 2:** Eval call się rozjeżdża z reality (Claude eval ≠ user reality).
+Mitigacja: P-4 false-positive feedback jako ground truth, korelujemy
+`score` z real-world false-positive rate w Fazie 2.
+
+**Realizacja:** Sesja 10. Implementacja: nowy plik `backend/src/eval.ts`,
+zmiana `claude.ts` żeby wołał eval po generation, update schema, update
+client-side `LoadedRule` o pole `score`/`experimental`.
 
 ---
 
