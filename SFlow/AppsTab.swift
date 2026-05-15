@@ -156,13 +156,36 @@ struct AppsTab: View {
 
     @ViewBuilder
     private func failedSection() -> some View {
-        // Real content arrives in Task 13. For now, a placeholder so the
-        // view compiles.
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Failed apps").font(.headline)
             if vm.failed.isEmpty {
                 Text("None — nice").foregroundColor(.secondary).font(.caption)
+            } else {
+                ForEach(vm.failed) { entry in
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack {
+                            Text("❌")
+                            Text(entry.name).frame(maxWidth: .infinity, alignment: .leading)
+                            Text(entry.reason.displayString)
+                                .foregroundColor(.secondary).font(.caption)
+                            Button("Try again") {
+                                AppDelegate.shared?.discoveryService?
+                                    .forceRetry(bundleId: entry.id)
+                            }
+                        }
+                        Text("last: \(format(entry.lastAttemptAt)) · \(entry.failureCount) fails · next auto-retry: \(format(entry.nextRetryAt))")
+                            .foregroundColor(.secondary).font(.caption)
+                    }
+                }
             }
         }
+    }
+
+    private func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.doesRelativeDateFormatting = true
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
