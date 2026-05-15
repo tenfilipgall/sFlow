@@ -35,6 +35,8 @@
 		CAFE0207 /* BundledUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFE0206 /* BundledUpdaterTests.swift */; };
 		f61a32de280e4ea2dd9f6164 /* DiscoveryFailureReasonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = b4c7249ad2ed36f0214d9baf /* DiscoveryFailureReasonTests.swift */; };
 		CAFE0209 /* BundledUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFE0208 /* BundledUpdater.swift */; };
+		52ff23472b8553ca69fec4b1 /* DiscoveryAttemptStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1eb9e9bd7fd6401db875cd26 /* DiscoveryAttemptStore.swift */; };
+		4c48c876679a5caff9539e7f /* DiscoveryAttemptStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = c93585d08df1d10298f6b468 /* DiscoveryAttemptStoreTests.swift */; };
 		7059E2B4B6F80C5B5BD01596 /* DiscoveryFailureReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8A05FD5286BDCB3FBDCF481 /* DiscoveryFailureReason.swift */; };
 		894DDA299F2DD79E74EF5521 /* ClickWatcherLayerGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7196A83CF2B5CA7EAA34B736 /* ClickWatcherLayerGateTests.swift */; };
 		8BF3A8E2AD112898A7A2829F /* FalsePositiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */; };
@@ -109,6 +111,8 @@
 		b4c7249ad2ed36f0214d9baf /* DiscoveryFailureReasonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryFailureReasonTests.swift; sourceTree = "<group>"; };
 		CAFE0208 /* BundledUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdater.swift; sourceTree = "<group>"; };
 		A8A05FD5286BDCB3FBDCF481 /* DiscoveryFailureReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryFailureReason.swift; sourceTree = "<group>"; };
+		1eb9e9bd7fd6401db875cd26 /* DiscoveryAttemptStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryAttemptStore.swift; sourceTree = "<group>"; };
+		c93585d08df1d10298f6b468 /* DiscoveryAttemptStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryAttemptStoreTests.swift; sourceTree = "<group>"; };
 		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
 		A59E05FD39B26B00B6EE061F /* KeySymbols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySymbols.swift; sourceTree = "<group>"; };
 		BC83E96D12C283AE32FE30BF /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
@@ -149,6 +153,7 @@
 				74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */,
 				FFD713F6C318B899F22748A1 /* DiscoveryClient.swift */,
 				A8A05FD5286BDCB3FBDCF481 /* DiscoveryFailureReason.swift */,
+				1eb9e9bd7fd6401db875cd26 /* DiscoveryAttemptStore.swift */,
 				4C457892CE0283E887EFC503 /* DiscoveryService.swift */,
 				63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */,
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
@@ -200,6 +205,7 @@
 				A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */,
 				CAFE0206 /* BundledUpdaterTests.swift */,
 				b4c7249ad2ed36f0214d9baf /* DiscoveryFailureReasonTests.swift */,
+				c93585d08df1d10298f6b468 /* DiscoveryAttemptStoreTests.swift */,
 				A1717B830384FA16E9B82893 /* LoadedRuleTests.swift */,
 				9E7EFA935CA79C3442AFF1CE /* MatchConfidenceTests.swift */,
 				71089F34BF360406DF829CD2 /* MenuBarCacheTests.swift */,
@@ -323,6 +329,7 @@
 				838B140FFAE42406744A8033 /* FalsePositiveStoreTests.swift in Sources */,
 				CAFE0207 /* BundledUpdaterTests.swift in Sources */,
 				f61a32de280e4ea2dd9f6164 /* DiscoveryFailureReasonTests.swift in Sources */,
+				4c48c876679a5caff9539e7f /* DiscoveryAttemptStoreTests.swift in Sources */,
 				061463221505D2A6B5533012 /* LoadedRuleTests.swift in Sources */,
 				D8B1CF34485FD3D6842055D5 /* MatchConfidenceTests.swift in Sources */,
 				3870CDD92A623CCC38212BBD /* MenuBarCacheTests.swift in Sources */,
@@ -345,6 +352,7 @@
 				B3F450355F09FDAD04F0AA40 /* AsarReader.swift in Sources */,
 				FBFAD138C297F1EC3CCECE4C /* BundleStringsScanner.swift in Sources */,
 				CAFE0209 /* BundledUpdater.swift in Sources */,
+				52ff23472b8553ca69fec4b1 /* DiscoveryAttemptStore.swift in Sources */,
 				7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */,
 				CF3C198D3BD7A3373FDC5178 /* DiscoveryClient.swift in Sources */,
 				7059E2B4B6F80C5B5BD01596 /* DiscoveryFailureReason.swift in Sources */,
