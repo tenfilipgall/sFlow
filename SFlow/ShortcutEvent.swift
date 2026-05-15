@@ -4,6 +4,7 @@ import Foundation
 /// Used for per-layer hit-rate telemetry (Phase 1.5 of roadmap).
 enum RecognitionLayer: String {
     case axKeyShortcuts = "L0"     // AXKeyShortcutsValue attribute
+    case tooltipObserver = "L0.3"  // DiscoveredStore — tooltip seen by hovering
     case ruleCache      = "L0.5"   // bundled.json / cache / user overrides
     case shortcutRules  = "L1"     // hardcoded ShortcutRules.rules
     case axHelp         = "L2"     // kAXHelpAttribute auto-parse

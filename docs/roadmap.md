@@ -104,6 +104,37 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-15 — Sesja B (complete): TooltipObserver — passive React-portal tooltip scraping
+
+**Co:** Nowa warstwa rozpoznawania `L0.3 tooltipObserver` — pasywnie obserwuje React-portal tooltipy w focused app i emit'uje toast przy kliku w obszar, gdzie wcześniej był tooltip. Adresuje P-37: Notion Mail (i każda inna Chromium-bazowana React-app z własnymi tooltipami) nie wystawia accessible name dla ikonkowych przycisków, ale **renderuje tooltipy** zawierające parę (nazwa akcji + skrót). Te tooltipy żyją w drzewie AX jako floating AXGroup z dwoma AXStaticText.
+
+**Nowe pliki (~430 LOC):**
+- `SFlow/TooltipShortcutParser.swift` — pure function, parsuje badge tooltipa (`"C"`, `"⌘\\"`, `"⇧R"`, `"⌘⇧K"`) → `[String]`. Rzecz wymaga dokładnie 1 znaku-klucza po opcjonalnych modyfikatorach (⌘⇧⌥⌃) — odrzuca "Hello", "Compose" jako szum.
+- `SFlow/DiscoveredStore.swift` — persistent in-memory store. Zapis do `~/Library/Application Support/SFlow/discovered/{bundleId}.jsonl`. Lookup po pozycji kursora w prostokącie z buforem 6px. De-dup w oknie 5s (cursor pause re-skanuje ten sam tooltip wielokrotnie). Cap 2000 entries w pamięci.
+- `SFlow/TooltipObserver.swift` — polluje pozycję kursora co 200ms (cleaner niż CGEventTap na mouseMoved). Scan fire'uje gdy: cursor stabilny ≥350ms (delay renderu tooltipa) + nie skanowaliśmy w ostatnich 500ms (rate-limit). Walk drzewa AX frontmost app głębokość 8, szuka `AXGroup` z prostokątem 40-500×16-100 w promieniu 350px kursora, parsuje wewnątrz AXStaticText'y. Privacy filter: odrzuca tooltipy z `@`, URL, datami ISO, długimi tekstami (>80 znaków).
+
+**Modyfikacje:**
+- `SFlow/ShortcutEvent.swift` — dodany `case tooltipObserver = "L0.3"`.
+- `SFlow/ClickWatcher.swift` — na początku `handleMouseDown`, przed całym walk'iem AX, query `DiscoveredStore.shared.lookup(near: cursorAX)` — jeśli match, emit i return. To staje się **najsilniejszą warstwą po L0** (AXKeyShortcuts), bo tooltipe to direct user-facing signal.
+- `SFlow/AppDelegate.swift` — `tooltipObserver = TooltipObserver()` w `startWatcher()`.
+
+**Testy:** 33 nowe (`TooltipShortcutParserTests` 13, `TooltipObserverParseTests` 13, `DiscoveredStoreTests` 7). **252 testy passing**, 0 failed.
+
+**Dlaczego:** Sesja A potwierdziła empirycznie że dla Notion Mail Chromium nie eksponuje dzieci ikonkowych AXButton — `subtreeLabel` zostaje puste mimo naprawionego fallbacku. Jedyną drogą do tych etykiet są tooltipe które Notion sam pokazuje na hoverze. Sesja B otwiera **nową, asymetryczną warstwę zdobywania reguł** niezależną od Claude'a — działa dla apek których jeszcze nikt nie eval'ował.
+
+**Verification plan dla Filipa:**
+1. Zbuduj z Xcode (Cmd+R)
+2. Otwórz Notion Mail. Najedź ~500ms na ikonkę Compose (czekaj aż pojawi się czarny tooltip „Compose a new email" + „C")
+3. Następnie kliknij Compose
+4. **Oczekiwany rezultat:** toast „C — Compose a new email" (layer L0.3)
+5. Powtórz dla Archive (⌘) ikony przy mailu i Close sidebar (top-left)
+6. `~/Library/Application Support/SFlow/discovered/notion.mail.id.jsonl` powinien rosnąć z każdym tooltipem
+7. **Jeśli nie działa**: dwa zwykłe powody — (a) Chromium nie wystawia tooltipów do drzewa AX (wtedy `discovered/...jsonl` jest puste mimo poprawnego buildu); (b) heurystyka rozmiaru/pozycji nie pasuje do Notion Maila (debug: dorzucić jednorazowy NSLog w `scanForTooltip` żeby zobaczyć co AX widzi)
+
+**Sesja C (backend) zostawiamy:** najpierw zweryfikujemy że B faktycznie łapie tooltipe Notion Maila. Jeśli tak — bez problemu robimy C (crowdsource). Jeśli nie — debugujemy heurystykę albo wracamy do Sesji A5 (rich parent-log).
+
+---
+
 ### 2026-05-15 — Sesja A (complete): Chromium AX deep fallback + miss-log enrichment
 
 **Co:** Naprawa 4 dziur w `ClickWatcher.swift` plus wzbogacenie `MissEvent` o nowe pola — adresuje P-36 (Notion Mail i podobne Electron-apki, gdzie ikonkowe `AXButton` mają puste accessible names).

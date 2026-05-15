@@ -208,6 +208,20 @@ final class ClickWatcher {
         let axX = Float(nsLoc.x)
         let axY = Float(primaryH - nsLoc.y)
 
+        // Layer 0.3: tooltip-observed entry. If the user hovered over this
+        // button within the last minute and we captured a Notion-style
+        // tooltip with name + shortcut badge, emit directly — strongest
+        // available signal for Chromium icon-only buttons that expose no AX
+        // label of their own.
+        let cursorAX = CGPoint(x: CGFloat(axX), y: CGFloat(axY))
+        if let entry = DiscoveredStore.shared.lookup(near: cursorAX, bundleId: bundleId) {
+            let autoId = "tooltip:\(bundleId):\(entry.keys.joined(separator: "+"))"
+            emit(bundleId: bundleId, shortcutId: autoId,
+                 keys: entry.keys, hint: entry.actionName,
+                 loc: nsLoc, layer: .tooltipObserver)
+            return
+        }
+
         let axApp = AXUIElementCreateApplication(frontmost.processIdentifier)
         // Force Chromium/Electron apps (Slack, Notion, Discord, VSCode) to expose their
         // accessibility tree. Idempotent. No-op on native apps.

@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem!
     private var clickWatcher: ClickWatcher?
+    private var tooltipObserver: TooltipObserver?
     private var ruleCache: RuleCache!
     var discoveryService: DiscoveryService?
     private var bundledUpdater: BundledUpdater?
@@ -209,6 +210,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 EventLogger.log(event: event)
             }
         }
+
+        tooltipObserver = TooltipObserver()
     }
 
     private func showAlert(title: String, message: String, url: String) {

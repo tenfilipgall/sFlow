@@ -1,0 +1,186 @@
+import AppKit
+import ApplicationServices
+
+/// Passively watches for tooltips appearing in the focused app's AX tree when
+/// the cursor pauses on a button. React-portal tooltips (Notion Mail, Linear,
+/// etc.) render as floating AXGroup nodes containing two AXStaticText children:
+/// one with the action name, one with the keyboard shortcut badge. When found,
+/// records the (action, shortcut, button-rect) tuple to `DiscoveredStore` so
+/// subsequent clicks on that button — even after the tooltip dismisses — can
+/// emit a toast via the new Layer 0.3 lookup in `ClickWatcher`.
+///
+/// Uses cursor polling (250 ms) rather than CGEventTap on `.mouseMoved` — the
+/// latter delivers ~60 events/sec and needs a separate Unmanaged dance; polling
+/// is simpler and only ticks when cursor is genuinely stable. Scan fires once
+/// cursor has been stationary ≥ 350 ms (tooltip render delay) and at most once
+/// per 500 ms (rate-limit).
+final class TooltipObserver {
+    private let store: DiscoveredStore
+    private let queue = DispatchQueue(label: "com.sflow.tooltip", qos: .utility)
+    private var timer: Timer?
+    private var lastCursor: CGPoint = .zero
+    private var stableSince: Date = .distantPast
+    private var lastScanAt: Date = .distantPast
+
+    init(store: DiscoveredStore = .shared) {
+        self.store = store
+        startPolling()
+    }
+
+    private func startPolling() {
+        let t = Timer(timeInterval: 0.2, repeats: true) { [weak self] _ in
+            self?.tick()
+        }
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+    }
+
+    private func tick() {
+        let nsLoc = NSEvent.mouseLocation
+        let primaryH = NSScreen.screens.first?.frame.height ?? 900
+        let cursor = CGPoint(x: nsLoc.x, y: primaryH - nsLoc.y)
+        let now = Date()
+        if abs(cursor.x - lastCursor.x) > 2 || abs(cursor.y - lastCursor.y) > 2 {
+            lastCursor = cursor
+            stableSince = now
+            return
+        }
+        guard now.timeIntervalSince(stableSince) >= 0.35 else { return }
+        guard now.timeIntervalSince(lastScanAt) >= 0.5 else { return }
+        lastScanAt = now
+        queue.async { [weak self] in
+            self?.scanForTooltip(at: cursor)
+        }
+    }
+
+    private func scanForTooltip(at cursor: CGPoint) {
+        guard let app = NSWorkspace.shared.frontmostApplication,
+              let bundleId = app.bundleIdentifier else { return }
+        let axApp = AXUIElementCreateApplication(app.processIdentifier)
+
+        var found: (rect: CGRect, badge: String, name: String)? = nil
+        walk(axApp, depth: 0, cursor: cursor, result: &found)
+
+        guard let f = found,
+              let keys = TooltipShortcutParser.parseBadge(f.badge) else { return }
+        if Self.containsSensitiveText(f.name) { return }
+
+        let entry = DiscoveredEntry(
+            bundleId: bundleId,
+            actionName: f.name,
+            keys: keys,
+            identifier: nil,
+            rect: DiscoveredEntry.CGRectCodable(f.rect),
+            observedAt: Date()
+        )
+        store.record(entry)
+    }
+
+    private func walk(_ element: AXUIElement, depth: Int, cursor: CGPoint,
+                       result: inout (rect: CGRect, badge: String, name: String)?) {
+        if depth > 8 || result != nil { return }
+        var roleRef: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
+        let role = roleRef as? String ?? ""
+
+        if role == "AXGroup" || role == "AXWindow" {
+            if let f = Self.frame(of: element), Self.isTooltipShape(f, cursor: cursor) {
+                let texts = Self.collectStaticTexts(element, depth: 0, limit: 8)
+                if let parsed = Self.parseTooltipTexts(texts) {
+                    result = (rect: f, badge: parsed.badge, name: parsed.name)
+                    return
+                }
+            }
+        }
+
+        var childrenRef: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef)
+        if let children = childrenRef as? [AXUIElement] {
+            for c in children {
+                walk(c, depth: depth + 1, cursor: cursor, result: &result)
+                if result != nil { return }
+            }
+        }
+    }
+
+    static func frame(of element: AXUIElement) -> CGRect? {
+        var posRef: AnyObject?; var sizeRef: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXPositionAttribute as CFString, &posRef)
+        AXUIElementCopyAttributeValue(element, kAXSizeAttribute as CFString, &sizeRef)
+        guard let pos = posRef, let sz = sizeRef else { return nil }
+        var p = CGPoint.zero; var s = CGSize.zero
+        AXValueGetValue(pos as! AXValue, .cgPoint, &p)
+        AXValueGetValue(sz as! AXValue, .cgSize, &s)
+        guard s.width > 0, s.height > 0 else { return nil }
+        return CGRect(origin: p, size: s)
+    }
+
+    /// Tooltip shape heuristic — small floating box near cursor.
+    /// 40-500 wide × 16-100 tall, center within 350 px of cursor.
+    static func isTooltipShape(_ rect: CGRect, cursor: CGPoint) -> Bool {
+        let w = rect.size.width, h = rect.size.height
+        guard w >= 40, w <= 500, h >= 16, h <= 100 else { return false }
+        let dx = rect.midX - cursor.x
+        let dy = rect.midY - cursor.y
+        return (dx * dx + dy * dy) < (350 * 350)
+    }
+
+    /// Collects up to `limit` AXStaticText texts from element's subtree
+    /// (looking at both kAXValue and kAXTitle since Chromium uses both).
+    static func collectStaticTexts(_ element: AXUIElement, depth: Int, limit: Int) -> [String] {
+        if depth > 4 || limit <= 0 { return [] }
+        var result: [String] = []
+        var childrenRef: AnyObject?
+        AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenRef)
+        guard let children = childrenRef as? [AXUIElement] else { return [] }
+        for c in children {
+            if result.count >= limit { break }
+            var roleRef: AnyObject?
+            AXUIElementCopyAttributeValue(c, kAXRoleAttribute as CFString, &roleRef)
+            let r = roleRef as? String ?? ""
+            if r == "AXStaticText" {
+                var valueRef: AnyObject?; var titleRef: AnyObject?
+                AXUIElementCopyAttributeValue(c, kAXValueAttribute as CFString, &valueRef)
+                AXUIElementCopyAttributeValue(c, kAXTitleAttribute as CFString, &titleRef)
+                let t = (valueRef as? String) ?? (titleRef as? String) ?? ""
+                if !t.isEmpty, t.count <= 100 { result.append(t) }
+            } else {
+                result.append(contentsOf: Self.collectStaticTexts(c, depth: depth + 1,
+                                                                   limit: limit - result.count))
+            }
+        }
+        return result
+    }
+
+    /// Identifies which text is the badge (short, parseable as shortcut) and
+    /// which is the action name (3-80 chars). Returns (badge, name) or nil.
+    static func parseTooltipTexts(_ texts: [String]) -> (badge: String, name: String)? {
+        var badge: String? = nil
+        var name: String? = nil
+        for raw in texts {
+            let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            if t.isEmpty { continue }
+            if t.count <= 5, badge == nil, TooltipShortcutParser.parseBadge(t) != nil {
+                badge = t
+            } else if t.count >= 3, t.count <= 80, name == nil {
+                name = t
+            }
+        }
+        guard let b = badge, let n = name else { return nil }
+        return (b, n)
+    }
+
+    /// Privacy filter — reject text that looks like user data (emails, URLs,
+    /// dates, very long strings, names of senders).
+    static func containsSensitiveText(_ s: String) -> Bool {
+        if s.contains("@") { return true }
+        if s.hasPrefix("http://") || s.hasPrefix("https://") { return true }
+        if s.range(of: #"\d{4}-\d{2}-\d{2}"#, options: .regularExpression) != nil { return true }
+        if s.count > 80 { return true }
+        return false
+    }
+
+    deinit {
+        timer?.invalidate()
+    }
+}
