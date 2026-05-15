@@ -69,6 +69,20 @@ final class DiscoveryService {
         var skeleton = AXSkeletonExtractor.extract(for: app)
         NSLog("SFlow discovery [\(bundleId)] runDiscovery start: skeleton.count=\(skeleton.count), menuBar.count=\(menuBar.count)")
 
+        // Backend has a hard cap of 500 items per array. Big IDE apps
+        // (Android Studio = ~575 menu items) overflow the Zod max(500) constraint
+        // and get rejected with HTTP 400. Cap on the client so we always send a
+        // valid payload. NSLog only fires when truncation actually happens.
+        let maxItems = 500
+        if menuBar.count > maxItems {
+            NSLog("SFlow discovery [\(bundleId)] menuBar truncated: \(menuBar.count) → \(maxItems)")
+            menuBar = Array(menuBar.prefix(maxItems))
+        }
+        if skeleton.count > maxItems {
+            NSLog("SFlow discovery [\(bundleId)] skeleton truncated: \(skeleton.count) → \(maxItems)")
+            skeleton = Array(skeleton.prefix(maxItems))
+        }
+
         if skeleton.count < 3 && menuBar.isEmpty {
             // App likely still loading AX tree — wait 15s and retry once
             NSLog("SFlow: empty AX for \(bundleId), waiting 15s for app to settle")
