@@ -34,6 +34,7 @@
 		838B140FFAE42406744A8033 /* FalsePositiveStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */; };
 		CAFE0207 /* BundledUpdaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFE0206 /* BundledUpdaterTests.swift */; };
 		CAFE0209 /* BundledUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAFE0208 /* BundledUpdater.swift */; };
+		7059E2B4B6F80C5B5BD01596 /* DiscoveryFailureReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8A05FD5286BDCB3FBDCF481 /* DiscoveryFailureReason.swift */; };
 		894DDA299F2DD79E74EF5521 /* ClickWatcherLayerGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7196A83CF2B5CA7EAA34B736 /* ClickWatcherLayerGateTests.swift */; };
 		8BF3A8E2AD112898A7A2829F /* FalsePositiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */; };
 		8DA7A33D1FEEFF27C202486F /* AsarReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4927B1309184521DF315A53 /* AsarReaderTests.swift */; };
@@ -105,6 +106,7 @@
 		A3880DD4C958F40977001577 /* FalsePositiveStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FalsePositiveStoreTests.swift; sourceTree = "<group>"; };
 		CAFE0206 /* BundledUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdaterTests.swift; sourceTree = "<group>"; };
 		CAFE0208 /* BundledUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdater.swift; sourceTree = "<group>"; };
+		A8A05FD5286BDCB3FBDCF481 /* DiscoveryFailureReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryFailureReason.swift; sourceTree = "<group>"; };
 		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
 		A59E05FD39B26B00B6EE061F /* KeySymbols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySymbols.swift; sourceTree = "<group>"; };
 		BC83E96D12C283AE32FE30BF /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
@@ -144,6 +146,7 @@
 				CAFE0208 /* BundledUpdater.swift */,
 				74610A7EF8913C2810D5A0C0 /* ClickWatcher.swift */,
 				FFD713F6C318B899F22748A1 /* DiscoveryClient.swift */,
+				A8A05FD5286BDCB3FBDCF481 /* DiscoveryFailureReason.swift */,
 				4C457892CE0283E887EFC503 /* DiscoveryService.swift */,
 				63398BFD748EC70C1A31DE9F /* ElectronShortcutScanner.swift */,
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
@@ -340,6 +343,7 @@
 				CAFE0209 /* BundledUpdater.swift in Sources */,
 				7F04919FAECD8480B487A8FD /* ClickWatcher.swift in Sources */,
 				CF3C198D3BD7A3373FDC5178 /* DiscoveryClient.swift in Sources */,
+				7059E2B4B6F80C5B5BD01596 /* DiscoveryFailureReason.swift in Sources */,
 				F7B4481B311DAA9A67DB13E0 /* DiscoveryService.swift in Sources */,
 				B0CB749EB83B777278EF3108 /* ElectronShortcutScanner.swift in Sources */,
 				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
