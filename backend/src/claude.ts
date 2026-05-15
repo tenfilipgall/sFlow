@@ -12,7 +12,10 @@ export async function generateRules(
 ): Promise<RuleSet> {
   const client = new Anthropic({ apiKey });
 
-  const message = await client.messages.create({
+  // Streaming is required for max_tokens > 8192 (Anthropic SDK rejects non-streaming
+  // long-running operations to avoid HTTP timeouts). finalMessage() collects all
+  // stream chunks into a regular Message object — rest of the pipeline unchanged.
+  const stream = client.messages.stream({
     model: MODEL,
     max_tokens: 32768,
     system: buildSystemPrompt(),
@@ -20,6 +23,7 @@ export async function generateRules(
     tools: [{ type: "web_search_20250305" as const, name: "web_search", max_uses: 4 }],
     messages: [{ role: "user", content: buildUserPrompt(req) }],
   });
+  const message = await stream.finalMessage();
 
   const text = extractFinalText(message);
   const rules = parseRulesJSON(text);
