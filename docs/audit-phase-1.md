@@ -18,7 +18,7 @@
 |---|---|---|
 | 1.0 Re-seed Terminal/Notion/Claude | 🟢 done | Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (sesja 2026-05-14) |
 | 1.1 Quality gate dla auto-discovered rules | 🟢 done | Backend dedup ✅ (v1.1.1). Settings toggle ✅. Client-side filtr confidence/source w RuleCache ✅ (sesja 2026-05-14) |
-| 1.2 Retry + backoff dla failed discovery | ⬜ pending | — |
+| 1.2 Retry + backoff dla failed discovery | 🟢 done | DiscoveryAttemptStore + Apps tab (beta-only) + display name z Info.plist + menuBar/skeleton cap 500. Manual eval ujawnił 2 nowe backend issues (P-34, P-35) — przeniesione do Sesji 9. Sesja 8 (2026-05-15). 219 testów passing. |
 | 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
 | 1.4 False-positive feedback (cmd-klik) | 🟢 done | cmd-klik na toast + false_positives.jsonl + lokalny disable po 3 zgłoszeniach + Settings Recent Shortcuts list + /v1/feedback backend (sesja 5) |
 | 1.5 Naprawa bugu MenuBarIndex.lookup | 🟢 done | Fix key.contains(q) + próg 5 znaków + 4 testy (sesja 2026-05-14) |
@@ -28,7 +28,7 @@
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
 | 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
-| 1.12 Backend prompt — ukierunkowany web research (P-32) | ⬜ pending | Update prompta: explicit web_search queries per-app (`{appName} keyboard shortcuts cheatsheet`) + per-element dla nieznanych skrótów. Łączone z reseedem (sesja 9, bundle C). |
+| 1.12 Backend prompt — ukierunkowany web research (P-32) | ⬜ pending | Update prompta: explicit web_search queries per-app (`{appName} keyboard shortcuts cheatsheet`) + per-element dla nieznanych skrótów. PLUS rozwiązanie P-34 (max_tokens 8192→16000+) i P-35 (timeout diagnostyka + ewentualnie split call). Łączone z reseedem (sesja 9, bundle C). |
 | 1.13 Synthetic Claude self-eval per regule (P-33) | ⬜ pending | Drugi Claude call po generacji reguł — score 1-5 + alternative shortcut suggestion. Score <3 → experimental flag w schemacie. Honorowane przez quality gate w RuleCache. Skaluje quality eval na 100+ apek bez manual. Sesja 10. |
 
 ---
@@ -53,7 +53,7 @@
 | **6** | Matching engine quality | 1.10 (P-26..P-30 + telemetria per-layer) | ~4h | 🟢 done | 📋 plan: `2026-05-14-matching-engine-quality.md` |
 | **7** | Coverage Quick Wins (P-31 część 1) | 1.11 część 1 — AXPress probe + walk-down + RoleDescription/CustomActions (bez czekania na dane) | ~3.5h | 🟢 done | 📋 plan: `2026-05-14-coverage-quick-wins.md` |
 | **8** | Coverage telemetry analysis + iteration (P-31 część 2) | 1.11 część 2 — Filip używa SFlow 1-2 dni, analiza `events.jsonl` per-layer, plan rozszerzeń (sdef, GitHub scan, prompt rework) | ~2h analizy + 1-2 dni impl | ⬜ | ✏️ pending (waits on usage data) |
-| **8.5** | Retry + backoff + Apps tab | 1.2 (P-2/P-3 + Apps tab beta-only) | ~3-4h | 🟡 design | 📋 sesja 8 obecna |
+| **8.5** | Retry + backoff + Apps tab | 1.2 (P-2/P-3 + Apps tab beta-only) | ~5h | 🟢 done | 📋 `2026-05-15-discovery-retry-and-apps-tab.md` |
 | **9** | Reseed + ukierunkowany web research | 1.12 + reseed 5 bundled apek z nowym promptem | ~1 dzień | ⬜ | ✏️ bundle C |
 | **10** | Synthetic Claude self-eval | 1.13 (P-33) — score per regule + experimental flag | ~1 dzień | ⬜ | ✏️ sketch |
 | **11** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |

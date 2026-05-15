@@ -104,31 +104,35 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
-### 2026-05-15 — Sesja 8 (in design): P-2/P-3 retry + Apps tab + P-32/P-33 added
+### 2026-05-15 — Sesja 8 (complete): P-2/P-3 discovery retry + Apps tab
 
-**Co:** Brainstorm sesji 8 — retry + backoff dla failed discovery (P-2)
-+ UI feedback dla failed status (P-3). Design: `DiscoveryAttemptStore`
-persistowany do `attempted.json`, backoff 1h/24h/7d/30d, pre-check 15s
-gdy skeleton<3 + menu empty, failure reasons enum. Apps tab w Settings
-(za toggle `showDeveloperFeatures` w Advanced) — lista discovered/failed
-apek z "Try again" button per apka.
+**Co:** Persistowany retry + backoff dla nieudanej discovery (P-2) plus UI feedback dla failed status (P-3). 13 atomic tasks TDD + 4 follow-up fixes.
 
-**Dlaczego:** P-2/P-3 oznaczone w audycie jako WYSOKA priorytet — "pierwsza
-rzecz która się zepsuje u prawdziwego usera". Bez tego beta z 3-5 osobami
-ryzykowna.
+(1) `DiscoveryFailureReason` enum (6 cases: emptySkeleton, emptyMenuBar, rateLimited, httpError, parseError, noRulesGenerated) + 5 testów mapowania z DiscoveryClientError.
 
-**Bonus — nowe problemy zidentyfikowane:**
-- **P-32** Web research w backend prompt niesterowany (Claude sam decyduje
-  kiedy/jak użyć web_search). Plan: prompt prowadzi Claude'a, max_uses 4→8.
-- **P-33** Quality eval nie skaluje powyżej manualnego (Filip + 5 osób).
-  Plan: synthetic Claude self-eval per regule (haiku, ~$0.001/regule), score
-  1-5, experimental flag dla score<3.
+(2) `DiscoveryAttemptStore` — atomic write do `attempted.json` (`~/Library/Application Support/SFlow/`), backoff 1h/24h/7d/30d (cap), canAttempt/recordFailure/recordSuccess/forceRetry, mock clock + 10 testów (skeleton, każdy backoff bucket, persistence round-trip, time-travel clock).
 
-**Status:** design fazaza ukończona, pisanie spec'a kontynuuje. Implementacja
-po user-review spec'a.
+(3) `DiscoveryService` przepisany: canAttempt gate, 15s pre-check gdy skeleton<3 + menu empty, klasyfikacja errorów do reason, recordSuccess po success, `NotificationCenter` event po każdej zmianie stanu, forceRetry public API z guard "launch app first" PRESERVUJĄCY entry gdy app not running (Bug 1 fix).
 
-**Wpływ:** zaplanowane sesje 9 (bundle C: P-32 + reseed) i 10 (P-33 synthetic
-eval). Execution sequence w audit-phase-1.md zaktualizowany.
+(4) `AppDelegate.shared` + wstrzyknięcie store **WCZEŚNIE** w applicationDidFinishLaunching (przed setupStatusItem — fix bo Settings → Apps mogło zwracać empty gdy store jeszcze nie istniał).
+
+(5) `AppsTab` SwiftUI — 3 sekcje (bundled / learned / failed) z `Try again` button. Display name z Info.plist via Launch Services (NSWorkspace.urlForApplication) gdy apka nie działa — zamiast bundleId tail "studio". Ukryta za toggle `showDeveloperFeatures` w Advanced.
+
+(6) menuBar/skeleton capped at 500 items klient-side (backend Zod max(500) — Android Studio z 575 items zwraca 400 Bad Request).
+
+**Dlaczego:** P-2/P-3 oznaczone w audycie jako WYSOKA priorytet — pierwszy user który aktywuje Notion 5s po starcie systemu miał trwale zepsute reguły do końca 90-dniowego cache. Z backoffem auto-retry naprawia sam, a beta-tester ma manual override.
+
+**Manual eval ujawnił 2 nowe problemy backendowe (przeniesione do Sesji 9):**
+- **P-34**: Android Studio — Claude max_tokens 8192 truncation → backend 502 non-JSON. Fix: zwiększyć max_tokens w `backend/src/claude.ts`.
+- **P-35**: DisplayTuner — backend timeout 90s. Diagnoza wymaga inspekcji backend latency logów.
+
+**Pre-check 15s WERYFIKOWANE działa:** AppCleaner wszedł z `skeleton=0, menu=0` → wait 15s → `skeleton=127, menu=150` → callBackendAndStore.
+
+**Wpływ:** Eliminuje gating issue dla bety (P-2/P-3 były WYSOKA priorytet). Apps tab ukryty domyślnie, nie zaśmieca UI zwykłym userom. **219 testów passing**, 15 nowych (z 198 baseline).
+
+**Commits:** patrz `git log --oneline` od `098a726`.
+
+**Następny krok (sesja 9):** Bundle C — P-32 (ukierunkowany web research w backend prompt) + P-34 (max_tokens) + P-35 (timeout diagnoza) + reseed 5 bundled apek nowym promptem.
 
 ### 2026-05-14 — Sesja 7: Coverage Quick Wins (P-31 część 1)
 

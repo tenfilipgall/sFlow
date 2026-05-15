@@ -17,8 +17,8 @@
 | ID | Status | Komentarz |
 |---|---|---|
 | P-1 Quality gate | 🟢 zamknięte | Backend dedup ✅ + client-side filtr confidence/source ✅ (sesja 2026-05-14) |
-| P-2 Retry przy fail | ⬜ otwarte | — |
-| P-3 .failed silently | ⬜ otwarte | — |
+| P-2 Retry przy fail | 🟢 zamknięte | DiscoveryAttemptStore (persisted attempted.json) + 1h/24h/7d/30d backoff + 15s AX pre-check + DiscoveryFailureReason classification (6 cases) + forceRetry API + auto-retry on app activation. 15 nowych testów. Manual eval: pre-check zweryfikowany (AppCleaner 0→127). Sesja 8 (2026-05-15) |
+| P-3 .failed silently | 🟢 zamknięte | Apps tab w Settings (za toggle showDeveloperFeatures w Advanced) — failed apps z displayString reason + Try again button + persistence + Bug 1 fix (entry preservation gdy app not running). Sesja 8 (2026-05-15) |
 | P-4 False-positive feedback | 🟢 zamknięte | cmd-klik na toast + false_positives.jsonl + lokalny disable po 3 zgłoszeniach + /v1/feedback backend + Settings Recent Shortcuts list (sesja 5) |
 | P-5 MenuBarIndex bug | 🟢 zamknięte | Fix + 2 nowe testy + 2 poprawione testy (sesja 2026-05-14) |
 | P-6 AXKeyShortcutsValue | 🟢 zamknięte | Layer 0 w ClickWatcher, parseAriaShortcut + 10 testów ✅ (sesja 2026-05-14) |
@@ -37,6 +37,8 @@
 | P-31 Coverage holes — gdzie SFlow nie pokazuje toasta dla klikalnych elementów | 🟡 w trakcie | Brainstorm sesji 6 (2026-05-14) zidentyfikował 12 potencjalnych źródeł skrótów których SFlow jeszcze nie tapuje: AXCustomActions, AXRoleDescription, `AXUIElementCopyActionNames` probe, AppleScript sdef, szersze Electron regex (Mousetrap, react-hotkeys, blueprintjs), walk-down z interactive ancestor, AXSkeletonExtractor identyfikatory stable-only, GitHub code-search dla OSS apek, Help→Shortcuts auto-scrape, embedded sqlite, keystroke monitoring (Phase 2.2), crowdsource submission. Konkretny plan czeka na dane z `events.jsonl` (sesja 7 telemetry analysis). Sesja 7 quick wins (AXPress probe, walk-down, RoleDescription/CustomActions) ✅ — patrz `2026-05-14-coverage-quick-wins.md`. Pełna iteracja czeka na analizę `events.jsonl` (sesja 8). |
 | P-32 Web research w backend prompt jest niesterowany | ⬜ otwarte | Dziś Claude sam decyduje kiedy/jak użyć `web_search` (max 4 use). Brak ukierunkowania per element ani per typ apki. Plan: prompt prowadzi Claude'a — najpierw `{appName} keyboard shortcuts cheatsheet`, potem per-element queries dla unknown skrótów. Łączymy z reseedem (sesja 9, C-bundle). |
 | P-33 Quality eval nie skaluje powyżej manualnego (Filip+5 osób) | ⬜ otwarte | Dziś jakość reguł sprawdzamy ręcznie (manual eval per apka) — to nie skaluje na 100+ apek. Plan: synthetic Claude self-eval per regule przy generowaniu (drugi call, ~$0.001/reguła, score 1-5 + reason). Score <3 → experimental flag. Tańsza droga niż AppleScript runner / video eval per apka. Sesja 10. |
+| P-34 Claude max_tokens truncation dla wielkich apek | ⬜ otwarte | Discovery dla Android Studio (500 menu + 500 skeleton + web_search → przekracza 8192 token output) zwraca non-JSON. Backend 502. Fix: max_tokens 8192→16000+ w `backend/src/claude.ts`. Łączy się z Sub-celem 1.12 (Sesja 9). |
+| P-35 Backend timeout (>90s) dla niektórych apek | ⬜ otwarte | DisplayTuner skeleton 149+menu 136 → timeout 90s. Możliwe: Claude rate limit, slow web_search, CF Worker CPU limit. Wymaga: backend latency log inspection + ewentualnie split call. Łączy się z Sub-celem 1.12 (Sesja 9). |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -875,6 +877,55 @@ cache'owane razem z regułami).
 **Wpływ Faza 1:** Sesja 10. Implementacja: 2nd Claude call w `claude.ts`,
 nowe pole `score` + `experimental` w schemacie reguł. Wymaga adjust client-side
 quality gate (P-1) żeby honorowała `experimental` flag.
+
+---
+
+### P-34: Claude max_tokens truncation dla wielkich apek
+
+**Plik:** `backend/src/claude.ts`
+
+**Symptom:**
+```
+LLM error: Claude returned non-JSON: 'Now I have all the information needed.
+Let me compile the full JSON rule list, using the menu bar as the primary
+(high-confidence) source for every shortcut that appeared there, and web-verified or we'
+```
+
+Android Studio discovery zwróciła HTTP 502 z backendu. Claude API skończyło output mid-sentence — wyjście zostało obcięte zanim Claude ukończył listę JSON. Backend próbował sparsować, dostał prozę naturalną, zwrócił 502.
+
+**Przyczyna:** Z 500 menu items + 500 skeleton items + wyniki web_search w kontekście, Claude przekroczył limit 8192 `max_tokens` na output ZANIM skończył generować listę reguł. Android Studio ma 575 items menu pre-cap — po obcięciu do 500 nadal produkuje ogromny payload.
+
+**Severity:** ŚREDNIA. Dotyczy wielkich apek (Android Studio, JetBrains stack, Xcode, złożone IDE-podobne Electron apki).
+
+**Fix:** Backend — zwiększyć `max_tokens` z 8192 do 16000+ w `backend/src/claude.ts`. Może wymagać przejścia na wariant modelu z dłuższym budżetem wyjściowym. Alternatywnie: streaming / JSON mode jeśli dostępne. Łączy się z Sub-celem 1.12 (Sesja 9, bundle C).
+
+---
+
+### P-35: Backend timeout (>90s) dla niektórych apek
+
+**Plik:** `backend/src/handlers/discover.ts`, `SFlow/DiscoveryClient.swift`
+
+**Symptom:**
+```
+NSURLErrorDomain Code=-1001 "The request timed out."
+URL: https://sflow-rules.shortcutflow.workers.dev/v1/discover
+```
+
+DisplayTuner (`com.benderbureau.displaytuner`) — skeleton 149, menuBar 136 — żądanie do `/v1/discover` przekroczyło timeout 90s po stronie klienta. Nie jest to ogromny payload — ale backend potrzebował >90s na odpowiedź.
+
+**Możliwe przyczyny:**
+- Claude API rate limiting (żądanie czeka w kolejce)
+- Wolne `web_search` tool dla tej domeny apki
+- Cloudflare Worker CPU time zbliżający się do limitu (max 30s CPU, ale może spędzać więcej na async I/O)
+
+**Severity:** ŚREDNIA. Dotyczy nieprzewidywalnego podzbioru apek w zależności od obciążenia Claude API + latency web_search.
+
+**Fix — diagnostyka:** backend `/v1/discover` powinien logować `durationMs` (Sub-cel z wcześniejszych sesji). Sprawdzić p95/p99 — jeśli wiele wywołań >60s, problem jest realny. Mitigacje:
+- Zwiększyć client timeout z 90s do 120s
+- Cache wyników `web_search` osobno żeby retry były szybsze
+- Lub split Claude call: najpierw reguły tylko z menu-bar (szybko), potem wzbogacenie przez web_search asynchronicznie
+
+Łączy się z Sub-celem 1.12 (Sesja 9, bundle C) — ta sama sesja iteracji promptu.
 
 ---
 
