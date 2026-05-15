@@ -71,7 +71,9 @@ final class TooltipObserver {
         walk(axApp, depth: 0, cursor: cursor, result: &found,
              candidatesSeen: &candidatesSeen, groupsSeen: &groupsSeen)
 
-        NSLog("SFlow[Tooltip]: scan in \(bundleId) at (\(Int(cursor.x)),\(Int(cursor.y))) — groups=\(groupsSeen) candidates=\(candidatesSeen) found=\(found?.name ?? "nil")")
+        if candidatesSeen > 0 || Self.verboseDebug {
+            NSLog("SFlow[Tooltip]: scan in \(bundleId) at (\(Int(cursor.x)),\(Int(cursor.y))) — groups=\(groupsSeen) candidates=\(candidatesSeen) found=\(found?.name ?? "nil")")
+        }
 
         guard let f = found,
               let keys = TooltipShortcutParser.parseBadge(f.badge) else { return }
@@ -84,10 +86,17 @@ final class TooltipObserver {
         // (Notion Mail: tooltip at y=-1354 while cursor on button is at y=-1332).
         // Click coords land on the BUTTON, not the tooltip rect — so we hit-test at
         // cursor pos to get the hovered element's own frame. Fall back to a small
-        // box around the cursor if AX rejects the hit-test.
-        let buttonRect = Self.hitTestRect(in: axApp, at: cursor) ?? CGRect(
-            x: cursor.x - 18, y: cursor.y - 18, width: 36, height: 36
-        )
+        // box around the cursor if AX rejects the hit-test OR if it returns an
+        // oversized container (sometimes Chromium returns the entire panel for
+        // the hovered position — Reply hit-test returned 810x809 once, causing
+        // false-positive Reply toasts for clicks anywhere in that pane).
+        let fallbackRect = CGRect(x: cursor.x - 18, y: cursor.y - 18, width: 36, height: 36)
+        let rawRect = Self.hitTestRect(in: axApp, at: cursor)
+        let buttonRect: CGRect = {
+            guard let r = rawRect else { return fallbackRect }
+            if r.size.width > 200 || r.size.height > 200 { return fallbackRect }
+            return r
+        }()
         let buttonId = Self.hitTestIdentifier(in: axApp, at: cursor)
 
         let entry = DiscoveredEntry(

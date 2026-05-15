@@ -214,9 +214,8 @@ final class ClickWatcher {
         // available signal for Chromium icon-only buttons that expose no AX
         // label of their own.
         let cursorAX = CGPoint(x: CGFloat(axX), y: CGFloat(axY))
-        let entry = DiscoveredStore.shared.lookup(near: cursorAX, bundleId: bundleId)
-        NSLog("SFlow[Tooltip]: click at (\(Int(cursorAX.x)),\(Int(cursorAX.y))) in \(bundleId) — L0.3 lookup=\(entry?.actionName ?? "miss")")
-        if let entry = entry {
+        if let entry = DiscoveredStore.shared.lookup(near: cursorAX, bundleId: bundleId) {
+            NSLog("SFlow[Tooltip]: L0.3 HIT — \(entry.actionName) [\(entry.keys.joined(separator: "+"))]")
             let autoId = "tooltip:\(bundleId):\(entry.keys.joined(separator: "+"))"
             emit(bundleId: bundleId, shortcutId: autoId,
                  keys: entry.keys, hint: entry.actionName,

@@ -94,13 +94,19 @@ final class DiscoveredStore {
 
     /// Look up a discovered entry whose stored button-rect contains the
     /// click position (in AX coords). Returns most recent match within `seconds`.
+    /// Defensive: skips entries with oversized rects (>200×200) — those came
+    /// from buggy hit-tests that returned a container element instead of the
+    /// actual button, and would cause false-positive matches over huge screen
+    /// areas.
     func lookup(near point: CGPoint, bundleId: String,
                 within seconds: TimeInterval = 60) -> DiscoveredEntry? {
         return queue.sync {
             let cutoff = Date().addingTimeInterval(-seconds)
             for entry in entries.reversed() where entry.bundleId == bundleId {
                 if entry.observedAt < cutoff { continue }
-                if let r = entry.rect?.cgRect, r.insetBy(dx: -6, dy: -6).contains(point) {
+                guard let r = entry.rect?.cgRect else { continue }
+                if r.size.width > 200 || r.size.height > 200 { continue }
+                if r.insetBy(dx: -6, dy: -6).contains(point) {
                     return entry
                 }
             }
