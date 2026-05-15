@@ -35,6 +35,8 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 }
 
 struct SettingsView: View {
+    @AppStorage("showDeveloperFeatures") private var showDeveloperFeatures: Bool = false
+
     var body: some View {
         TabView {
             GeneralTab()
@@ -43,6 +45,10 @@ struct SettingsView: View {
                 .tabItem { Label("Privacy", systemImage: "eye.slash") }
             AdvancedTab()
                 .tabItem { Label("Advanced", systemImage: "slider.horizontal.3") }
+            if showDeveloperFeatures {
+                AppsTab()
+                    .tabItem { Label("Apps", systemImage: "app.badge") }
+            }
         }
         .frame(width: 480, height: 300)
         .padding([.horizontal, .bottom])
