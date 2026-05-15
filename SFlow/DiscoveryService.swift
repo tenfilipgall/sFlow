@@ -67,6 +67,7 @@ final class DiscoveryService {
                               appVersion: String) {
         var menuBar = MenuBarDumper.dump(for: app)
         var skeleton = AXSkeletonExtractor.extract(for: app)
+        NSLog("SFlow discovery [\(bundleId)] runDiscovery start: skeleton.count=\(skeleton.count), menuBar.count=\(menuBar.count)")
 
         if skeleton.count < 3 && menuBar.isEmpty {
             // App likely still loading AX tree — wait 15s and retry once
@@ -74,6 +75,7 @@ final class DiscoveryService {
             Thread.sleep(forTimeInterval: 15)
             menuBar = MenuBarDumper.dump(for: app)
             skeleton = AXSkeletonExtractor.extract(for: app)
+            NSLog("SFlow discovery [\(bundleId)] after pre-check wait: skeleton.count=\(skeleton.count), menuBar.count=\(menuBar.count)")
         }
 
         if skeleton.count < 3 && menuBar.isEmpty {
@@ -111,6 +113,7 @@ final class DiscoveryService {
             }
             self.inFlight.remove(bundleId)
         }
+        NSLog("SFlow discovery [\(bundleId)] callBackendAndStore: starting backend call, payload skeleton=\(skeleton.count) menuBar=\(menuBar.count)")
 
         let result: BackendRuleSet
         do {
@@ -120,6 +123,7 @@ final class DiscoveryService {
             )
         } catch {
             let reason = DiscoveryFailureReason.from(error: error)
+            NSLog("SFlow discovery [\(bundleId)] backend call FAILED: \(error) → reason=\(reason.rawValue)")
             self.attemptStore.recordFailure(bundleId: bundleId, reason: reason)
             await MainActor.run {
                 self.onStatusChange?(.failed(
@@ -130,6 +134,7 @@ final class DiscoveryService {
         }
 
         if result.rules.isEmpty {
+            NSLog("SFlow discovery [\(bundleId)] backend returned 0 rules — recording .noRulesGenerated")
             self.attemptStore.recordFailure(bundleId: bundleId, reason: .noRulesGenerated)
             await MainActor.run {
                 self.onStatusChange?(.failed(
@@ -141,6 +146,7 @@ final class DiscoveryService {
         }
 
         do {
+            NSLog("SFlow discovery [\(bundleId)] backend success: \(result.rules.count) rules — writing to cache")
             try self.writeToCache(bundleId: bundleId, appVersion: appVersion, result: result)
             try self.ruleCache.load()
             self.attemptStore.recordSuccess(bundleId: bundleId)
@@ -150,6 +156,7 @@ final class DiscoveryService {
         } catch {
             // Local I/O failure — classify as parseError (closest match) so
             // the entry persists and backoff applies. Treat as transient.
+            NSLog("SFlow discovery [\(bundleId)] write/load FAILED: \(error)")
             self.attemptStore.recordFailure(bundleId: bundleId, reason: .parseError)
             await MainActor.run {
                 self.onStatusChange?(.failed(
@@ -164,30 +171,42 @@ final class DiscoveryService {
     /// If the app is not currently running, emits a `.failed` status with
     /// guidance to launch the app first.
     func forceRetry(bundleId: String) {
-        attemptStore.forceRetry(bundleId: bundleId)
-
         guard let app = NSRunningApplication.runningApplications(
             withBundleIdentifier: bundleId
         ).first else {
+            // App not running — leave the store entry intact so the user
+            // can find the failed app again. Surface a clear message.
+            NSLog("SFlow: forceRetry(\(bundleId)) — app not running, asking user to launch first")
             DispatchQueue.main.async {
                 self.onStatusChange?(.failed(
                     appName: bundleId,
                     message: "Launch the app first, then try again"
                 ))
-                NotificationCenter.default.post(
-                    name: .sflowDiscoveryStateChanged, object: nil
-                )
+                // Don't post sflowDiscoveryStateChanged — nothing changed in the
+                // store, so the AppsTab list should NOT refresh (entry stays).
             }
             return
         }
 
-        if inFlight.contains(bundleId) { return }
+        // App is running — safe to clear the backoff entry and proceed.
+        attemptStore.forceRetry(bundleId: bundleId)
+
+        if inFlight.contains(bundleId) {
+            NSLog("SFlow: forceRetry(\(bundleId)) — already inFlight, skipping")
+            return
+        }
         inFlight.insert(bundleId)
 
         let appName = app.localizedName ?? bundleId
         let appVersion = readAppVersion(app) ?? "unknown"
+        NSLog("SFlow: forceRetry(\(bundleId)) — starting discovery for \(appName) v\(appVersion)")
         DispatchQueue.main.async {
             self.onStatusChange?(.running(appName: appName))
+            // Post notification so AppsTab refresh removes entry from failed list
+            // and shows the running state in menu bar correctly.
+            NotificationCenter.default.post(
+                name: .sflowDiscoveryStateChanged, object: nil
+            )
         }
 
         queue.async { [weak self] in
