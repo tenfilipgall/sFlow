@@ -33,6 +33,20 @@ final class TooltipShortcutParserTests: XCTestCase {
         XCTAssertEqual(TooltipShortcutParser.parseBadge("["), ["["])
     }
 
+    func test_notionPlusSeparator() {
+        // Notion Mail writes "⌘+\\" with explicit + between modifier and key.
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⌘+\\"), ["meta", "\\"])
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⌘+,"), ["meta", ","])
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⌘+K"), ["meta", "k"])
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⇧+R"), ["shift", "r"])
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⌘+⇧+K"), ["meta", "shift", "k"])
+    }
+
+    func test_spaceSeparator() {
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⌘ K"), ["meta", "k"])
+        XCTAssertEqual(TooltipShortcutParser.parseBadge("⌘ ⇧ K"), ["meta", "shift", "k"])
+    }
+
     func test_emptyReturnsNil() {
         XCTAssertNil(TooltipShortcutParser.parseBadge(""))
         XCTAssertNil(TooltipShortcutParser.parseBadge("   "))

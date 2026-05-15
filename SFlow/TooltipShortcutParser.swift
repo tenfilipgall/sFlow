@@ -21,14 +21,20 @@ enum TooltipShortcutParser {
 
     private static let punctuationKeys: Set<Character> = ["\\", ",", ".", ";", "'", "/", "[", "]", "`", "-", "="]
 
+    /// Characters used as visual separators between modifier and key — silently skipped.
+    /// Notion Mail writes "⌘+\\" or "⌘ +\\"; some apps use middle dot " · " or spaces.
+    private static let separatorChars: Set<Character> = ["+", " ", "·", "‧"]
+
     static func parseBadge(_ text: String) -> [String]? {
         let s = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !s.isEmpty, s.count <= 6 else { return nil }
+        guard !s.isEmpty, s.count <= 8 else { return nil }
 
         var keys: [String] = []
         var keyCount = 0
         for ch in s {
-            if let mod = modifierSymbols[ch] {
+            if separatorChars.contains(ch) {
+                continue
+            } else if let mod = modifierSymbols[ch] {
                 if keyCount > 0 { return nil }
                 keys.append(mod)
             } else if ch.isLetter {

@@ -80,16 +80,46 @@ final class TooltipObserver {
             return
         }
 
+        // The tooltip rect itself sits above/beside the actual hover-target button
+        // (Notion Mail: tooltip at y=-1354 while cursor on button is at y=-1332).
+        // Click coords land on the BUTTON, not the tooltip rect — so we hit-test at
+        // cursor pos to get the hovered element's own frame. Fall back to a small
+        // box around the cursor if AX rejects the hit-test.
+        let buttonRect = Self.hitTestRect(in: axApp, at: cursor) ?? CGRect(
+            x: cursor.x - 18, y: cursor.y - 18, width: 36, height: 36
+        )
+        let buttonId = Self.hitTestIdentifier(in: axApp, at: cursor)
+
         let entry = DiscoveredEntry(
             bundleId: bundleId,
             actionName: f.name,
             keys: keys,
-            identifier: nil,
-            rect: DiscoveredEntry.CGRectCodable(f.rect),
+            identifier: buttonId,
+            rect: DiscoveredEntry.CGRectCodable(buttonRect),
             observedAt: Date()
         )
         store.record(entry)
-        NSLog("SFlow[Tooltip]: recorded — \(f.name) [\(keys.joined(separator: "+"))] in \(bundleId)")
+        NSLog("SFlow[Tooltip]: recorded — \(f.name) [\(keys.joined(separator: "+"))] in \(bundleId) buttonRect=\(Int(buttonRect.minX)),\(Int(buttonRect.minY)),\(Int(buttonRect.width))x\(Int(buttonRect.height))")
+    }
+
+    /// Hit-tests at `cursor` in `axApp` and returns the hovered element's frame.
+    /// Used to find the *button* a tooltip is describing (the tooltip itself
+    /// floats nearby, not at cursor).
+    static func hitTestRect(in axApp: AXUIElement, at cursor: CGPoint) -> CGRect? {
+        var elemRef: AXUIElement?
+        let res = AXUIElementCopyElementAtPosition(axApp, Float(cursor.x), Float(cursor.y), &elemRef)
+        guard res == .success, let elem = elemRef else { return nil }
+        return frame(of: elem)
+    }
+
+    static func hitTestIdentifier(in axApp: AXUIElement, at cursor: CGPoint) -> String? {
+        var elemRef: AXUIElement?
+        let res = AXUIElementCopyElementAtPosition(axApp, Float(cursor.x), Float(cursor.y), &elemRef)
+        guard res == .success, let elem = elemRef else { return nil }
+        var idRef: AnyObject?
+        AXUIElementCopyAttributeValue(elem, kAXIdentifierAttribute as CFString, &idRef)
+        let id = idRef as? String ?? ""
+        return id.isEmpty ? nil : id
     }
 
     private func walk(_ element: AXUIElement, depth: Int, cursor: CGPoint,
