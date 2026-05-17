@@ -119,7 +119,7 @@ final class DiscoveredStore {
     /// AXMenuItem rows are ~300 wide; tooltip entries keep the tighter 200
     /// limit calibrated against Chromium false-positives.
     func lookup(near point: CGPoint, bundleId: String,
-                within seconds: TimeInterval = 60) -> DiscoveredEntry? {
+                within seconds: TimeInterval = 7 * 24 * 3600) -> DiscoveredEntry? {
         return queue.sync {
             let cutoff = Date().addingTimeInterval(-seconds)
             for entry in entries.reversed() where entry.bundleId == bundleId {
