@@ -371,11 +371,16 @@ final class ClickWatcher {
                 // guard against false-positive shortcuts emitted from arbitrary
                 // visible text.
                 if runNonInteractive {
-                    // Path A
+                    // Path A — STRICT: exactly 2 texts = pure name+badge pair.
+                    // More than 2 texts means we're walking a parent container
+                    // and collecting sibling-element texts (false-positive
+                    // observed 2026-05-17: ["Daily Journal", "Comments",
+                    // "estewtst", "/"] from sidebar group → wrong shortcut "/").
                     let inlineTexts = TooltipObserver.collectStaticTexts(
                         current, depth: 0, limit: 4
                     )
-                    if let parsed = TooltipObserver.parseTooltipTexts(inlineTexts),
+                    if inlineTexts.count == 2,
+                       let parsed = TooltipObserver.parseTooltipTexts(inlineTexts),
                        let keys = TooltipShortcutParser.parseBadge(parsed.badge),
                        TooltipNameFilter.isAcceptableActionName(parsed.name),
                        !TooltipObserver.containsSensitiveText(parsed.name) {
