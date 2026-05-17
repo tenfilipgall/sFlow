@@ -43,6 +43,8 @@
 | 1.27 Eval coverage — Catalyst (iPad-on-Mac) | ⬜ pending | 📋✏️ [eval-test-cases](eval-test-cases-phase-1.5.md) | News, Stocks, Home, Books. ~4h. |
 | 1.28 Eval coverage — SwiftUI pure | ⬜ pending | 📋✏️ [eval-test-cases](eval-test-cases-phase-1.5.md) | Shortcuts.app, Freeform. ~2h. |
 | 1.29 TooltipObserver false-positive integration (B.1) | 🟡 partial | 📋💻 [b.1](superpowers/plans/2026-05-16-tooltip-scrubbing-and-privacy.md) | **Kod gotowy 2026-05-16:** `SFlow/TooltipNameFilter.swift` z banned-list + whitelist + 11 testów + `PrivacyFilter` w `EventLogger.logMiss`. **Czeka na integrację** — Filip dodaje 1 linię w `TooltipObserver`: `guard TooltipNameFilter.isAcceptableActionName(name) else { return nil }`. |
+| 1.30 Silent mode toggle (beta prereq) | 🟢 done 2026-05-17 | inline | UserDefaults `silentMode` + toggle w Settings → Advanced "Hide toasts (collect data only)" + guard w `AppDelegate` ClickWatcher callback (skip ToastWindow + FalsePositiveStore) + `EventLogger.log(silent:)` pisze `"silent": true` w events.jsonl + 🔇 indicator w menu bar. 4 testy `EventLoggerSilentModeTests`. Build verified 2026-05-17. |
+| 1.31 Diagnostic bundle export (beta prereq) | 🟢 done 2026-05-17 | inline | `SFlow/DiagnosticBundleExporter.swift` (~150 LOC) — ZIP z events/false_pos/attempted/discovered/system-info, NSSavePanel + Finder reveal. Button w Settings → Advanced "Export diagnostic bundle…". 5 testów `DiagnosticBundleExporterTests`. Plus `docs/beta-tester-guide.md` 1-pager dla kolegi-testera. Build verified 2026-05-17. |
 
 ---
 

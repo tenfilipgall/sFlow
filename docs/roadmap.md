@@ -104,6 +104,30 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-17 — Silent mode + Diagnostic Bundle Export (beta prereq) ✅
+
+**Co:** Implementacja dwóch prerequisites dla Fazy 1.7 Beta. Filip chciał móc dać kolegom-testerom SFlow, żeby zbierali dane bez upierdliwych toastów + żeby mogli zwrotnie wysłać dane po 2-3 dniach.
+
+**Sub-cel 1.30 Silent mode toggle (🟢):**
+- `SFlow/EventLogger.swift` — `log(event:silent:)` parameter, dodaje `"silent": true` do entry gdy ON
+- `SFlow/AppDelegate.swift` — guard wokół toast emission (skip ToastWindow + FalsePositiveStore), `EventLogger.log` wciąż wykonywany (krytyczne dla hit-rate analizy), `refreshStatusIcon` z 🔇 indicator + tooltip
+- `SFlow/SettingsWindow.swift` AdvancedTab — `@AppStorage("silentMode")` toggle „Hide toasts (collect data only)"
+- 4 testy w `EventLoggerSilentModeTests.swift`
+
+**Sub-cel 1.31 Diagnostic bundle export (🟢):**
+- `SFlow/DiagnosticBundleExporter.swift` (NEW, ~150 LOC) — `buildBundle()` tworzy ZIP via `/usr/bin/zip` z events.jsonl + false_positives.jsonl + attempted.json + discovered/ + system-info.txt. `exportInteractive()` z NSSavePanel + `NSWorkspace.activateFileViewerSelecting` reveal w Finderze.
+- Button w Settings → Advanced „Export diagnostic bundle…"
+- 5 testów w `DiagnosticBundleExporterTests.swift` (timestamp format, system-info content, privacy guarantees — no username leak)
+- Plus `docs/beta-tester-guide.md` — 1-pager dla kolegi-testera: 4 kroki, privacy guarantees, troubleshooting, timeline
+
+**Build:** xcodegen + Cmd+B w Xcode → SUCCESS (Filip confirmed). 257 testów oczekiwanych (248 + 9 nowych).
+
+**Statusy:** Sub-cel 1.30 🟢 (NEW), Sub-cel 1.31 🟢 (NEW). Prerequisites Fazy 1.7: 2/5 zamknięte (silent mode + DMG export).
+
+**Następny krok:** UAT silent mode + export w żywej apce (~5 min, Filip) → wybierz kolegę-testera → E-1 SwiftUI eval (~2h) jako pierwsza z 5 kategorii.
+
+**Powiązane:** `STATUS.md`, `docs/phase-5-categories-eval-plan.md`, `docs/events-jsonl-analysis-2026-05-17.md` (qualitative analysis 22 entries).
+
 ### 2026-05-17 — U-1 (Sub-cel 1.29 B.1): TooltipNameFilter + PrivacyFilter integration ✅
 
 **Co:** Zamknięcie B.1 — integracja `TooltipNameFilter.isAcceptableActionName` w `TooltipObserver.scanForTooltip` (1 linia guard). Fix bugu w `PrivacyFilter` — wzorzec telefonów nie łapał formatu US `NXX-NXX-XXXX` (3-3-4 cyfry). **280 testów passing** (było 256, +24 z B.1: 11 TooltipNameFilter + 13 PrivacyFilter). BUILD SUCCEEDED bez błędów.
