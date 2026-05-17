@@ -52,13 +52,13 @@ enum EventLogger {
         writeQueue.sync {}
     }
 
-    static func log(event: ShortcutEvent) {
-        log(event: event, to: defaultLogURL)
+    static func log(event: ShortcutEvent, silent: Bool = false) {
+        log(event: event, to: defaultLogURL, silent: silent)
     }
 
-    static func log(event: ShortcutEvent, to url: URL) {
+    static func log(event: ShortcutEvent, to url: URL, silent: Bool = false) {
         let formatter = ISO8601DateFormatter()
-        let entry: [String: Any] = [
+        var entry: [String: Any] = [
             "type":       "toast",
             "timestamp":  formatter.string(from: Date()),
             "bundleId":   event.bundleId,
@@ -69,6 +69,12 @@ enum EventLogger {
             "mouseY":     event.mouseY,
             "layer":      event.layer.rawValue,
         ]
+        if silent {
+            // Mark events that were logged without showing a toast UI
+            // (silent / data-collection mode). Used by beta-tester sessions
+            // to gather signal without UI noise. See docs/beta-tester-guide.md.
+            entry["silent"] = true
+        }
         write(entry, to: url)
     }
 

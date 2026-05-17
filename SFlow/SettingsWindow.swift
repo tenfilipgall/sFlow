@@ -94,6 +94,7 @@ private struct PrivacyTab: View {
 private struct AdvancedTab: View {
     @AppStorage("showExperimental") private var showExperimental: Bool = false
     @AppStorage("showDeveloperFeatures") private var showDeveloperFeatures: Bool = false
+    @AppStorage("silentMode") private var silentMode: Bool = false
     @ObservedObject private var store: FalsePositiveStore = .shared
 
     var body: some View {
@@ -103,6 +104,12 @@ private struct AdvancedTab: View {
                     .help("Activates low-confidence auto-discovered rules. May show incorrect shortcuts.")
                 Toggle("Show developer features", isOn: $showDeveloperFeatures)
                     .help("Reveals an Apps tab with discovery diagnostics. For beta testing and debugging only.")
+                Toggle("Hide toasts (collect data only)", isOn: $silentMode)
+                    .help("Silent mode: SFlow keeps detecting clicks and logging to events.jsonl, but does not show toast UI. Useful for 2–3 day beta-tester data collection sessions without UI noise. Toast events are still logged with `silent: true` flag for hit-rate analysis.")
+                Button("Export diagnostic bundle…") {
+                    DiagnosticBundleExporter.exportInteractive()
+                }
+                .help("Creates a .zip with events.jsonl + discovered/ + system info. Save it to send back to the SFlow team after 2–3 days of testing. Stored on Desktop by default.")
             }
             .padding([.horizontal, .top])
 

@@ -58,13 +58,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func refreshStatusIcon() {
         guard let button = statusItem.button else { return }
+        let silent = UserDefaults.standard.bool(forKey: "silentMode")
         if let img = NSImage(systemSymbolName: "command", accessibilityDescription: "SFlow") {
             img.isTemplate = true
             button.image = img
-            button.title = ""
+            // In silent mode show a small indicator next to the icon so the
+            // user remembers data is being collected without UI.
+            button.title = silent ? " 🔇" : ""
+            button.toolTip = silent
+                ? "SFlow — silent mode (collecting data, toasts hidden)"
+                : "SFlow"
         } else {
             button.image = nil
-            button.title = "⌘"
+            button.title = silent ? "⌘ 🔇" : "⌘"
         }
         button.alphaValue = isEnabled ? 1.0 : 0.4
     }
@@ -86,6 +92,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func userDefaultsChanged() {
         ruleCache?.showExperimental = UserDefaults.standard.bool(forKey: "showExperimental")
+        // refresh menu bar icon when silentMode flips
+        DispatchQueue.main.async { [weak self] in self?.refreshStatusIcon() }
     }
 
     @objc private func showTestToast() {
@@ -200,14 +208,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         clickWatcher = ClickWatcher(ruleCache: ruleCache) { event in
             Task { @MainActor in
                 guard !FalsePositiveStore.shared.isDisabled(shortcutId: event.shortcutId) else { return }
-                FalsePositiveStore.shared.toastShown(event: event)
-                ToastWindow.show(event: event, onFalsePositive: {
-                    FalsePositiveStore.shared.report(
-                        shortcutId: event.shortcutId, bundleId: event.bundleId,
-                        keys: event.keys, hint: event.hint
-                    )
-                })
-                EventLogger.log(event: event)
+                let silent = UserDefaults.standard.bool(forKey: "silentMode")
+                if !silent {
+                    FalsePositiveStore.shared.toastShown(event: event)
+                    ToastWindow.show(event: event, onFalsePositive: {
+                        FalsePositiveStore.shared.report(
+                            shortcutId: event.shortcutId, bundleId: event.bundleId,
+                            keys: event.keys, hint: event.hint
+                        )
+                    })
+                }
+                EventLogger.log(event: event, silent: silent)
             }
         }
 
