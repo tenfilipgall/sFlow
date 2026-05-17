@@ -122,6 +122,14 @@ final class RightClickMenuHarvesterTests: XCTestCase {
         XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("Reload Page"))
     }
 
+    func test_titleParser_notionLabel_DuplicateCmdD() {
+        // Real Notion context menu item observed in UAT 2026-05-17:
+        // title="" and AXValue="Duplicate ⌘D". harvest() falls back to value.
+        let result = RightClickMenuHarvester.parseShortcutFromTitle("Duplicate ⌘D")
+        XCTAssertEqual(result?.keys, ["meta", "d"])
+        XCTAssertEqual(result?.cleanTitle, "Duplicate")
+    }
+
     // MARK: - DiscoveredStore integration: menu-harvested entries
     //         bypass the tooltip 200×200 rect filter
 

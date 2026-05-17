@@ -180,10 +180,18 @@ enum RightClickMenuHarvester {
             AXUIElementCopyAttributeValue(item, kAXRoleAttribute as CFString, &roleRef)
             guard (roleRef as? String) == "AXMenuItem" else { continue }
 
-            var titleRef: AnyObject?
+            // Notion's AXMenuItem leaves title="" and exposes the label
+            // (including the shortcut suffix, e.g. "Duplicate ⌘D") via kAXValue.
+            // Native macOS apps + Comet use title. Try title first, fall back
+            // to value — whichever is non-empty wins.
+            var titleRef: AnyObject?; var valueRef: AnyObject?
             AXUIElementCopyAttributeValue(item, kAXTitleAttribute as CFString, &titleRef)
-            let title = (titleRef as? String)?
+            AXUIElementCopyAttributeValue(item, kAXValueAttribute as CFString, &valueRef)
+            let rawTitle = (titleRef as? String)?
                 .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let rawValue = (valueRef as? String)?
+                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let title = !rawTitle.isEmpty ? rawTitle : rawValue
             guard !title.isEmpty else { continue }
 
             var cmdCharRef: AnyObject?; var cmdModRef: AnyObject?; var cmdVKRef: AnyObject?
