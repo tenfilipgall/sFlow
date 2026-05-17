@@ -1,0 +1,112 @@
+{
+  "_comment_proposed": "Proposed bundled rules for Gmail (web). Activates after U-4 (web-as-app pseudo-bundleId). Source: https://support.google.com/mail/answer/6594. Manual review + reseed recommended before promote to bundled/.",
+  "bundleId": "web:mail.google.com",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Gmail",
+  "features": {
+    "singleKeyMode": true,
+    "requiresUserSetting": "Settings → See all settings → Keyboard shortcuts: ON"
+  },
+  "rules": [
+    {
+      "match": { "role": "AXButton", "titles": ["compose", "new message"] },
+      "keys": ["c"], "hint": "Compose",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["reply"] },
+      "keys": ["r"], "hint": "Reply",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["reply all"] },
+      "keys": ["a"], "hint": "Reply all",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["forward"] },
+      "keys": ["f"], "hint": "Forward",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["archive"] },
+      "keys": ["e"], "hint": "Archive",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["delete", "trash", "move to trash"] },
+      "keys": ["#"], "hint": "Delete",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["mark as read"] },
+      "keys": ["shift", "i"], "hint": "Mark as read",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["mark as unread"] },
+      "keys": ["shift", "u"], "hint": "Mark as unread",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["snooze"] },
+      "keys": ["b"], "hint": "Snooze",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["star", "starred"] },
+      "keys": ["s"], "hint": "Star",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["report spam", "spam"] },
+      "keys": ["!"], "hint": "Report spam",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["mute"] },
+      "keys": ["m"], "hint": "Mute conversation",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["search", "search mail"] },
+      "keys": ["/"], "hint": "Search mail",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["select all", "select"] },
+      "keys": ["*", "a"], "hint": "Select all",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["send"] },
+      "keys": ["meta", "enter"], "hint": "Send",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["inbox", "go to inbox"] },
+      "keys": ["g", "i"], "hint": "Go to Inbox",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["starred"] },
+      "keys": ["g", "s"], "hint": "Go to Starred",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["sent", "sent mail"] },
+      "keys": ["g", "t"], "hint": "Go to Sent mail",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["drafts"] },
+      "keys": ["g", "d"], "hint": "Go to Drafts",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["all mail"] },
+      "keys": ["g", "a"], "hint": "Go to All Mail",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    }
+  ]
+}

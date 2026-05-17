@@ -1,0 +1,21 @@
+{
+  "_comment_proposed": "Google Docs (web). Source: support.google.com/docs/answer/179738. Mostly modifier-based shortcuts (no single-key mode).",
+  "bundleId": "web:docs.google.com",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Google Docs",
+  "features": { "singleKeyMode": false },
+  "rules": [
+    { "match": { "role": "AXButton", "titles": ["bold"] }, "keys": ["meta", "b"], "hint": "Bold", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["italic"] }, "keys": ["meta", "i"], "hint": "Italic", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["underline"] }, "keys": ["meta", "u"], "hint": "Underline", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["link", "insert link"] }, "keys": ["meta", "k"], "hint": "Insert link", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["comment", "insert comment"] }, "keys": ["meta", "alt", "m"], "hint": "Insert comment", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["heading 1"] }, "keys": ["meta", "alt", "1"], "hint": "Heading 1", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["heading 2"] }, "keys": ["meta", "alt", "2"], "hint": "Heading 2", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["bulleted list"] }, "keys": ["meta", "shift", "8"], "hint": "Bulleted list", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["numbered list"] }, "keys": ["meta", "shift", "7"], "hint": "Numbered list", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["print"] }, "keys": ["meta", "p"], "hint": "Print", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["find", "search"] }, "keys": ["meta", "f"], "hint": "Find", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["find and replace"] }, "keys": ["meta", "shift", "h"], "hint": "Find and replace", "confidence": "high", "source": "web_docs_official", "version": 1 }
+  ]
+}

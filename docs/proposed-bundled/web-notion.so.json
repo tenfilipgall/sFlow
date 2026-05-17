@@ -1,0 +1,86 @@
+{
+  "_comment_proposed": "Proposed bundled rules for Notion (web). Activates after U-4. Source: notion.so/help/keyboard-shortcuts. Manual review before promote.",
+  "bundleId": "web:notion.so",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Notion",
+  "features": {
+    "singleKeyMode": false
+  },
+  "rules": [
+    {
+      "match": { "role": "AXButton", "titles": ["new page"] },
+      "keys": ["meta", "n"], "hint": "New page",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["quick find", "search"] },
+      "keys": ["meta", "k"], "hint": "Quick Find",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["search workspace"] },
+      "keys": ["meta", "p"], "hint": "Search workspace",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go to home"] },
+      "keys": ["meta", "shift", "h"], "hint": "Go to Home",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go back"] },
+      "keys": ["meta", "["], "hint": "Go back",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go forward"] },
+      "keys": ["meta", "]"], "hint": "Go forward",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["toggle sidebar"] },
+      "keys": ["meta", "\\"], "hint": "Toggle sidebar",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["duplicate", "duplicate block"] },
+      "keys": ["meta", "d"], "hint": "Duplicate block",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["delete"] },
+      "keys": ["meta", "shift", "backspace"], "hint": "Delete block",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["dark mode", "toggle dark mode"] },
+      "keys": ["meta", "shift", "l"], "hint": "Toggle dark mode",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["comment", "add comment"] },
+      "keys": ["meta", "shift", "m"], "hint": "Add comment",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["new sub-page", "new subpage"] },
+      "keys": ["meta", "shift", "n"], "hint": "New sub-page",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["heading 1", "h1"] },
+      "keys": ["meta", "alt", "1"], "hint": "Heading 1",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["heading 2", "h2"] },
+      "keys": ["meta", "alt", "2"], "hint": "Heading 2",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["bulleted list", "to-do"] },
+      "keys": ["meta", "alt", "5"], "hint": "Bulleted list",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    }
+  ]
+}

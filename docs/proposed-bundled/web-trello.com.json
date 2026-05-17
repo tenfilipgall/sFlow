@@ -1,0 +1,19 @@
+{
+  "_comment_proposed": "Trello web. Source: trello.com/shortcuts. Single-key heavy (typical board tool).",
+  "bundleId": "web:trello.com",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Trello",
+  "features": { "singleKeyMode": true },
+  "rules": [
+    { "match": { "role": "AXButton", "titles": ["edit card", "edit"] }, "keys": ["e"], "hint": "Quick edit card", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["assign", "members"] }, "keys": ["m"], "hint": "Add/remove members", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["labels"] }, "keys": ["l"], "hint": "Labels", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["due date"] }, "keys": ["d"], "hint": "Due date", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["subscribe", "watch"] }, "keys": ["s"], "hint": "Subscribe", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["archive"] }, "keys": ["c"], "hint": "Archive", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["board menu", "menu"] }, "keys": ["w"], "hint": "Open board menu", "confidence": "medium", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["filter cards"] }, "keys": ["f"], "hint": "Filter cards", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["boards", "home"] }, "keys": ["b"], "hint": "Boards menu", "confidence": "medium", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["search"] }, "keys": ["/"], "hint": "Search", "confidence": "high", "source": "web_docs_official", "version": 1 }
+  ]
+}

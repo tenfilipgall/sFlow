@@ -1,0 +1,18 @@
+{
+  "_comment_proposed": "Slack web (app.slack.com). Source: slack.com/help/articles/201374536. Same shortcuts as Slack Desktop in most cases — bonus: works for users who don't have desktop app.",
+  "bundleId": "web:app.slack.com",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Slack (web)",
+  "features": { "singleKeyMode": false },
+  "rules": [
+    { "match": { "role": "AXButton", "titles": ["jump to", "search", "quick switcher"] }, "keys": ["meta", "k"], "hint": "Quick Switcher", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["direct messages"] }, "keys": ["meta", "shift", "k"], "hint": "Browse DMs", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["new message", "compose"] }, "keys": ["meta", "n"], "hint": "New Message", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["all unreads"] }, "keys": ["meta", "shift", "a"], "hint": "All Unreads", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["mentions", "activity"] }, "keys": ["meta", "shift", "m"], "hint": "Mentions & Reactions", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["channels", "browse channels"] }, "keys": ["meta", "shift", "l"], "hint": "Channels", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["preferences", "settings"] }, "keys": ["meta", ","], "hint": "Preferences", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["upload file"] }, "keys": ["meta", "u"], "hint": "Upload File", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["star", "starred"] }, "keys": ["meta", "shift", "s"], "hint": "Star", "confidence": "high", "source": "web_docs_official", "version": 1 }
+  ]
+}

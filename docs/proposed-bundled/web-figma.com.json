@@ -1,0 +1,27 @@
+{
+  "_comment_proposed": "Figma web. Source: help.figma.com/keyboard-shortcuts. NOTE: Figma toolbox requires U-7 (tool/mode switching) for full coverage.",
+  "bundleId": "web:figma.com",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Figma",
+  "features": { "singleKeyMode": true },
+  "rules": [
+    { "match": { "role": "AXButton", "titles": ["move", "selection"] }, "keys": ["v"], "hint": "Move tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["frame"] }, "keys": ["f"], "hint": "Frame tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["rectangle"] }, "keys": ["r"], "hint": "Rectangle tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["line"] }, "keys": ["l"], "hint": "Line tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["arrow"] }, "keys": ["shift", "l"], "hint": "Arrow tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["ellipse", "circle"] }, "keys": ["o"], "hint": "Ellipse tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["pen"] }, "keys": ["p"], "hint": "Pen tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["pencil"] }, "keys": ["shift", "p"], "hint": "Pencil tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["text", "type"] }, "keys": ["t"], "hint": "Text tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["hand"] }, "keys": ["h"], "hint": "Hand tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["comment"] }, "keys": ["c"], "hint": "Comment tool", "scope": ["toolbar"], "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["bold"] }, "keys": ["meta", "b"], "hint": "Bold", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["italic"] }, "keys": ["meta", "i"], "hint": "Italic", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["group"] }, "keys": ["meta", "g"], "hint": "Group", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["ungroup"] }, "keys": ["meta", "shift", "g"], "hint": "Ungroup", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["zoom in"] }, "keys": ["meta", "+"], "hint": "Zoom in", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["zoom out"] }, "keys": ["meta", "-"], "hint": "Zoom out", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["zoom to fit", "fit"] }, "keys": ["shift", "1"], "hint": "Zoom to fit", "confidence": "high", "source": "web_docs_official", "version": 1 }
+  ]
+}

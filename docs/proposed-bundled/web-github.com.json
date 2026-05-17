@@ -1,0 +1,81 @@
+{
+  "_comment_proposed": "Proposed bundled rules for GitHub (web). Activates after U-4. Source: docs.github.com/keyboard-shortcuts. Manual review before promote.",
+  "bundleId": "web:github.com",
+  "rulesVersion": "1.0-proposed",
+  "appName": "GitHub",
+  "features": {
+    "singleKeyMode": true
+  },
+  "rules": [
+    {
+      "match": { "role": "AXButton", "titles": ["search", "search github"] },
+      "keys": ["/"], "hint": "Search",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["jump to anything", "command palette"] },
+      "keys": ["meta", "k"], "hint": "Command palette",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["new issue"] },
+      "keys": ["c"], "hint": "Create issue",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["edit", "edit file"] },
+      "keys": ["e"], "hint": "Edit file",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["close issue"] },
+      "keys": ["ctrl", "."], "hint": "Close issue",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["comment"] },
+      "keys": ["meta", "enter"], "hint": "Submit comment",
+      "confidence": "high", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["assign"] },
+      "keys": ["a"], "hint": "Assignee",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["label", "labels"] },
+      "keys": ["l"], "hint": "Labels",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["projects"] },
+      "keys": ["p"], "hint": "Projects",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["milestone"] },
+      "keys": ["m"], "hint": "Milestones",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go to home"] },
+      "keys": ["g", "h"], "hint": "Go to Home",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go to issues"] },
+      "keys": ["g", "i"], "hint": "Go to Issues",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go to pull requests"] },
+      "keys": ["g", "p"], "hint": "Go to Pull requests",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    },
+    {
+      "match": { "role": "AXButton", "titles": ["go to code"] },
+      "keys": ["g", "c"], "hint": "Go to Code",
+      "confidence": "medium", "source": "web_docs_official", "version": 1
+    }
+  ]
+}

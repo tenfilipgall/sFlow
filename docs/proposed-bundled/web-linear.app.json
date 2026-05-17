@@ -1,0 +1,22 @@
+{
+  "_comment_proposed": "Linear web. Source: linear.app/docs/keyboard-shortcuts.",
+  "bundleId": "web:linear.app",
+  "rulesVersion": "1.0-proposed",
+  "appName": "Linear",
+  "features": { "singleKeyMode": true },
+  "rules": [
+    { "match": { "role": "AXButton", "titles": ["new issue", "create issue"] }, "keys": ["c"], "hint": "New issue", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["edit"] }, "keys": ["e"], "hint": "Edit", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["assignee"] }, "keys": ["a"], "hint": "Assignee", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["priority"] }, "keys": ["p"], "hint": "Priority", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["status"] }, "keys": ["s"], "hint": "Status", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["label", "labels"] }, "keys": ["l"], "hint": "Labels", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["due date"] }, "keys": ["shift", "d"], "hint": "Due date", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["estimate"] }, "keys": ["shift", "e"], "hint": "Estimate", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["copy link"] }, "keys": ["meta", "shift", ","], "hint": "Copy link", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["command", "command palette", "search"] }, "keys": ["meta", "k"], "hint": "Command palette", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["my issues"] }, "keys": ["g", "i"], "hint": "Go to My Issues", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["active issues"] }, "keys": ["g", "a"], "hint": "Go to Active", "confidence": "high", "source": "web_docs_official", "version": 1 },
+    { "match": { "role": "AXButton", "titles": ["backlog"] }, "keys": ["g", "b"], "hint": "Go to Backlog", "confidence": "high", "source": "web_docs_official", "version": 1 }
+  ]
+}
