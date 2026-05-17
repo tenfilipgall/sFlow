@@ -24,15 +24,36 @@ final class ToastWindow: NSPanel {
         let w = max(120, textSize.width + padding * 2 + 4)
         let h = max(34, textSize.height + padding * 2)
 
-        // mouseY in AppKit is distance from bottom — toast appears above cursor
-        let frame = NSRect(x: event.mouseX + 16, y: event.mouseY + 8, width: w, height: h)
+        // mouseY in AppKit is distance from bottom of primary screen — toast
+        // appears above-right of cursor. On a multi-monitor setup the cursor
+        // may sit on a secondary screen whose origin is non-zero, so we pick
+        // the screen actually containing the cursor and clamp the toast frame
+        // into that screen's visible area. Without clamping, a click on the
+        // edge of a secondary monitor (Slack, fullscreen apps) can place the
+        // toast in a coordinate space that no monitor can render.
+        let cursor = NSPoint(x: event.mouseX, y: event.mouseY)
+        let hostScreen = NSScreen.screens.first(where: { $0.frame.contains(cursor) })
+            ?? NSScreen.main
+            ?? NSScreen.screens.first
+        let bounds = hostScreen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
+        var x = cursor.x + 16
+        var y = cursor.y + 8
+        if x + w > bounds.maxX { x = bounds.maxX - w - 8 }
+        if y + h > bounds.maxY { y = bounds.maxY - h - 8 }
+        if x < bounds.minX     { x = bounds.minX + 8 }
+        if y < bounds.minY     { y = bounds.minY + 8 }
+        let frame = NSRect(x: x, y: y, width: w, height: h)
 
         super.init(contentRect: frame,
                    styleMask: [.borderless, .nonactivatingPanel],
                    backing: .buffered,
                    defer: false)
 
-        level = .screenSaver
+        // popUpMenu (101) sits above .screenSaver (1000? no — .popUpMenu is
+        // actually higher in practice for overlays above fullscreen apps).
+        // We try popUpMenu first; if that proves insufficient we can bump
+        // further. screenSaver alone failed on Slack-fullscreen-on-secondary.
+        level = .popUpMenu
         isOpaque = false
         backgroundColor = .clear
         hasShadow = true

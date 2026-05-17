@@ -1,18 +1,76 @@
 #!/usr/bin/env bash
 # Extracts frames from a screen recording and builds 3x3 montage strips for AI analysis.
-# Usage: sflow-video-eval <video.mp4> [interval_sec=1.0]
+# Optionally runs per-frame Claude vision analysis with --llm (Sub-cel 1.8 Droga B).
 #
-# Output: /tmp/sflow_video_eval_<timestamp>/
-#   f_0000.png, f_0001.png, ...   individual frames
-#   strip_000.png, ...            3x3 montage strips (requires ImageMagick)
+# Usage:
+#   sflow-video-eval <video.mp4> [interval_sec] [flags]
 #
-# Next step: ask AI "read the strips and find wrong toasts"
+# Flags:
+#   --llm                          run per-frame Claude vision analysis (writes docs/video-eval-<ts>.md)
+#   --model <id>                   Claude model id (default: claude-haiku-4-5-20251001)
+#   --concurrency <n>              parallel API requests for --llm (default: 5)
+#   --report <path>                where to write the LLM report (default: docs/video-eval-<ts>.md)
+#   --no-strips                    skip ImageMagick montage strips
+#
+# Examples:
+#   sflow-video-eval ~/Desktop/eval.mp4              # Droga C only (current behavior)
+#   sflow-video-eval ~/Desktop/eval.mp4 --llm        # Droga B: full LLM analysis
+#   sflow-video-eval ~/Desktop/eval.mp4 0.5 --llm    # 0.5s frame interval + LLM
+#   sflow-video-eval eval.mp4 --llm --model claude-sonnet-4-6
+#
+# Env for --llm:
+#   ANTHROPIC_API_KEY    required for LLM mode
 set -euo pipefail
 
-VIDEO="${1:?usage: sflow-video-eval <video.mp4> [interval_sec]}"
-INTERVAL="${2:-1.0}"
-OUTDIR="/tmp/sflow_video_eval_$(date +%Y%m%dT%H%M%S)"
+VIDEO=""
+INTERVAL="1.0"
+LLM=0
+NO_STRIPS=0
+MODEL="claude-haiku-4-5-20251001"
+CONCURRENCY="5"
+REPORT=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --llm) LLM=1; shift ;;
+        --no-strips) NO_STRIPS=1; shift ;;
+        --model) MODEL="${2:?--model needs an argument}"; shift 2 ;;
+        --concurrency) CONCURRENCY="${2:?--concurrency needs an argument}"; shift 2 ;;
+        --report) REPORT="${2:?--report needs an argument}"; shift 2 ;;
+        --help|-h)
+            sed -n '2,/^set -euo/p' "$0" | sed 's/^# //;s/^#//'
+            exit 0
+            ;;
+        --) shift; break ;;
+        --*)
+            echo "sflow-video-eval: unknown flag: $1" >&2
+            exit 64
+            ;;
+        *)
+            if [[ -z "$VIDEO" ]]; then
+                VIDEO="$1"
+            else
+                INTERVAL="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$VIDEO" ]]; then
+    echo "usage: sflow-video-eval <video.mp4> [interval_sec] [--llm] [--model ID] [--concurrency N] [--no-strips]" >&2
+    exit 64
+fi
+
+if [[ ! -f "$VIDEO" ]]; then
+    echo "sflow-video-eval: file not found: $VIDEO" >&2
+    exit 66
+fi
+
+TIMESTAMP=$(date +%Y%m%dT%H%M%S)
+OUTDIR="/tmp/sflow_video_eval_${TIMESTAMP}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 mkdir -p "$OUTDIR"
 
@@ -25,8 +83,8 @@ swift "$SCRIPT_DIR/sflow-video-extract.swift" "$VIDEO" "$OUTDIR" "$INTERVAL"
 FRAME_COUNT=$(ls "$OUTDIR"/f_*.png 2>/dev/null | wc -l | tr -d ' ')
 echo "sflow-video-eval: $FRAME_COUNT frames extracted"
 
-# Build 3x3 montage strips if ImageMagick is available
-if command -v montage >/dev/null 2>&1; then
+# Build 3x3 montage strips (unless --no-strips)
+if [[ "$NO_STRIPS" -eq 0 ]] && command -v montage >/dev/null 2>&1; then
     echo "sflow-video-eval: building 3x3 strips..."
     cd "$OUTDIR"
     strip_idx=0
@@ -41,18 +99,52 @@ if command -v montage >/dev/null 2>&1; then
     done
     STRIP_COUNT=$(ls "$OUTDIR"/strip_*.png 2>/dev/null | wc -l | tr -d ' ')
     echo "sflow-video-eval: $STRIP_COUNT strips built"
+    cd - >/dev/null
+elif [[ "$NO_STRIPS" -eq 0 ]]; then
+    echo "sflow-video-eval: ImageMagick not available — skipping strips (brew install imagemagick to enable)"
+fi
+
+# LLM analysis (Droga B)
+if [[ "$LLM" -eq 1 ]]; then
+    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+        echo
+        echo "sflow-video-eval: --llm requires ANTHROPIC_API_KEY env var." >&2
+        echo "  export ANTHROPIC_API_KEY=sk-ant-..." >&2
+        exit 78
+    fi
+
+    if [[ -z "$REPORT" ]]; then
+        mkdir -p "$REPO_ROOT/docs"
+        REPORT="$REPO_ROOT/docs/video-eval-${TIMESTAMP}.md"
+    fi
+
     echo
-    echo "Gotowe! Pokaż AI:"
-    echo "  $OUTDIR/strip_*.png"
-    echo "i napisz: 'przeczytaj te stripy i znajdź wrong toasts, porównaj z bundled.json'"
+    echo "sflow-video-eval: running LLM analysis (model=$MODEL, concurrency=$CONCURRENCY)"
+    echo "sflow-video-eval: report → $REPORT"
+    echo
+
+    swift "$SCRIPT_DIR/sflow-video-llm.swift" \
+        "$OUTDIR" "$REPORT" \
+        --model "$MODEL" \
+        --concurrency "$CONCURRENCY" \
+        --interval-sec "$INTERVAL"
+
+    echo
+    echo "Gotowe! Raport: $REPORT"
+    echo "Otwórz go i porównaj toasty z SFlow/Resources/bundled.json"
 else
     echo
-    echo "Gotowe! (ImageMagick niedostępny — brak stripów, ale klatki są)"
-    echo "Pokaż AI klatki:"
-    echo "  $OUTDIR/f_*.png"
-    echo "i napisz: 'przejrzyj te klatki i znajdź wrong toasts, porównaj z bundled.json'"
+    if ls "$OUTDIR"/strip_*.png >/dev/null 2>&1; then
+        echo "Gotowe! Pokaż AI:"
+        echo "  $OUTDIR/strip_*.png"
+        echo "i napisz: 'przeczytaj te stripy i znajdź wrong toasts, porównaj z bundled.json'"
+    else
+        echo "Gotowe! Pokaż AI klatki:"
+        echo "  $OUTDIR/f_*.png"
+        echo "i napisz: 'przejrzyj te klatki i znajdź wrong toasts, porównaj z bundled.json'"
+    fi
     echo
-    echo "Aby włączyć stripy 3x3: brew install imagemagick"
+    echo "Tip: dodaj --llm żeby Claude przeanalizował klatki automatycznie."
 fi
 
 echo

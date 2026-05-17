@@ -12,6 +12,7 @@ final class ClickWatcher {
     private let ruleCache: RuleCache
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var healthCheckTimer: Timer?
     private var lastShortcutId: String = ""
     private var lastShortcutTime: Date = .distantPast
     private var emitFiredInCurrentClick: Bool = false
@@ -40,6 +41,20 @@ final class ClickWatcher {
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
+
+        // Active heartbeat: re-enable the tap if macOS disabled it silently
+        // (no tapDisabledByTimeout callback fired). Necessary because the
+        // callback-based re-enable only works when the system still bothers
+        // to call us — on heavy AX-IPC workloads it sometimes doesn't.
+        let t = Timer(timeInterval: 2.0, repeats: true) { [weak self] _ in
+            guard let self, let tap = self.tap else { return }
+            if !CGEvent.tapIsEnabled(tap: tap) {
+                NSLog("SFlow: CGEventTap silent-disabled detected — re-enabling")
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+        }
+        RunLoop.main.add(t, forMode: .common)
+        healthCheckTimer = t
     }
 
     // Roles whose title/description carry semantic UI meaning (vs. arbitrary user content).
@@ -516,14 +531,34 @@ final class ClickWatcher {
         emitFiredInCurrentClick = true
     }
 
+    /// Called from the tap callback when macOS notifies us that the event tap
+    /// was disabled (timeout or user input). Re-enabling is required —
+    /// otherwise the tap stays dead until the process restarts.
+    func reenableTap() {
+        guard let tap else { return }
+        NSLog("SFlow: CGEventTap disabled by system — re-enabling")
+        CGEvent.tapEnable(tap: tap, enable: true)
+    }
+
     deinit {
+        healthCheckTimer?.invalidate()
         if let tap { CGEvent.tapEnable(tap: tap, enable: false) }
         if let src = runLoopSource { CFRunLoopRemoveSource(CFRunLoopGetMain(), src, .commonModes) }
         sharedWatcher = nil
     }
 }
 
-private let tapCallback: CGEventTapCallBack = { _, type, event, _ in
+private let tapCallback: CGEventTapCallBack = { proxy, type, event, _ in
+    // macOS disables our tap when the callback exceeds the system timeout
+    // (~1s by default) or after certain user-input events. Without re-enabling
+    // here, the tap stays dead permanently — manifesting as "first click works,
+    // every subsequent click is silently dropped". AX queries inside
+    // handleMouseDown are synchronous IPC and can easily blow past the timeout
+    // for Electron apps with deep trees (Slack on a second monitor).
+    if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+        sharedWatcher?.reenableTap()
+        return Unmanaged.passUnretained(event)
+    }
     if type == .leftMouseDown {
         sharedWatcher?.handleMouseDown()
     }

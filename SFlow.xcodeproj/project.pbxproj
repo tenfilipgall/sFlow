@@ -132,7 +132,7 @@
 		CA2127D7DB5CC20332B016EE /* BundledUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdaterTests.swift; sourceTree = "<group>"; };
 		CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRulesTests.swift; sourceTree = "<group>"; };
 		D05919D511DAC8124C848B31 /* ShortcutRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRules.swift; sourceTree = "<group>"; };
-		DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		DA442DAD8FEA3C3117ADBEF3 /* .gitkeep */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
 		DA4CFF690026DC7D21A29A06 /* ClickWatcherParseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickWatcherParseTests.swift; sourceTree = "<group>"; };
 		DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutEvent.swift; sourceTree = "<group>"; };
 		E6DFFA9889B3369494D433E7 /* EventLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLoggerTests.swift; sourceTree = "<group>"; };
@@ -295,7 +295,6 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					03F03064784A91D4917B6693 = {
-						DevelopmentTeam = Z8R9KWPK32;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -421,7 +420,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Z8R9KWPK32;
+				DEVELOPMENT_TEAM = L2B952623M;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = SFlow/Info.plist;
@@ -459,7 +458,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = Z8R9KWPK32;
+				DEVELOPMENT_TEAM = L2B952623M;
 				ENABLE_HARDENED_RUNTIME = NO;
 				INFOPLIST_FILE = SFlow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

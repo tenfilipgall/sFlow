@@ -60,10 +60,30 @@ final class TooltipObserver {
         UserDefaults.standard.bool(forKey: "tooltipDebug")
     }
 
+    /// Set to true via `defaults write com.filip.sflow tooltipDiag -bool true`
+    /// to dump a deep diagnostic snapshot per scan: number of app windows,
+    /// system-wide hit-test result, and the hit-tested element's parent chain
+    /// with siblings + their static-texts. Used to localize tooltip rendering
+    /// in Chromium apps where AXGroup rects are not informative.
+    private static var diagMode: Bool {
+        UserDefaults.standard.bool(forKey: "tooltipDiag")
+    }
+
     private func scanForTooltip(at cursor: CGPoint) {
         guard let app = NSWorkspace.shared.frontmostApplication,
               let bundleId = app.bundleIdentifier else { return }
         let axApp = AXUIElementCreateApplication(app.processIdentifier)
+        // Force Chromium/Electron apps (Slack, Notion, Discord, VSCode, Linear) to
+        // expose their accessibility tree. ClickWatcher does this on every click,
+        // but the tooltip scanner runs on its own 200 ms timer — without these
+        // flags the AX walk hits an empty AXWindow before any click ever fires.
+        // Idempotent. No-op on native apps.
+        AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
+        AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
+
+        if Self.diagMode {
+            Self.dumpDiagnostic(axApp: axApp, bundleId: bundleId, cursor: cursor)
+        }
 
         var found: (rect: CGRect, badge: String, name: String)? = nil
         var candidatesSeen = 0
@@ -109,6 +129,83 @@ final class TooltipObserver {
         )
         store.record(entry)
         NSLog("SFlow[Tooltip]: recorded — \(f.name) [\(keys.joined(separator: "+"))] in \(bundleId) buttonRect=\(Int(buttonRect.minX)),\(Int(buttonRect.minY)),\(Int(buttonRect.width))x\(Int(buttonRect.height))")
+    }
+
+    /// One-shot diagnostic dump. Logs:
+    ///  1. All top-level AXWindows for the app (Chromium often renders tooltips
+    ///     as separate floating windows — if we see >1 window with small rects,
+    ///     tooltips live outside the main window and we need to scan them too).
+    ///  2. System-wide hit-test at cursor (returns whichever element is on
+    ///     screen there, regardless of process — catches OS-level tooltip
+    ///     overlays that the per-app axApp doesn't see).
+    ///  3. The hit-tested element's parent + its siblings (1 hop up + their
+    ///     immediate static texts) — shows the AX tree neighborhood we'd need
+    ///     to traverse to find a name+badge pair.
+    static func dumpDiagnostic(axApp: AXUIElement, bundleId: String, cursor: CGPoint) {
+        // 1. App windows.
+        var windowsRef: AnyObject?
+        AXUIElementCopyAttributeValue(axApp, kAXWindowsAttribute as CFString, &windowsRef)
+        let windows = (windowsRef as? [AXUIElement]) ?? []
+        NSLog("SFlow[Tooltip][diag]: app=\(bundleId) windows=\(windows.count)")
+        for (i, w) in windows.enumerated() {
+            var roleRef: AnyObject?
+            AXUIElementCopyAttributeValue(w, kAXRoleAttribute as CFString, &roleRef)
+            var titleRef: AnyObject?
+            AXUIElementCopyAttributeValue(w, kAXTitleAttribute as CFString, &titleRef)
+            var subroleRef: AnyObject?
+            AXUIElementCopyAttributeValue(w, kAXSubroleAttribute as CFString, &subroleRef)
+            let r = frame(of: w).map { "\(Int($0.minX)),\(Int($0.minY)),\(Int($0.width))x\(Int($0.height))" } ?? "nil"
+            NSLog("SFlow[Tooltip][diag]: window[\(i)] role=\(roleRef as? String ?? "?") subrole=\(subroleRef as? String ?? "?") title=\"\(titleRef as? String ?? "")\" rect=\(r)")
+        }
+
+        // 2. System-wide hit-test.
+        let sysWide = AXUIElementCreateSystemWide()
+        var sysElemRef: AXUIElement?
+        let sysRes = AXUIElementCopyElementAtPosition(sysWide, Float(cursor.x), Float(cursor.y), &sysElemRef)
+        if sysRes == .success, let sysElem = sysElemRef {
+            var roleRef: AnyObject?; var titleRef: AnyObject?; var descRef: AnyObject?; var valueRef: AnyObject?
+            AXUIElementCopyAttributeValue(sysElem, kAXRoleAttribute as CFString, &roleRef)
+            AXUIElementCopyAttributeValue(sysElem, kAXTitleAttribute as CFString, &titleRef)
+            AXUIElementCopyAttributeValue(sysElem, kAXDescriptionAttribute as CFString, &descRef)
+            AXUIElementCopyAttributeValue(sysElem, kAXValueAttribute as CFString, &valueRef)
+            var pid: pid_t = 0
+            AXUIElementGetPid(sysElem, &pid)
+            let r = frame(of: sysElem).map { "\(Int($0.minX)),\(Int($0.minY)),\(Int($0.width))x\(Int($0.height))" } ?? "nil"
+            NSLog("SFlow[Tooltip][diag]: sysHit pid=\(pid) role=\(roleRef as? String ?? "?") title=\"\(titleRef as? String ?? "")\" desc=\"\(descRef as? String ?? "")\" value=\"\((valueRef as? String ?? "").prefix(40))\" rect=\(r)")
+        } else {
+            NSLog("SFlow[Tooltip][diag]: sysHit FAILED res=\(sysRes.rawValue)")
+        }
+
+        // 3. App hit-test + parent + siblings.
+        var appElemRef: AXUIElement?
+        let appRes = AXUIElementCopyElementAtPosition(axApp, Float(cursor.x), Float(cursor.y), &appElemRef)
+        guard appRes == .success, let appElem = appElemRef else {
+            NSLog("SFlow[Tooltip][diag]: appHit FAILED res=\(appRes.rawValue)")
+            return
+        }
+        var hitRoleRef: AnyObject?; var hitTitleRef: AnyObject?
+        AXUIElementCopyAttributeValue(appElem, kAXRoleAttribute as CFString, &hitRoleRef)
+        AXUIElementCopyAttributeValue(appElem, kAXTitleAttribute as CFString, &hitTitleRef)
+        NSLog("SFlow[Tooltip][diag]: appHit role=\(hitRoleRef as? String ?? "?") title=\"\(hitTitleRef as? String ?? "")\"")
+
+        var parentRef: AnyObject?
+        AXUIElementCopyAttributeValue(appElem, kAXParentAttribute as CFString, &parentRef)
+        guard let parent = parentRef as! AXUIElement? else { return }
+        var pRoleRef: AnyObject?
+        AXUIElementCopyAttributeValue(parent, kAXRoleAttribute as CFString, &pRoleRef)
+        NSLog("SFlow[Tooltip][diag]: parent role=\(pRoleRef as? String ?? "?") texts=\(collectStaticTexts(parent, depth: 0, limit: 8))")
+
+        var siblingsRef: AnyObject?
+        AXUIElementCopyAttributeValue(parent, kAXChildrenAttribute as CFString, &siblingsRef)
+        let siblings = (siblingsRef as? [AXUIElement]) ?? []
+        NSLog("SFlow[Tooltip][diag]: siblings=\(siblings.count)")
+        for (i, sib) in siblings.prefix(8).enumerated() {
+            var sRoleRef: AnyObject?
+            AXUIElementCopyAttributeValue(sib, kAXRoleAttribute as CFString, &sRoleRef)
+            let texts = collectStaticTexts(sib, depth: 0, limit: 4)
+            let r = frame(of: sib).map { "\(Int($0.width))x\(Int($0.height))" } ?? "nil"
+            NSLog("SFlow[Tooltip][diag]:   sib[\(i)] role=\(sRoleRef as? String ?? "?") size=\(r) texts=\(texts)")
+        }
     }
 
     /// Hit-tests at `cursor` in `axApp` and returns the hovered element's frame.

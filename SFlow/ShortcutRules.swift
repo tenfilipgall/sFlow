@@ -167,6 +167,28 @@ enum ShortcutRules {
               id: "universal-reply-all", keys: ["meta", "shift", "r"], hint: "Reply All"),
     ]
 
+    // MARK: - Message-action rule helper
+
+    /// Builds a ClickRule pair (matching by desc and by title) for each
+    /// `(actionName, shortcutId, keys, hint)` tuple. Used to wire Chromium
+    /// message-toolbar and overflow-menu actions where the action label
+    /// is exposed via kAXDescription on an icon-only button (Slack pattern;
+    /// the badge with the keyboard letter is `aria-hidden` and unreachable
+    /// from AX). Same shape works for Discord/Linear message actions —
+    /// re-use this helper from those buckets when wiring them.
+    ///
+    /// Per-bundleId scoping is unchanged: rules built here only fire when
+    /// `match()` is called with the matching `bundleId`, so adding entries
+    /// here cannot affect rule resolution in any other app.
+    static func messageActions(_ tuples: [(action: String, id: String, keys: [String], hint: String)]) -> [ClickRule] {
+        var out: [ClickRule] = []
+        for t in tuples {
+            out.append(.init(desc: t.action, id: t.id, keys: t.keys, hint: t.hint))
+            out.append(.init(title: t.action, id: t.id, keys: t.keys, hint: t.hint))
+        }
+        return out
+    }
+
     // MARK: - Rules Database
 
     static let rules: [String: [ClickRule]] = [
@@ -239,7 +261,22 @@ enum ShortcutRules {
                   id: "slack-browse-channels", keys: ["meta","shift","e"], hint: "Browse Channels"),
             .init(title: "browse channels",
                   id: "slack-browse-channels", keys: ["meta","shift","e"], hint: "Browse Channels"),
-        ],
+        ] + messageActions([
+            // Message hover-toolbar buttons (verified in diag logs — Slack exposes
+            // these via kAXDescription on AXCheckBox/AXButton; the keyboard badge
+            // overlay is aria-hidden so we map name → key statically here).
+            (action: "save for later",    id: "slack-msg-save",    keys: ["a"], hint: "Save for later"),
+            (action: "remove from later", id: "slack-msg-unsave",  keys: ["a"], hint: "Remove from Later"),
+            (action: "reply in thread",   id: "slack-msg-reply",   keys: ["t"], hint: "Reply in thread"),
+            (action: "forward message",   id: "slack-msg-forward", keys: ["f"], hint: "Forward message"),
+            (action: "more actions",      id: "slack-msg-more",    keys: [],    hint: "More actions"),
+
+            // Overflow menu items (visible after clicking "More actions" / ⋮).
+            (action: "edit message",      id: "slack-msg-edit",    keys: ["e"], hint: "Edit message"),
+            (action: "mark unread",       id: "slack-msg-unread",  keys: ["u"], hint: "Mark unread"),
+            (action: "copy link",         id: "slack-msg-link",    keys: ["l"], hint: "Copy link"),
+            (action: "copy message",      id: "slack-msg-copy",    keys: ["meta","c"], hint: "Copy message"),
+        ]),
 
         // ── Notion ────────────────────────────────────────────────────────
         "notion.id": [
