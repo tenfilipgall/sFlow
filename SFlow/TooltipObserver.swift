@@ -301,8 +301,13 @@ final class TooltipObserver {
         return (dx * dx + dy * dy) < (350 * 350)
     }
 
-    /// Collects up to `limit` AXStaticText texts from element's subtree
-    /// (looking at both kAXValue and kAXTitle since Chromium uses both).
+    /// Collects up to `limit` texts from element's subtree.
+    /// Primary source: `AXStaticText` children with `kAXValue`/`kAXTitle`.
+    /// Fallback (Chromium pattern observed in Notion main, U-2.2):
+    /// container roles (AXGroup, AXLink, AXImage, AXButton, AXUnknown) can
+    /// expose tooltip text directly via their own `kAXValue` or `kAXTitle`
+    /// without an AXStaticText child. Skips multi-line strings (those are
+    /// page content, not tooltips) and strings > 100 chars.
     static func collectStaticTexts(_ element: AXUIElement, depth: Int, limit: Int) -> [String] {
         if depth > 4 || limit <= 0 { return [] }
         var result: [String] = []
@@ -321,8 +326,25 @@ final class TooltipObserver {
                 let t = (valueRef as? String) ?? (titleRef as? String) ?? ""
                 if !t.isEmpty, t.count <= 100 { result.append(t) }
             } else {
-                result.append(contentsOf: Self.collectStaticTexts(c, depth: depth + 1,
-                                                                   limit: limit - result.count))
+                // Chromium fallback: read own value/title before recursing.
+                // Notion main tooltips put the action name directly on AXGroup.
+                let containerRoles: Set<String> = [
+                    "AXGroup", "AXLink", "AXImage", "AXButton", "AXUnknown"
+                ]
+                if containerRoles.contains(r) {
+                    var valueRef: AnyObject?; var titleRef: AnyObject?
+                    AXUIElementCopyAttributeValue(c, kAXValueAttribute as CFString, &valueRef)
+                    AXUIElementCopyAttributeValue(c, kAXTitleAttribute as CFString, &titleRef)
+                    let t = (valueRef as? String) ?? (titleRef as? String) ?? ""
+                    if !t.isEmpty, t.count <= 100,
+                       !t.contains("\n") {
+                        result.append(t)
+                    }
+                }
+                if result.count < limit {
+                    result.append(contentsOf: Self.collectStaticTexts(c, depth: depth + 1,
+                                                                       limit: limit - result.count))
+                }
             }
         }
         return result
