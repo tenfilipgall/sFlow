@@ -52,7 +52,8 @@
 | P-46 Tool/mode switching w kreatywnych apkach | ⬜ otwarte | Figma toolbar ma narzędzia (move/rectangle/text/pen) z literami V/R/T/P. Photoshop B/V/M. Linear/Asana/Trello mają boards z toolami selekcji. Klik w ikonkę narzędzia → SFlow pokazuje toast **tylko jeśli ma regułę** dla Figmy/Photoshopa — których dziś **nie ma**. Plan: AXToolbar role detection w drzewie; toolbar children = AXButton z desc=nazwa narzędzia; L0.3 tooltip + single-key whitelist dla toolbar context. Otwiera klasę creative apek. Adresuje Sub-cel 1.23 (G-8). ~5h. |
 | P-47 Brak ewaluacji 5 typów apek UI | ⬜ otwarte | W audicie 2026-05-16 zidentyfikowano 5 niepokrytych typów apek: (1) **Microsoft Office** — hybrid AppKit + ribbon (Excel/Word/PowerPoint/OneNote/Outlook), (2) **Adobe Creative Suite** — custom rendering (Photoshop/Illustrator/Premiere/Lightroom), (3) **Qt/GTK/Tk** — ograniczone AX (VLC/GIMP/Krita/Blender/OBS/Audacity/RStudio), (4) **Catalyst** — UIKit→AppKit translation (News/Stocks/Home/Books/Voice Memos), (5) **SwiftUI pure** — labelki w `value` zamiast `title` (Shortcuts.app/Freeform/indie). **Empiryczna luka:** nie wiemy ile z naszych warstw uniwersalnych działa w tych apkach. Plan: reseed + manual eval każdej (~2h per apka). Adresuje Sub-cele 1.24-1.28 (Faza 1.5). |
 | P-48 Version detection — patch update apki ⇒ ciche psucie reguł | ⬜ otwarte | Cache key `bundleId:major.minor`. Notion często zmienia UI w patch update (0.0.x). Reguły dziedziczone z 2 miesięcy temu są coraz bardziej nieaktualne — psują się cicho bez sygnału do usera. Plan: hash UI skeleton (top-50 elements role+title) jako fingerprint; jeśli fingerprint zmienił się o >30% od ostatniego discovery → trigger refresh; notification dla usera "Notion looks different — re-detecting shortcuts". Niski priorytet (Faza 2+), ale długofalowo blokujący. Adresuje G-9 (odłożone na Fazę 2+). |
-| P-49 Toast nie renderuje wizualnie na 2. monitorze (Slack message-actions) | ⬜ otwarte | **Krytyczny blocker dla Fazy 1.7 (beta).** Reguły `slack-msg-*` (Save→A, Reply→T, Forward→F) są dopasowane na poziomie eventów (events.jsonl pokazuje toast emisję), ale `ToastWindow` nie pojawia się wizualnie gdy Slack jest na 2. monitorze (lub fullscreen). Dotyczy bezpośrednio użytkowników multi-monitor — czyli **większości power-userów** którzy są ICP. Wszystkie drogi rozwoju (A intro toast, B curriculum, E reports) tracą sens jeśli toast nie jest widoczny. Hipotezy: `NSScreen.main` vs `NSScreen.screens[clickedScreenIndex]`, level wyższy niż fullscreen window, NSWindowCollectionBehavior. Pełna diagnoza: [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md). Plan: ~2h debugowania renderera + sprawdzenie czy nie dotyczy też Notion/Linear na 2. monitorze. |
+| P-49 Toast nie renderuje wizualnie na 2. monitorze (Slack message-actions) | ✅ zamknięte | **NAPRAWIONE 2026-05-17.** Dwie oddzielne poprawki: (1) crash — `canJoinAllSpaces` XOR `moveToActiveSpace` (wzajemne wykluczenie AppKit); (2) rendering — `NSScreen` selection + `NSWindowLevel` + `NSWindowCollectionBehavior` poprawione tak, że toast pojawia się na monitorze z Slackiem w fullscreen (zweryfikowane na Comet). **Pozostały problem:** Slack hover-toolbar (Save/Reply/More) nie loguje się w `events.jsonl` w ogóle — osobna przyczyna, śledzone jako P-50. |
+| P-50 Slack hover-toolbar — ClickWatcher nie widzi kliknięć (Save/Reply/More) | ⬜ otwarte | Przyciski hover-toolbar wiadomości Slacka (pojawia się po najechaniu na wiadomość) **w ogóle nie trafiają do `events.jsonl`** — ani jako hit, ani jako miss. Oznacza to, że `handleMouseDown()` albo nie jest wywoływana dla tych kliknięć, albo wraca przedwcześnie przed pierwszym logiem. Hipotezy: (1) `CGEventTap` disabled silent timeout przy kliknięciu Slack (Electron); (2) `NSWorkspace.frontmostApplication` zwraca złą apkę gdy hover toolbar pojawia się w osobnym oknie Slacka; (3) `AXUIElementCopyElementAtPosition` zwraca błąd dla obszaru hover-toolbar (Chromium overlay). **Plan diagnostyczny:** dodać `NSLog` na samym wejściu `handleMouseDown()` + po `AXUIElementCopyElementAtPosition` → wiemy czy funkcja jest w ogóle wywoływana. ~1h diagnoza, następnie implementacja. |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -1158,8 +1159,14 @@ Te decyzje są przedmiotem audytu Fazy 1.
 ## Outstanding bugs (post-Faza 0)
 
 - **P-49 (2026-05-16) — ToastWindow nie renderuje wizualnie na 2. monitorze
-  (Slack message-actions).** Sformalizowane jako P-49 w tabeli statusów na
-  górze pliku. Backend dopasowania działa, `events.jsonl` ma wpisy `slack-msg-*`
-  toast'ów, ale okno toastu nie pojawia się. **Blocker dla Fazy 1.7 (beta)** —
-  multi-monitor to większość ICP. Pełna diagnoza + plan:
-  [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md)
+  (Slack message-actions). ✅ ZAMKNIĘTE 2026-05-17.** Dwa commity: (1) crash fix
+  `canJoinAllSpaces` XOR `moveToActiveSpace`; (2) rendering fix — screen selection
+  + NSWindowLevel + NSWindowCollectionBehavior. Toast widoczny na 2. monitorze
+  w fullscreen (zweryfikowane na Comet / Slack).
+
+- **P-50 (2026-05-17) — Slack hover-toolbar (Save/Reply/More) niewidoczny dla
+  ClickWatcher.** Przyciski hover-toolbar wiadomości nie pojawiają się w
+  `events.jsonl` w ogóle (ani hit, ani miss). Osobna przyczyna od P-49 —
+  problem leży w warstwie _wykrywania kliknięć_, nie renderowania toasta.
+  Plan: NSLog na wejściu `handleMouseDown()` + po `AXUIElementCopyElementAtPosition`
+  → ustalić czy funkcja jest wywoływana dla tych kliknięć.

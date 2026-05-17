@@ -245,7 +245,6 @@ final class ClickWatcher {
         AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
         var elemRef: AXUIElement?
         let result = AXUIElementCopyElementAtPosition(axApp, axX, axY, &elemRef)
-
         if result == .success, let element = elemRef {
             var current = element
             for depth in 0..<6 {
