@@ -127,4 +127,25 @@ final class AXSkeletonFilterTests: XCTestCase {
         let items = [RawAXItem(role: "AXButton", title: "John Smith")]
         XCTAssertEqual(AXSkeletonExtractor.filter(rawItems: items).count, 0)
     }
+
+    // MARK: - P-51: AXGroup for Electron ribbon icons
+
+    func test_filter_acceptsAXGroupWithLabel_Obsidian() {
+        // Obsidian ribbon exposes "Open graph view" / "New note" as AXGroup
+        // with kAXDescription. walk() populates RawAXItem.title from desc.
+        let items = AXSkeletonExtractor.filter(rawItems: [
+            RawAXItem(role: "AXGroup", title: "Open graph view"),
+            RawAXItem(role: "AXGroup", title: "New note"),
+            RawAXItem(role: "AXGroup", title: "Bookmarks"),
+        ])
+        XCTAssertEqual(items.count, 3)
+        XCTAssertEqual(Set(items.map { $0.title }),
+                       ["Open graph view", "New note", "Bookmarks"])
+    }
+
+    func test_filter_dropsAXGroupHumanNameLabel() {
+        // Sanity: AXGroup goes through the same content filters as other roles.
+        let items = [RawAXItem(role: "AXGroup", title: "Anna Kowalska")]
+        XCTAssertEqual(AXSkeletonExtractor.filter(rawItems: items).count, 0)
+    }
 }

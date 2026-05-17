@@ -95,6 +95,17 @@ enum Reseeder {
         let menuBar = MenuBarDumper.dump(for: runningApp)
         let skeleton = AXSkeletonExtractor.extract(for: runningApp)
 
+        // Debug: skeleton breakdown by role (helps diagnose payload-size issues
+        // when reseed times out after expanding allowedRoles, e.g. P-51 AXGroup).
+        let skeletonRoles = Dictionary(grouping: skeleton, by: { $0.role })
+            .mapValues { $0.count }
+            .sorted { $0.value > $1.value }
+            .map { "\($0.key)=\($0.value)" }
+            .joined(separator: " ")
+        let skeletonSample = skeleton.prefix(8).map { "\($0.role):\"\($0.title)\"" }.joined(separator: ", ")
+        print("Reseeder: \(bundleId) — menuBar=\(menuBar.count) skeleton=\(skeleton.count) [\(skeletonRoles)]")
+        print("Reseeder: \(bundleId) — skeleton sample: \(skeletonSample)")
+
         // 5. POST to backend (block on the async call).
         let appName = runningApp.localizedName ?? bundleId
         let appVersion = readAppVersion(runningApp) ?? "unknown"
@@ -182,8 +193,11 @@ enum Reseeder {
             var roleRef: AnyObject?
             let err = AXUIElementCopyAttributeValue(axApp, kAXRoleAttribute as CFString, &roleRef)
             if err == .success, (roleRef as? String) == "AXApplication" {
-                // Brief settle so the menu bar populates.
-                Thread.sleep(forTimeInterval: 0.5)
+                // Settle so the menu bar populates AND Electron/Chromium apps
+                // (Obsidian/Notion/Linear/Cursor/Discord/VSCode/Slack desktop)
+                // get time to build their AX tree, which is lazy after
+                // AXManualAccessibility. 0.5s is enough for AppKit, not Electron.
+                Thread.sleep(forTimeInterval: 3.0)
                 return true
             }
             Thread.sleep(forTimeInterval: 0.2)

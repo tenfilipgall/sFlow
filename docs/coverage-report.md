@@ -30,10 +30,10 @@
 | `notion.mail.id` | Notion Mail | 🟢 GOOD | Sesja B verified 5/5 ikonek. L0.3 tooltips. 3 toasty bez missów. |
 | `com.cron.electron` | Notion Calendar | 🟡 PARTIAL | L0.3 tooltip dla Create Event działa. **Dropdown menu items NIE są tapowane (P-38)** — Week/Month miss 4×. |
 | `com.anthropic.claudefordesktop` | Claude Desktop | 🟢 GOOD | 7 toastów / 1 miss. Reguły z reseedu działają (Chat/Code/Cowork mode, Sidebar, Quick Search). |
-| `md.obsidian` | Obsidian | ⬜ UNTESTED | Bundled.json istnieje, manual eval nie wykonany od v1.1.1 reseed. |
-| `com.linear.LinearMac` | Linear | ⬜ UNTESTED | Bundled.json istnieje. Reguły są ale brak weryfikacji. |
-| `com.todesktop.230313mzl4w4u92` | Cursor | ⬜ UNTESTED | Reseed był, manual eval nie. |
-| `com.apple.Terminal` | Terminal | ⬜ UNTESTED | Reseed v1.1.1, eval nie. |
+| `md.obsidian` | Obsidian | 🟡 PARTIAL | UAT 2026-05-17 (Filip, 5-min eval): menu bar items działają, Graph View ribbon icon ⌘G zadziałał (post-reseed); pozostałe ribbon icons (New note, Search, Bookmarks, Today's daily note, Expand, Collapse) NIE pokazują toastów. **Root cause:** P-51 Electron lazy AX tree — reseed walk widzi 12 elementów (visited=12, raw=0), wszystkie AXGroup/AXButton mają puste desc dopóki user nie hoveruje. AX desc populuje się dopiero przy aktywności. Eksperymenty 2026-05-17: 4 reseedy (50/41/43/45 rules), żaden nie zharvestował content. Diagnostyka w `AXSkeletonExtractor` + `Reseeder` printuje visited/maxDepth/byRole. Adresowane przez P-51 w audit-phase-0.md. |
+| `com.linear.LinearMac` | Linear | 🚫 SKIPPED | UAT 2026-05-17: nie zainstalowany na maszynie Filipa. Bundled rules istnieją ale brak możliwości weryfikacji lokalnie. |
+| `com.todesktop.230313mzl4w4u92` | Cursor | 🚫 SKIPPED | UAT 2026-05-17: nie zainstalowany na maszynie Filipa. Bundled rules istnieją (reseed był) ale brak możliwości weryfikacji lokalnie. |
+| `com.apple.Terminal` | Terminal | 🟢 GOOD | UAT 2026-05-17 (Filip, 5-min eval): 5/5 — ⌘T New tab, ⌘N New window, ⌘F Find, ⌘K Clear, ⌘W Close tab wszystkie pokazały toast. Native macOS app, L3 MenuBarIndex pełne pokrycie. |
 
 ### Auto-discovered (cache) apki widziane w events.jsonl
 

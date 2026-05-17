@@ -37,6 +37,10 @@ enum AXSkeletonExtractor {
     private static let allowedRoles: Set<String> = [
         "AXButton", "AXLink", "AXMenuItem",
         "AXCheckBox", "AXRadioButton", "AXPopUpButton",
+        // P-51: Electron/Chromium ribbon icons (Obsidian/Notion/Linear/Cursor/Discord)
+        // expose buttons as AXGroup with kAXDescription. walk() restricts AXGroup to
+        // elements with a description so layout containers are not harvested.
+        "AXGroup",
     ]
     private static let maxTitleLen = 50
     private static let maxItems = 500
@@ -125,18 +129,44 @@ enum AXSkeletonExtractor {
     static func extract(for app: NSRunningApplication, maxNodes: Int = 5000) -> [SkeletonItem] {
         let axApp = AXUIElementCreateApplication(app.processIdentifier)
         var raw: [RawAXItem] = []
+        debugVisited = 0
+        debugRoleCount = [:]
+        debugMaxDepth = 0
+        // Walk the whole app tree but skip AXMenuBar inside walk() so the budget
+        // goes to window content (AXButton/AXGroup ribbon icons) instead of the
+        // Apple-menu "Open Recent" submenu which would otherwise saturate it.
         walk(axApp, depth: 0, maxDepth: 6, count: &raw, max: maxNodes)
+        let sample = raw.prefix(10).map { "\($0.role):\"\($0.title)\"" }.joined(separator: ", ")
+        let topRoles = debugRoleCount.sorted { $0.value > $1.value }.prefix(10)
+            .map { "\($0.key)=\($0.value)" }.joined(separator: " ")
+        print("AXSkeletonExtractor: visited=\(debugVisited) maxDepth=\(debugMaxDepth) raw=\(raw.count)")
+        print("AXSkeletonExtractor: byRole [\(topRoles)]")
+        print("AXSkeletonExtractor: rawSample: \(sample)")
         return filter(rawItems: raw)
     }
+
+    // Debug counters — populated by walk() during extract().
+    private static var debugVisited: Int = 0
+    private static var debugRoleCount: [String: Int] = [:]
+    private static var debugMaxDepth: Int = 0
 
     private static func walk(_ element: AXUIElement, depth: Int, maxDepth: Int,
                               count raw: inout [RawAXItem], max: Int) {
         if raw.count >= max { return }
         if depth > maxDepth { return }
 
+        debugVisited += 1
+        if depth > debugMaxDepth { debugMaxDepth = depth }
+
         var roleRef: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleRef)
         let role = roleRef as? String ?? ""
+        debugRoleCount[role, default: 0] += 1
+
+        // Skip menu bar — its items are collected separately by MenuBarDumper.
+        // Walking it would let Apple-menu "Open Recent" submenu (hundreds of
+        // file entries) saturate the budget before window content is reached.
+        if role == "AXMenuBar" { return }
 
         if allowedRoles.contains(role) {
             var titleRef: AnyObject?
@@ -145,8 +175,16 @@ enum AXSkeletonExtractor {
             AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &titleRef)
             AXUIElementCopyAttributeValue(element, kAXDescriptionAttribute as CFString, &descRef)
             AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identRef)
-            let title = (titleRef as? String).flatMap { $0.isEmpty ? nil : $0 }
-                ?? (descRef as? String) ?? ""
+            let title: String
+            if role == "AXGroup" {
+                // P-51: AXGroup is generic; only collect when it has an explicit
+                // description (Electron ribbon icons). Title-only AXGroups are
+                // layout containers and would flood the skeleton.
+                title = (descRef as? String) ?? ""
+            } else {
+                title = (titleRef as? String).flatMap { $0.isEmpty ? nil : $0 }
+                    ?? (descRef as? String) ?? ""
+            }
             if !title.isEmpty {
                 let ident = identRef as? String
                 raw.append(RawAXItem(role: role, title: title,
