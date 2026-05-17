@@ -958,7 +958,7 @@
             "edit message",
             "Edit this message"
           ],
-          "role": "AXMenuItem"
+          "role": "AXButton"
         },
         "keys": [
           "e"
@@ -977,7 +977,7 @@
             "start thread reply",
             "thread reply"
           ],
-          "role": "AXMenuItem"
+          "role": "AXButton"
         },
         "keys": [
           "t"
@@ -989,7 +989,7 @@
         "version": 1,
         "confidence": "medium",
         "match": {
-          "role": "AXMenuItem",
+          "role": "AXButton",
           "titles": [
             "Pin message",
             "Pin message P",
@@ -1012,9 +1012,10 @@
             "Share message",
             "Share message S",
             "forward message",
+            "Forward message…",
             "share this message"
           ],
-          "role": "AXMenuItem"
+          "role": "AXButton"
         },
         "keys": [
           "s"
@@ -1031,9 +1032,10 @@
             "Save message A",
             "bookmark message",
             "save for later",
+            "Remove from Later",
             "add to saved items"
           ],
-          "role": "AXMenuItem"
+          "role": "AXButton"
         },
         "keys": [
           "a"
@@ -1051,7 +1053,7 @@
             "mark as unread",
             "mark message unread"
           ],
-          "role": "AXMenuItem"
+          "role": "AXButton"
         },
         "keys": [
           "u"
@@ -1070,7 +1072,7 @@
             "set reminder",
             "message reminder"
           ],
-          "role": "AXMenuItem"
+          "role": "AXButton"
         },
         "keys": [
           "m"
