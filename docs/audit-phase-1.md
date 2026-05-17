@@ -24,7 +24,7 @@
 | 1.5 Naprawa bugu MenuBarIndex.lookup | 🟢 done | Fix key.contains(q) + próg 5 znaków + 4 testy (sesja 2026-05-14) |
 | 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
-| 1.8 Video-based eval protocol | 🔵 partial | Skrypt `sflow-video-eval` + `sflow-video-extract.swift` zbudowany (sesja 2026-05-14, droga C). Brakuje: LLM vision `--llm` flag (droga B) |
+| 1.8 Video-based eval protocol | 🔵 partial | Droga C ✅ (sesja 2026-05-14). Droga B (`--llm` flag) — **T1 2026-05-16**: `scripts/sflow-video-llm.swift` (~280 LOC, Haiku 4.5 vision, concurrency 5, structured md report) + rozszerzony `scripts/sflow-video-eval` o `--llm/--model/--concurrency/--report/--no-strips`. E2E test na 32 klatkach OK (pipeline works, 0 błędów po fixie klucza API). **Issue znaleziony:** prompt v1 halucynował 4 SFlow toasty z Slack context menu items ("Remind me ?", "Mark unread U", "Copy link L", "Quick Switcher ⌘K") — Claude mylił natywne menu kontekstowe z toastem. **Prompt v2 napisany** — ścisła definicja "standalone overlay outside any menu", 5 jawnych negacji (context menu / command palette / menu bar dropdown / native tooltip / help overlay), golden test, bias false-negative > false-positive. **TODO 2026-05-17:** (1) Filip re-runs `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` — weryfikuje że 4 halucynowane toasty zniknęły. (2) Nagrać krótki screencast Notion Mail (B+C verification target) i puścić full pipeline `./scripts/sflow-video-eval <video> --llm`. (3) Po pozytywnej weryfikacji 🔵→🟢. |
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
 | 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
@@ -33,6 +33,35 @@
 | 1.14 Chromium window AX deep fallback (P-36) | 🟢 done | Sesja A (2026-05-15): gate `depth > 0` usunięty, `extractFallbackTitleFromChildren` czyta `kAXValue` + 1-level rekurencja, `kAXValue` czytane na głównym elemencie, `MissEvent` wzbogacony o identifier/value/roleDescription/customActions/subtreeLabel. ~80 LOC. 219 testów passing. Verify-step dla Filipa: Notion Mail click test. |
 | 1.15 Passive tooltip observer + backend ingest (P-37) | 🟢 część 1 done (B verified), część 2 pending (C) | **Sesja B verified 2026-05-15 wieczór** na 2 apkach: Notion Mail (5/5 ikonek) + Notion Calendar. 4 iteracje fix'ów (+ separator, hit-test button rect, sanity-check >200×200, split-badge). 256 testy passing (+37). **Sesja C (backend `/v1/discovered` crowdsource) — odłożona** do potwierdzenia że B generalizuje się na Linear/Discord/Slack/Notion main (test Filipa na następnej sesji). |
 | 1.16 Dev-mode seed pre-fetch (opcjonalne) | ⬜ pending | Sesja D (opcjonalna). Tryb `--seed-app <bundleId>` — symulowany hover wszystkich AXButton w aplikacji, harvest tooltipów do seed JSON. **Internal-only** dla zespołu SFlow przed releasem (NIE w user-facing buildach — sztuczny hover może triggerować analytics/animations u userów). Zasila bundled RuleCache dla zimnego startu. |
+| 1.17 Menu-as-discovery: `AXMenu`/`AXMenuItem` inline shortcuts (P-38) | ⬜ pending | Diagnoza 2026-05-16: dropdowny w oknie apki (Notion Calendar Week→Day/Week/Month, Linear ⌘K, Slack apps menu, etc.) mają skróty inline ("1 or D", "0 or W", "M"), których TooltipObserver nie łapie (rola `AXMenu` poza białą listą, kształt za wysoki, parser zakłada 2 oddzielne static-text, brak modelu alternatywnych skrótów). Plan 3-etapowy: (1) `MenuItemObserver` dla natywnych menu macOS — czyta `kAXMenuItemCmdChar`/`kAXMenuItemCmdModifiers` bezpośrednio (no heuristics); (2) Chromium dropdown — walk po `AXMenuItem`, pozycyjne parsowanie StaticText'ów wewnątrz; (3) schemat `DiscoveredEntry.alternateKeys: [[String]]?` dla formatu "X or Y". Decyzja go/no-go po teście Sesji B na Linear/Discord/Slack/Notion main — jeśli >20% missów to dropdowny, priorytet ŚREDNIA-WYSOKA (sesja po C). |
+
+---
+
+## Sub-cele 1.18+ — Faza 1.5 Universal Coverage
+
+**Sub-cele 1.18-1.29 zostały wydzielone do osobnej Fazy 1.5** —
+**Universal Coverage** — bo dotyczą **rozszerzenia zasięgu** (pokrycie
+większej liczby apek bez per-app pracy), nie głębokości jakości Fazy 1.
+
+**Pełna specyfikacja:** [`audit-phase-1.5.md`](audit-phase-1.5.md).
+
+**Krótki przegląd:**
+
+| Sub-cel | Co | Adresuje | Czas |
+|---|---|---|---|
+| 1.18 | Right-click / context menu monitoring | P-41 (G-1) | ~3h |
+| 1.19 | Web-as-app pseudo-bundleId per domena | P-42 (G-2) | ~5-8h |
+| 1.20 | i18n / lokalizacja reguł | P-43 (G-3) | ~6-10h |
+| 1.21 | Single-key shortcut mode | P-44 (G-4) | ~2h |
+| 1.22 | Modal / sheet / dialog scope | P-45 (G-7) | ~6h |
+| 1.23 | Tool/mode switching w kreatywnych apkach | P-46 (G-8) | ~5h |
+| 1.24-1.28 | Eval 5 niepokrytych typów apek (Office/Adobe/Qt/Catalyst/SwiftUI) | P-47 | ~30h |
+| 1.29 | B.1 finalize — `TooltipNameFilter` + `PrivacyFilter` integracja | P-39 + P-40 | ~30 min |
+
+**Decyzja kolejności:** zacząć od **U-1 (Sub-cel 1.29 B.1)** — kod gotowy
+2026-05-16, czeka tylko 1 linia integracji. Potem **U-2 (Sub-cel 1.18
+right-click)** — największy uniwersalny win za ~3h. Patrz
+`audit-phase-1.5.md` § Execution sequence.
 
 ---
 
@@ -62,6 +91,7 @@
 | **A** | Chromium AX deep fallback + miss-log enrichment | 1.14 (P-36) — 4 dziury w `extractFallbackTitleFromChildren` + rich `MissEvent` | ~1.5h | 🟢 done | inline (Notion Mail empty-label fix, 2026-05-15) |
 | **B** | Passive tooltip observer | 1.15 część 1 (P-37) — `TooltipObserver` + click-time L0.3 fallback + lokalny `discovered/{bundleId}.jsonl` + privacy filter | ~5h (z 4 iteracjami fix'ów) | 🟢 done | inline (verified Notion Mail + Notion Calendar) |
 | **C** | Backend `/v1/discovered` + bundled promotion | 1.15 część 2 — endpoint + agregator + promote do `bundled.json` | ~half dzień | ⬜ pending | Decyzja po teście B na Linear/Discord/Slack/Notion main (memory: `next-session-2026-05-16`) |
+| **C.5** | Menu-as-discovery (`MenuItemObserver`) | 1.17 (P-38) — `AXMenu`/`AXMenuItem` natywne + Chromium dropdown + alternate keys schema | ~4-6h | ⬜ pending | Decyzja go/no-go po teście B (memory: `next-session-2026-05-16`) — robimy jeśli >20% missów to dropdowny |
 | **D** | Dev-mode `--seed-app` (opcjonalne) | 1.16 — synth hover dla internal team | ~3h | ⬜ | ✏️ sketch (only if B+C lessons require) |
 | **10** | Synthetic Claude self-eval | 1.13 (P-33) — score per regule + experimental flag | ~1 dzień | ⬜ | ✏️ sketch |
 | **11** | Self-healing /v1/refresh | 1.3 (miss data + scheduler) | ~3 dni | ⬜ | ✏️ sketch |
@@ -1536,3 +1566,20 @@ podstawie.
 *Status: kompletny audyt Fazy 1. Następny krok: napisać spec dla pierwszego
 sub-celu (quality gate + false-positive feedback) i zacząć implementację.
 Sugerowany plik specu: `docs/superpowers/specs/2026-05-XX-quality-and-feedback-design.md`.*
+
+---
+
+## Discovered issues post-audit
+
+- **2026-05-16 — Toast rendering regression dla Slacka na 2. monitorze
+  (multi-monitor / fullscreen).** Logika dopasowania (`ShortcutRules`)
+  i emisji eventu (`EventLogger`) działa poprawnie — toast jest zapisywany
+  do `events.jsonl`. Renderowanie `ToastWindow` zawodzi specyficznie dla
+  pozycji na drugim monitorze (test toast z menu bar działa OK). Tej sesji
+  dodano reguły `slack-msg-*` (Save for later → A, Reply → T, Forward → F,
+  Mark unread → U, Copy link → L, Copy message → ⌘C, Edit → E, More
+  actions) i fixy infrastrukturalne (`AXManualAccessibility` w
+  `TooltipObserver`, tap re-enable + heartbeat w `ClickWatcher`,
+  screen-aware placement w `ToastWindow`) — wszystkie zachowane jako
+  fundament, ale finalna widoczność toastu wymaga osobnej iteracji.
+  Pełna diagnoza: [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md)

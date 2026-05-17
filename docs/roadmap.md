@@ -104,6 +104,77 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-17 — Audyt 4 dokumentów + poprawki sekwencjonowania (meta, bez kodu)
+
+**Co:** Filip wskazał priorytet "rozpoznawanie elementów w oknach + toast display dla wszystkich apek". Pełny audyt `audit-phase-0.md` + `audit-phase-1.md` + `roadmap.md` + `product-vision.md` ujawnił 11 luk dokumentacyjnych. Wykonane 5 poprawek surgicznie:
+
+1. **P-49 sformalizowany** w `audit-phase-0.md` — Slack multi-monitor toast blocker (do tej pory wiszący bez numeru P-X jako "Outstanding bug"). Krytyczny dla Fazy 1.7 beta.
+2. **"Outstanding bugs"** w audit-phase-0 + **"Outstanding issues"** w roadmap zlinkowane z P-49.
+3. **Graf zależności Faza 1 ↔ 1.5 ↔ 1.6 ↔ 1.7** dodany na początku sekcji Fazy 1.5. Reguła: Faza 1.5 i 1.6 idą **równolegle**, Faza 1.7 czeka na P-49 + ≥10 verified apps (zmniejszone z 20 dla beta MVP).
+4. **U-5 (i18n) podniesione z MEDIUM na HIGH** — uzasadnienie: polski UI Slack/Notion daje 0% pokrycia bez i18n, beta sygnał niewiarygodny.
+5. **P-49 wstawione w sekwencji U-1..U-7** jako #2 (zaraz po U-1 B.1) — przed U-2/U-3/U-4.
+
+**Dlaczego:** dokumentacja była aktualna ale **niespójna w 5 miejscach** (Slack toast bez P-numeru, kolejność Faza 1.5 vs 1.7 niejasna, i18n nie pasowała do polskiego ICP, brak grafu zależności). Audyt zamknął te luki przed dziś wieczorem sesją techniczną U-1.
+
+**Następny krok:** Sesja U-1 (B.1 integracja, 30 min) → P-49 fix (~2h, multi-monitor) → U-2 (right-click, 3h). Sekwencja zatwierdzona przez Filipa.
+
+### 2026-05-16 — T2 (diagnoza, bez kodu): Dropdown menu items nie są tapowane (P-38)
+
+**Co:** Filip pokazał screenshot z Notion Calendar — dropdown otwarty po kliknięciu „Week" z pozycjami `Day` (1 or D), `Week` (0 or W), `Month` (M), `Number of days` (>), `View settings` (>). SFlow nie pokazuje toasta dla żadnego z nich mimo aktywnej Sesji B.
+
+**Diagnoza (z `TooltipObserver.swift` + `TooltipShortcutParser.swift`):** 4 niezależne powody — (1) `walk()` nie iteruje po `AXMenu`/`AXMenuItem` (poza białą listą `containerRoles`), (2) `isTooltipShape` wymaga 40–500×16–100 px (menu ~280×400 — za wysokie), (3) `parseTooltipTexts` wymaga 2 oddzielnych `AXStaticText` (nazwa + badge) — `AXMenuItem` ma title+shortcut na jednym elemencie, (4) `TooltipShortcutParser` nie rozumie formatu „X or Y" (alternatywne skróty).
+
+**Decyzja architekturalna:** to jest **trzecia osobna ścieżka discovery**, nie rozszerzenie TooltipObservera:
+- Menu bar → `MenuBarWatcher` przez `kAXMenuItemCmdChar` ✅
+- Window button tooltips → `TooltipObserver` L0.3 ✅ (Sesja B)
+- Window dropdown menus → **brak**, planowany `MenuItemObserver` (Sub-cel 1.17 / Sesja C.5)
+
+**Dodane do dokumentacji:**
+- `audit-phase-0.md`: nowe P-38 w tabeli statusów + pełny opis na końcu listy problemów (4 powody blokady, plan 3-etapowy)
+- `audit-phase-1.md`: nowy Sub-cel 1.17 w tabeli statusów + Sesja C.5 w execution sequence (po Sesji C)
+- `product-vision.md`: notka w sekcji 3 snapshot
+- `roadmap.md`: ten wpis
+
+**Decyzja go/no-go:** zależy od wyników testu Sesji B na Linear/Discord/Slack/Notion main (memory `next-session-2026-05-16`). Jeśli dropdowny to >20% missów na tych apkach → priorytet ŚREDNIA-WYSOKA i robimy Sesję C.5 zaraz po C. Jeśli marginalne — Faza 2.
+
+**Zero zmian w kodzie.** Diagnoza + plan only.
+
+### 2026-05-16 — T1 (w toku, weryfikacja jutro): LLM video eval `--llm` flag
+
+**Co:** Dokończenie Sub-celu 1.8 Droga B (audit-phase-1.md row 1.8). Pasywna ścieżka rozumiana jak "stripy → AI manualnie czyta" (Droga C) → automatyczna ścieżka "klatki → Claude vision per frame → raport markdown" (Droga B).
+
+**Nowe pliki (~280 LOC):**
+- `scripts/sflow-video-llm.swift` — czyta `f_*.png` z katalogu, base64-enkoduje, POST do Anthropic API per klatka (concurrency 5 via DispatchSemaphore), agreguje per-(action, keys, app), pisze strukturyzowany `docs/video-eval-<ts>.md` z tabelami Toast hits / Native tooltips / Timeline (consecutive identical states collapsed).
+
+**Modyfikacje:**
+- `scripts/sflow-video-eval` — flagi `--llm/--model/--concurrency/--report/--no-strips`, backward compatible z pozycyjnym intervalem. `--llm` woła `sflow-video-llm.swift` po extract'cie klatek.
+
+**Pipeline test 2026-05-15 wieczór:**
+- 32 klatek z 32s screencast'a (CleanShot, Slack/Xcode/Google Chat aktywne)
+- Po fixie błędnego klucza API w env: 0 errors, raport wygenerowany, struktura OK
+- **Issue znaleziony przez Filipa:** 4 wykryte SFlow toasty (Remind me ?, Mark unread U, Copy link L, Quick Switcher ⌘K) **nie istniały w wideo** — Claude (Haiku 4.5) zinterpretował pozycje natywnego context menu Slacka (right-click → lista z klawiszami po prawej) jako SFlow toasty.
+
+**Prompt v2 (rozwiązanie):** Ścisła definicja w `analysisPrompt`:
+- Pozytywna: "standalone overlay floating ON TOP of the app, OUTSIDE any menu/dropdown/list"
+- 5 jawnych negacji z przykładami: context menu / command palette (⌘K) / menu bar dropdown / native tooltip / help overlay
+- Golden test: "Is this a SINGLE compact pill, separate from any menu?"
+- Bias: "false negatives MUCH better than false positives"
+
+**TODO 2026-05-17 (Filip):**
+1. `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` — re-run na istniejących klatkach z promptem v2. Oczekiwane: 4 halucynowane toasty znikają z "Toast hits summary".
+2. Nagrać krótki screencast Notion Mail (po Sesji B verify): kliknięcia w Compose/Archive/Reply/Forward. Puścić `./scripts/sflow-video-eval <video> --llm` end-to-end.
+3. Jeśli oba OK → status 1.8 🔵→🟢.
+
+**Acceptance criteria sub-celu 1.8 (z audit-phase-1.md):**
+- [x] `scripts/sflow-video-eval` istnieje i działa (Droga C minimum)
+- [x] `.gitignore` zawiera `*.mp4`
+- [x] (Droga B) `--llm` flag wywołuje Claude vision per klatka
+- [ ] Wykonano ≥1 video eval z udokumentowanymi findings w session log ← **TODO jutro**
+
+**Pliki dotknięte:** `scripts/sflow-video-llm.swift` (nowy), `scripts/sflow-video-eval` (modyfikacja), `docs/audit-phase-1.md` (status row 1.8). **NIE dotknięto** żadnych plików ze ścieżki Sesji A/B/C — pełna izolacja od głównego terminala.
+
+**Coś niezamknięte na czysto:** plik `docs/video-eval-test.md` (raport z prompt v1, z halucynacjami) zostawiony — po pozytywnej weryfikacji jutro można zostawić jako proof-of-concept albo zmienić nazwę na `docs/video-eval-20260515T1640-slack-poc.md`. **Decyzja Filipa.**
+
 ### 2026-05-15 (wieczór) — Sesja B verified + 4 iteracje fix'ów
 
 **Verified end-to-end** na 2 apkach:
@@ -642,6 +713,116 @@ konkretnymi liczbami.
 
 ---
 
+## Sekwencja Faza 1 ↔ 1.5 ↔ 1.6 ↔ 1.7 (graf zależności)
+
+```
+Faza 1 (jakość fundamentu, P-26..P-30 ✅, P-49 ⬜)
+   │
+   ├──► Faza 1.5 (Universal Coverage U-1..U-7)
+   │       │   robi się równolegle, bo każda warstwa
+   │       │   uniwersalna zwiększa Sub-cel 1.6 hit-rate
+   │       ▼
+   ├──► Faza 1.6 (20 verified apps, hit-rate ≥70%)
+   │       │   wymaga U-1..U-4 żeby trafić 70% na apkach
+   │       │   typu Notion Mail / Gmail web / Figma
+   │       ▼
+   └──► Faza 1.7 (beta 3-5 osób, 2 tygodnie)
+           │   wymaga P-49 ZAMKNIĘTE (multi-monitor toast)
+           │   bo bez widocznego toasta beta nic nie mierzy
+           ▼
+       Decyzja: kontynuować Fazę 2 czy pivot
+```
+
+**Reguły:**
+1. **Faza 1.5 nie czeka na Fazę 1.6** — wykonujemy je współbieżnie, każda
+   warstwa U-X zasila hit-rate w 1.6.
+2. **Faza 1.7 (beta) wymaga zamknięcia P-49** — multi-monitor toast blocker.
+   Bez tego beta-testerzy z 2-monitorami nie zobaczą produktu.
+3. **Faza 1.7 wymaga ≥10 verified apps z 1.6** (zniżamy z 20→10 dla beta MVP)
+   — 20 to cel pełny, 10 wystarczy żeby beta-tester miał codzienne pokrycie.
+4. **Faza 2 nie startuje** dopóki beta nie odpowie na pytanie "czy toast uczy".
+
+---
+
+## Faza 1.5: Universal Coverage (2–3 tygodnie)
+
+**Cel:** zamknąć największe luki uniwersalności mechanizmu rozpoznawania
+**przed** budową drogi B. Bez tej fazy każda nowa apka wymaga reseedu
+Claude + manual eval. Z tą fazą — 6 nowych warstw działa **z dnia 0** dla
+większości popularnych Mac apek.
+
+**Kontekst:** po analizie 2026-05-16 (`docs/universality-gaps-and-windows-2026-05-16.md`)
+zidentyfikowano 15 dziur uniwersalności (G-1..G-15) + 5 niepokrytych typów
+apek (Office / Adobe / Qt-GTK / Catalyst / SwiftUI). Faza 1.5 robi
+**najwyższy ROI subset** — 6 priorytetów (G-1, G-2, G-3, G-4, G-7, G-8) +
+eval coverage 5 typów apek.
+
+**Kryterium wyjścia:**
+- Sub-cele 1.18–1.23 (G-1..G-4, G-7, G-8) zaimplementowane lub świadomie
+  odłożone
+- Sub-cel 1.29 (B.1 follow-up — TooltipNameFilter + PrivacyFilter
+  zintegrowane)
+- Coverage 50 apek (z 20 w Fazie 1.6 → 50 z mix auto-discovered + manual
+  eval Fazy 1.5)
+- % missów per kategoria (right-click, web content, dialog) w `events.jsonl`
+  spada o **≥60%**
+
+**Pełna lista sub-celów + execution sequence + atomic plany:**
+patrz [`audit-phase-1.5.md`](audit-phase-1.5.md).
+
+### 1.5.1 Najważniejsze sub-cele (top-4 ROI, ~12h razem)
+
+| Sub-cel | Krótko | Czas |
+|---|---|---|
+| 1.18 (G-1) | **Right-click monitoring** — `rightMouseDown` + AXMenu handler. Pokrywa skróty z context menu we **wszystkich** apkach naraz. | ~3h |
+| 1.21 (G-4) | **Single-key mode** — feature flag dla Gmail/Notion Mail/Obsidian Vim. Tani fix, czysty mental model. | ~2h |
+| 1.19 (G-2) | **Web-as-app** — pseudo-bundleId `web:gmail.com` per domena. Otwiera klasę web-apek bez per-app pracy. | ~5-8h |
+| 1.20 (G-3) | **i18n lokalizacja** — `AXLanguage` + Claude prompt z `userLocale`. Odblokowuje non-EN market. | ~6-10h |
+
+### 1.5.2 Inne sub-cele Fazy 1.5
+
+| Sub-cel | Krótko | Czas |
+|---|---|---|
+| 1.22 (G-7) | Modal/sheet/dialog scope — `AXFocusedWindow` role check, scope field w schema | ~6h |
+| 1.23 (G-8) | Tool/mode switching — `AXToolbar` detection, single-key whitelist dla creative apek | ~5h |
+| 1.24 | Eval Microsoft Office (Excel/Word/PowerPoint/OneNote/Outlook) — reseed + manual | ~10h |
+| 1.25 | Eval Adobe (Photoshop/Illustrator/Premiere) — reseed + manual | ~10h |
+| 1.26 | Eval Qt/GTK/Tk (VLC/GIMP/Blender/OBS/RStudio) | ~6h |
+| 1.27 | Eval Catalyst (News/Stocks/Home/Books) | ~4h |
+| 1.28 | Eval SwiftUI (Shortcuts.app/Freeform) | ~2h |
+| 1.29 | B.1 finalize — integracja `TooltipNameFilter` + `PrivacyFilter` (kod gotowy 2026-05-16, 1 linia integracji) | ~30 min |
+
+**Łącznie Faza 1.5:** ~55-70h. Można rozbić na ~10 sesji.
+
+### 1.5.3 Świadomie odłożone na późniejsze fazy
+
+- **G-5 P-38 MenuItemObserver** — już Sub-cel 1.17 w Fazie 1 (sesja C.5 po Sesji C)
+- **G-6 Keystroke monitoring** — już Faza 2.2 (drugi event tap)
+- **G-15 Active probing** — już Sub-cel 1.16 (Sesja D, opcjonalna)
+- **G-9, G-10, G-11, G-13, G-14** — niski priorytet, Faza 2+ (patrz
+  `audit-phase-1.5.md` § "Co NIE robimy")
+- **G-12 Team/admin** — już Faza 7 (B2B)
+- **Windows port** — Q1 2027, po PMF na Macu
+
+### 1.5.4 Decyzja kolejności
+
+Sesje U-1..U-10 mają priorytety. Sekwencja zalecana (zmiana 2026-05-17):
+
+1. **U-1** (B.1 integracja, ~30 min) — kod gotowy, najszybszy commit
+2. **P-49** (Slack multi-monitor toast, ~2h) — **WSTAWIONE TUTAJ:** blocker
+   dla Fazy 1.7 beta; bez tego beta-testerzy z 2-monitorami nie zobaczą produktu
+3. **U-2** (Right-click, ~3h) — największy uniwersalny win
+4. **U-3** (Single-key, ~2h) — najtańszy fix
+5. **U-4** (Web-as-app, ~6-8h) — największy unlock zakresu (Gmail/Linear/Slack web)
+6. **U-5** (i18n, ~6-10h) — **PODNIESIONE z MEDIUM na HIGH (2026-05-17):**
+   Filip pisze po polsku i większość polskich beta-testerów ma polski UI
+   Slacka/Notion. Bez i18n te apki dają 0% pokrycia okien (tylko menu bar).
+   Beta sygnał będzie niewiarygodny jeśli pokrycie zależy od locale apki.
+7. **U-6, U-7** (modal scope, tool/mode) — kolejność zależna od bety Fazy 1.7
+8. **U-8..U-10** (eval 5 typów apek) — w międzyczasie jako "small sessions"
+
+---
+
 ## Faza 2: Infrastruktura nauki (3–4 tygodnie)
 
 **Cel:** mamy serwer + lokalne hooki potrzebne do drogi B i E.
@@ -1120,6 +1301,18 @@ quality gate):
 - Nie pisz landing page'u (Faza 6) — nie ma czego sprzedawać
 - Nie integruj telemetry z serwerem (Faza 2) — Faza 1 musi być solidna
 - Nie poleruj toasta wizualnie (Faza 3) — to 1 tydzień pracy później, nie teraz
+
+---
+
+## Outstanding issues (do rozwiązania)
+
+- **P-49 (2026-05-16) — Toast Slacka nie renderuje wizualnie mimo emisji**
+  (multi-monitor / fullscreen) — sformalizowane jako P-49 w `audit-phase-0.md`.
+  Reguły `slack-msg-*` poprawnie dopasowane w `ShortcutRules`, `events.jsonl`
+  pokazuje toast, ale `ToastWindow` na 2. monitorze nie pojawia się.
+  **Blocker dla Fazy 1.7 (beta)** — multi-monitor to większość ICP power-userów.
+  Pełna diagnoza + hipotezy + plan testów:
+  [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md)
 
 ---
 

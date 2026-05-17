@@ -235,6 +235,25 @@ To **nowa, asymetryczna droga zdobywania reguł** — niezależna od Claude'a,
 działa dla apek których jeszcze nikt nie eval'ował, samonapędzający się
 ekosystem.
 
+**Diagnoza 2026-05-16 — znana luka w pokryciu: dropdown menu w oknach (P-38).**
+Po Sesji B Filip zauważył że w Notion Calendar dropdowny otwarte po kliku
+w przycisk (Week → Day/Week/Month z badge'ami "1 or D", "0 or W", "M") nadal
+nie emit'ują toastów. To **trzecia osobna ścieżka discovery**, niezależna
+od dwóch obecnych:
+
+| Źródło skrótu | Obsługa dziś |
+|---|---|
+| Menu bar (File/Edit/View) | `MenuBarWatcher` przez `kAXMenuItemCmdChar` ✅ |
+| Window button tooltips (Compose, Reply) | `TooltipObserver` L0.3 ✅ (Sesja B) |
+| **Window dropdown menus** (View→Week) | **brak** — `MenuItemObserver` (Sub-cel 1.17) |
+
+Powody techniczne: rola `AXMenu`/`AXMenuItem` poza białą listą `walk()`,
+heurystyka rozmiaru tooltipa odrzuca pionowe menu, format "X or Y" (dwa
+skróty na jedną akcję) nie mieści się w obecnym schemacie `[String]`.
+Skala: każda apka z dropdownami w UI (Linear ⌘K, Slack apps, Figma context
+menu, Notion slash-menu). Decyzja go/no-go po teście Sesji B na Linear/
+Discord/Slack — patrz `audit-phase-1.md` Sub-cel 1.17 + `audit-phase-0.md` P-38.
+
 **Czym są toasty dziś:**
 > Toasty służą mi do testowania czy SFlow faktycznie "łapie" elementy które
 > mają skróty.
@@ -516,3 +535,15 @@ gdy będzie pierwszych userów.
 
 *Status dokumentu: roboczy, do iteracji. Następna sesja: zdecydować czy
 robimy beta-test (krok 1 z rekomendacji) czy idziemy bezpośrednio w drogę B 1.0.*
+
+---
+
+## Outstanding blockers (do rozwiązania)
+
+- **2026-05-16 — Toast nie renderuje wizualnie dla Slacka na 2. monitorze.**
+  Krytyczne dla wartości produktu: jeśli toast nie jest widoczny, **droga A
+  (intro/onboarding) i droga B (nauka) tracą sens** dla użytkowników
+  multi-monitor. Diagnoza techniczna w
+  [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md).
+  Reguły `slack-msg-*` (Save→A, Reply→T, Forward→F itd.) zostały dodane
+  i działają na poziomie eventów — czekają na fix renderera.

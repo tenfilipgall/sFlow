@@ -41,6 +41,18 @@
 | P-35 Backend timeout (>90s) dla niektórych apek | 🔵 częściowo | Prawdopodobnie naprawione przez streaming switch z P-34 — Anthropic odrzucał wcześniej niektóre calle z tego samego powodu. Wymaga weryfikacji na DisplayTuner (`com.benderbureau.displaytuner`) przez Try again. |
 | P-36 Chromium window AX labels są puste (Notion Mail) | 🟢 zamknięte (czeka na verify) | Sesja A (2026-05-15) zaadresowała 4 dziury w `ClickWatcher.swift`: (a) gate `depth > 0` usunięty, (b) `extractFallbackTitleFromChildren` czyta `kAXValue` dziecka (z filtrem static-text-like ról + cap 100 znaków), (c) 1-level rekurencja, (d) `kAXValue` czytane na głównym elemencie i feed do effectiveTitle gdy element to static-text-like. Plus rich `MissEvent` (identifier/value/roleDescription/customActions/subtreeLabel) — sub-cel 1.14. 219 testów passing. Manual verify na Notion Mail: kliknięcie ikonek Compose/Archive/Sidebar po rebuildzie z Xcode. |
 | P-37 Tooltip-as-discovery (React portal) nie eksploatowane | 🟢 zamknięte (B verified na 2 apkach) | **Sesja B verified Filipem 2026-05-15 wieczór** na Notion Mail (5/5 ikonek: Compose/Archive/Close sidebar/Reply/Forward) + Notion Calendar (po dorobieniu split-badge parser). 4 iteracje fix'ów: (1) `+` separator w parserze, (2) hit-test pod kursorem zwraca rect przycisku (nie tooltipa), (3) sanity-check rect >200×200 (Chromium czasem zwraca cały panel), (4) split-badge dla apek wystawiających modyfikator osobno. Warstwa `L0.3` w `ClickWatcher` query'uje `DiscoveredStore.lookup(near: cursorAX)` na początku każdego klika. 256 testy passing. **Sesja C (backend `/v1/discovered` crowdsource) — odłożona** do testu generalizacji B na Linear/Discord/Slack/Notion main. |
+| P-38 Dropdown menu items z inline-shortcut nie są tapowane | ⬜ otwarte | Diagnoza 2026-05-16: dropdown w Notion Calendar (Week→Day/Week/Month/Number of days/View settings) ma skróty po prawej stronie pozycji menu ("1 or D", "0 or W", "M"). TooltipObserver tego nie łapie z 4 powodów: (1) menu ma rolę `AXMenu`/`AXMenuItem` — poza białą listą ról kontenera w `walk()`, (2) `isTooltipShape` wymaga 40–500×16–100 px (menu jest ~280×400 — za wysokie), (3) `parseTooltipTexts` szuka 2 oddzielnych AXStaticText (nazwa + badge), a menu item ma title i shortcut na jednym elemencie (`kAXMenuItemCmdChar`/`kAXMenuItemCmdModifiers`), (4) `TooltipShortcutParser` nie rozumie formatu "X or Y" (alternatywne skróty). To **inny wzorzec discovery** niż React-portal tooltip — natywne macOS menu wystawia skróty bezpośrednio w atrybutach AX (`kAXMenuItemCmdChar`), więc nie potrzebujemy heurystyki rozmiaru. Skala: każda apka z dropdown menu w UI okna (nie tylko menu bar). Plan: rozszerzyć discovery o `MenuItemObserver` skanujący `AXMenu` na hover otwarcia. Patrz Sub-cel 1.17 w `audit-phase-1.md`. |
+| P-39 TooltipObserver false-positive: meta-words jako nazwy akcji | 🟡 partial (kod gotowy, czeka integracja) | Analiza `events.jsonl` 2026-05-16 wykryła 4× w Comet `hint="shortcut" keys=["2"]` — TooltipObserver zinterpretował help-overlay element ("shortcut"+"2" jako 2 oddzielne AXStaticText) jako tooltip akcji. **Kod fix gotowy 2026-05-16 (sesja B.1):** `SFlow/TooltipNameFilter.swift` z banned-list ("shortcut"/"hotkey"/"keyboard"/"tip"/"help") + whitelist znanych verbów dla single-word + 11 testów. **Integracja:** 1 linia w `TooltipObserver.scanForTooltip` (`guard TooltipNameFilter.isAcceptableActionName(f.name) else { return }`). Czeka na commit po xcodegen + manual sanity. Adresuje Sub-cel 1.29 w Fazie 1.5. |
+| P-40 MissEvent zapisuje PII bez scrubbingu | 🟢 zamknięte (kod) | Analiza `events.jsonl` 2026-05-16 wykryła PII w polach desc/value/title/subtreeLabel: WhatsApp imiona ("☀️Sade☀️"), Notion tytuły prywatnych notatek, dane karty MasterCard z Comet. **Fix wdrożony 2026-05-16 (sesja B.1):** `SFlow/PrivacyFilter.swift` z `containsPII` (email/data/karty/emoji/długie stringi/waluty/telefon) + `redact` zwraca `[REDACTED]`. `EventLogger.logMiss` redactuje 5 pól (title/desc/help/value/subtreeLabel/customActions) at write-time, struct trzyma oryginał dla in-memory. 13 testów PrivacyFilterTests + 2 nowe EventLoggerTests. Manual verify: po build i 1 dniu użycia events.jsonl ma `[REDACTED]` zamiast WhatsApp/Notion content. |
+| P-41 Right-click / context menu nie monitorowany | ⬜ otwarte | `CGEventTap` mask = `leftMouseDown` only. Right-click context menu (z **bardzo bogatymi inline shortcutami** — Copy link, Open in new tab, Reveal in Finder, Save image) **nigdy** nie jest obserwowany. Każde z tych ma literę access-key. Plan: rozszerz mask o `rightMouseDown` + special handler dla AXMenu który pojawia się 100-300ms po right-clicku; każdy AXMenuItem ma natywne `kAXMenuItemCmdChar` — atrybut autorytatywny, zero heurystyki. **Pokrywa wszystkie apki naraz.** Adresuje Sub-cel 1.18 (G-1) w Fazie 1.5. ~3h. |
+| P-42 Web-as-app — pseudo-bundleId per domena | ⬜ otwarte | Klik w Gmailu w przeglądarce Comet → `bundleId="ai.perplexity.comet"`. Gmail/Slack web/Notion web/GitHub web mają własne, kompletnie inne shortcuts. SFlow widzi je wszystkie jako "Comet" → 0% pokrycia web shortcutów (Gmail j/k/c/e, Linear ⌘K). Skala: power-user 4h/dzień w przeglądarce. Plan: czytać URL z `AXWebArea.AXURL` (do potwierdzenia empirycznie) lub ekstrahować domenę z `AXTitle` okna ("Inbox — Gmail" → `gmail.com`); pseudo-bundleId `web:gmail.com`; nowy klucz w `rules` dictionary; reguły matchowane per-domain. Adresuje Sub-cel 1.19 (G-2). ~5-8h. |
+| P-43 i18n / lokalizacja reguł | ⬜ otwarte | Slack PL: "Skomponuj wiadomość" zamiast "Compose" → reguła `desc:"compose"` fail. Polish/German/French/Spanish/Japanese/Chinese user widzi 0% pokrycia w window elements dopóki menu bar nie zawiera skrótu. Plan: (a) czytać `AXLanguage` z `frontmostApplication` lub `kAXLanguageAttribute`; (b) Backend prompt z explicit `userLocale: "pl"` → Claude generuje 5 wariantów per locale; (c) per-locale cache `cache/{bundleId}:pl.json`; alternatywnie schema z `localizedTitles: {pl: [...], de: [...]}`. Adresuje Sub-cel 1.20 (G-3). ~6-10h. |
+| P-44 Single-key shortcut mode (Gmail/Vim) | ⬜ otwarte | Niektóre apki mają single-key navigation: Gmail (j/k next/prev, c compose), Notion Mail (c/r/f), Obsidian Vim (h/j/k/l), Notion slash-menu. Dziś Layer 2 wymaga `count>1 OR isInteractive` żeby zaakceptować single char (ochrona przed false-positives). Plan: per-app feature flag `singleKeyMode: true` w bundled.json; whitelist apek; akceptuj single char nawet na non-interactive role w tych apkach. Adresuje Sub-cel 1.21 (G-4). ~2h. |
+| P-45 Modal / sheet / dialog scope brakuje | ⬜ otwarte | Klik w przycisk "Bold" w edytorze tekstu wywołuje ⌘B niezależnie od kontekstu — ale ten sam przycisk "Bold" w dialogu formatowania może mieć inny skrót lub brak skrótu. Brakuje scopu reguł. Plan: czytać `AXFocusedWindow` w czasie kliku; sprawdzać `AXRole` na window (`AXSheet`/`AXFloatingWindow`/`AXSystemDialog`); dodać `scope: ["AXSheet", "AXTextField"]` do schema reguł; reguły filtrowane przez scope match. Eliminuje false-positives. Adresuje Sub-cel 1.22 (G-7). ~6h. |
+| P-46 Tool/mode switching w kreatywnych apkach | ⬜ otwarte | Figma toolbar ma narzędzia (move/rectangle/text/pen) z literami V/R/T/P. Photoshop B/V/M. Linear/Asana/Trello mają boards z toolami selekcji. Klik w ikonkę narzędzia → SFlow pokazuje toast **tylko jeśli ma regułę** dla Figmy/Photoshopa — których dziś **nie ma**. Plan: AXToolbar role detection w drzewie; toolbar children = AXButton z desc=nazwa narzędzia; L0.3 tooltip + single-key whitelist dla toolbar context. Otwiera klasę creative apek. Adresuje Sub-cel 1.23 (G-8). ~5h. |
+| P-47 Brak ewaluacji 5 typów apek UI | ⬜ otwarte | W audicie 2026-05-16 zidentyfikowano 5 niepokrytych typów apek: (1) **Microsoft Office** — hybrid AppKit + ribbon (Excel/Word/PowerPoint/OneNote/Outlook), (2) **Adobe Creative Suite** — custom rendering (Photoshop/Illustrator/Premiere/Lightroom), (3) **Qt/GTK/Tk** — ograniczone AX (VLC/GIMP/Krita/Blender/OBS/Audacity/RStudio), (4) **Catalyst** — UIKit→AppKit translation (News/Stocks/Home/Books/Voice Memos), (5) **SwiftUI pure** — labelki w `value` zamiast `title` (Shortcuts.app/Freeform/indie). **Empiryczna luka:** nie wiemy ile z naszych warstw uniwersalnych działa w tych apkach. Plan: reseed + manual eval każdej (~2h per apka). Adresuje Sub-cele 1.24-1.28 (Faza 1.5). |
+| P-48 Version detection — patch update apki ⇒ ciche psucie reguł | ⬜ otwarte | Cache key `bundleId:major.minor`. Notion często zmienia UI w patch update (0.0.x). Reguły dziedziczone z 2 miesięcy temu są coraz bardziej nieaktualne — psują się cicho bez sygnału do usera. Plan: hash UI skeleton (top-50 elements role+title) jako fingerprint; jeśli fingerprint zmienił się o >30% od ostatniego discovery → trigger refresh; notification dla usera "Notion looks different — re-detecting shortcuts". Niski priorytet (Faza 2+), ale długofalowo blokujący. Adresuje G-9 (odłożone na Fazę 2+). |
+| P-49 Toast nie renderuje wizualnie na 2. monitorze (Slack message-actions) | ⬜ otwarte | **Krytyczny blocker dla Fazy 1.7 (beta).** Reguły `slack-msg-*` (Save→A, Reply→T, Forward→F) są dopasowane na poziomie eventów (events.jsonl pokazuje toast emisję), ale `ToastWindow` nie pojawia się wizualnie gdy Slack jest na 2. monitorze (lub fullscreen). Dotyczy bezpośrednio użytkowników multi-monitor — czyli **większości power-userów** którzy są ICP. Wszystkie drogi rozwoju (A intro toast, B curriculum, E reports) tracą sens jeśli toast nie jest widoczny. Hipotezy: `NSScreen.main` vs `NSScreen.screens[clickedScreenIndex]`, level wyższy niż fullscreen window, NSWindowCollectionBehavior. Pełna diagnoza: [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md). Plan: ~2h debugowania renderera + sprawdzenie czy nie dotyczy też Notion/Linear na 2. monitorze. |
 
 Reszta problemów P-7, P-9..P-22 — patrz pełna lista poniżej.
 
@@ -945,6 +957,52 @@ Najprawdopodobniej P-34 fix (streaming switch) naprawia również P-35 — niekt
 
 ---
 
+### P-38: Dropdown menu items z inline-shortcut hints nie są tapowane
+
+**Plik:** `SFlow/TooltipObserver.swift` (gap), nowy `SFlow/MenuItemObserver.swift` (plan)
+
+**Symptom (diagnoza 2026-05-16):** Filip pokazał screenshot z Notion Calendar — dropdown otwarty po kliknięciu „Week" zawiera pozycje z inline skrótami po prawej stronie:
+
+```
+Day              1 or D
+✓ Week           0 or W
+  Month          M
+  Number of days >
+  View settings  >
+```
+
+SFlow nie pokazuje toasta dla żadnego z tych elementów, mimo że (a) mają widoczny skrót, (b) są klikalne, (c) `TooltipObserver` z Sesji B jest aktywny.
+
+**Co dokładnie blokuje detekcję — 4 niezależne powody:**
+
+1. **Rola AX nie jest na białej liście kontenerów.**
+   `TooltipObserver.walk()` (linia 149) iteruje po: `AXGroup, AXWindow, AXSheet, AXSystemDialog, AXHelpTag, AXPopover, AXLayoutItem, AXUnknown`. Natywne menu macOS / Chromium dropdown wystawia się jako `AXMenu` z dziećmi `AXMenuItem` — **żadnego z nich nie ma w secie**. Skaner przechodzi obojętnie.
+
+2. **Heurystyka kształtu odrzuca menu.**
+   `isTooltipShape` (linia 202) wymaga `40–500 × 16–100 px`. Dropdown w Notion Calendar to ~`280 × 400 px` — za wysokie, odrzucone w pierwszym kroku nawet gdyby rola była dopuszczona.
+
+3. **Parser tekstu zakłada 2 oddzielne `AXStaticText` na tooltip.**
+   `parseTooltipTexts` (linia 245) szuka jednego krótkiego stringa (badge ≤5 znaków) + jednego dłuższego (nazwa 3–80). `AXMenuItem` ma title + shortcut na **tym samym elemencie** w atrybutach `kAXMenuItemCmdChar` / `kAXMenuItemCmdModifiers` (natywne menu macOS) albo jako rendered text w jednym StaticText (Chromium dropdown). Inny model danych.
+
+4. **`TooltipShortcutParser` nie rozumie alternatyw.**
+   Format „1 or D" oznacza dwa różne skróty na jedną akcję. Parser (`TooltipShortcutParser.swift:28`) akceptuje dokładnie jeden klawisz po opcjonalnych modyfikatorach — zwraca `nil` dla „1 or D" bo widzi dwie cyfry/litery. Schemat `DiscoveredEntry.keys: [String]` też wyraża tylko jedną kombinację (jako accord), nie alternatywę.
+
+**Skala problemu:**
+- Każda apka z dropdown menu w UI okna (nie tylko w menu bar): Notion Calendar, Linear command-K, Slack apps menu, Figma right-click context menu, Notion main slash-menu, etc.
+- W menu bar dropdown skróty łapie `MenuBarWatcher` przez `kAXMenuItemCmdChar` — to działa.
+- W oknie dropdown — nie mamy nic. To trzecia osobna ścieżka discovery (obok button-tooltipów P-37 i menu-bar L4).
+
+**Severity:** ŚREDNIA. Nie blokuje fundamentu, ale wycina sporą klasę kliknięć z coverage. Filip zauważył to empirycznie po Sesji B — po naprawieniu ikonek Notion Mail i Calendar, dropdowny pozostają „ślepą strefą".
+
+**Plan (Sub-cel 1.17 w `audit-phase-1.md`):**
+- **Etap 1 — natywne menu macOS:** nowy `MenuItemObserver` skanuje otwarte `AXMenu` (wykryte przez notyfikację `AXMenuOpened` lub poll po focused-app). Dla każdego `AXMenuItem` czyta `kAXTitle` + `kAXMenuItemCmdChar` + `kAXMenuItemCmdModifiers` → bezpośrednio do `DiscoveredStore`. Bez heurystyki rozmiaru, bez parsowania tekstu — atrybuty AX są autorytatywne.
+- **Etap 2 — Chromium dropdown:** te nie wystawiają `kAXMenuItemCmdChar`. Walk po `AXMenuItem` + parsuj rendered AXStaticText'y wewnątrz (nazwa po lewej, skrót po prawej — pozycyjnie). Rozszerz `TooltipShortcutParser` o format „X or Y" (zwraca `[[keys1], [keys2]]` — wiele wariantów) **albo** zapisuj dwa osobne `DiscoveredEntry` z tym samym `actionName` i `rect`.
+- **Etap 3 — schemat:** `DiscoveredEntry` lub `LoadedRule` rozszerzyć o `alternateKeys: [[String]]?` żeby wyrazić „D albo 1" w toaście jako „D" lub „1".
+
+**Decyzja czy robimy:** zależy od wyników testu Sesji B na Linear/Discord/Slack/Notion main (memory `next-session-2026-05-16`). Jeśli okaże się że dropdowny są >20% missów na tych apkach → priorytet ŚREDNIA-WYSOKA, sesja po C. Jeśli marginalne — Faza 2.
+
+---
+
 ### P-22: Subtelność: Layer 0.5 cache uderza PRZED hardcoded L1
 
 **Plik:** `ClickWatcher.swift:111-122` (L0.5) vs `124-134` (L1)
@@ -1094,3 +1152,14 @@ Te decyzje są przedmiotem audytu Fazy 1.
 
 *Status: kompletny inwentarz Fazy 0. Następny krok: audyt Fazy 1
 (`docs/audit-phase-1.md`).*
+
+---
+
+## Outstanding bugs (post-Faza 0)
+
+- **P-49 (2026-05-16) — ToastWindow nie renderuje wizualnie na 2. monitorze
+  (Slack message-actions).** Sformalizowane jako P-49 w tabeli statusów na
+  górze pliku. Backend dopasowania działa, `events.jsonl` ma wpisy `slack-msg-*`
+  toast'ów, ale okno toastu nie pojawia się. **Blocker dla Fazy 1.7 (beta)** —
+  multi-monitor to większość ICP. Pełna diagnoza + plan:
+  [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md)
