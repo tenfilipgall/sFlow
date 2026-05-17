@@ -7,20 +7,20 @@ final class RightClickMenuHarvesterTests: XCTestCase {
 
     func test_plainCmdC() {
         let keys = RightClickMenuHarvester.parseShortcut(cmdChar: "c", cmdModifiers: 0)
-        XCTAssertEqual(keys, ["cmd", "c"])
+        XCTAssertEqual(keys, ["meta", "c"])
     }
 
     func test_cmdShiftC() {
         let keys = RightClickMenuHarvester.parseShortcut(cmdChar: "c",
                                                          cmdModifiers: RightClickMenuHarvester.modifierShift)
-        XCTAssertEqual(keys, ["cmd", "shift", "c"])
+        XCTAssertEqual(keys, ["meta", "shift", "c"])
     }
 
     func test_cmdOptionEnter() {
         let keys = RightClickMenuHarvester.parseShortcut(cmdChar: "",
                                                          cmdModifiers: RightClickMenuHarvester.modifierOption,
                                                          cmdVirtualKey: 0x24)
-        XCTAssertEqual(keys, ["cmd", "alt", "return"])
+        XCTAssertEqual(keys, ["meta", "alt", "return"])
     }
 
     func test_cmdControlOptionShiftA() {
@@ -28,7 +28,7 @@ final class RightClickMenuHarvesterTests: XCTestCase {
                  | RightClickMenuHarvester.modifierOption
                  | RightClickMenuHarvester.modifierControl
         let keys = RightClickMenuHarvester.parseShortcut(cmdChar: "a", cmdModifiers: mods)
-        XCTAssertEqual(keys, ["cmd", "ctrl", "alt", "shift", "a"])
+        XCTAssertEqual(keys, ["meta", "ctrl", "alt", "shift", "a"])
     }
 
     func test_noCommandBit_dropsCmd() {
@@ -65,12 +65,61 @@ final class RightClickMenuHarvesterTests: XCTestCase {
 
     func test_cmdCharTrimmed() {
         let keys = RightClickMenuHarvester.parseShortcut(cmdChar: "  c  ", cmdModifiers: 0)
-        XCTAssertEqual(keys, ["cmd", "c"])
+        XCTAssertEqual(keys, ["meta", "c"])
     }
 
     func test_cmdCharLowercased() {
         let keys = RightClickMenuHarvester.parseShortcut(cmdChar: "C", cmdModifiers: 0)
-        XCTAssertEqual(keys, ["cmd", "c"])
+        XCTAssertEqual(keys, ["meta", "c"])
+    }
+
+    // MARK: - parseShortcutFromTitle: Chromium menu title fallback
+
+    func test_titleParser_macOSSymbolSuffix() {
+        let result = RightClickMenuHarvester.parseShortcutFromTitle("Save link ⌘S")
+        XCTAssertEqual(result?.keys, ["meta", "s"])
+        XCTAssertEqual(result?.cleanTitle, "Save link")
+    }
+
+    func test_titleParser_shiftCmdSuffix() {
+        let result = RightClickMenuHarvester.parseShortcutFromTitle("New incognito window ⇧⌘N")
+        XCTAssertEqual(result?.keys, ["shift", "meta", "n"])
+        XCTAssertEqual(result?.cleanTitle, "New incognito window")
+    }
+
+    func test_titleParser_slackStyleSingleLetter() {
+        let result = RightClickMenuHarvester.parseShortcutFromTitle("Edit message E")
+        XCTAssertEqual(result?.keys, ["e"])
+        XCTAssertEqual(result?.cleanTitle, "Edit message")
+    }
+
+    func test_titleParser_rejectsMouseModifier() {
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("Side peek ⌥Click"))
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("Open Link in New Tab"))
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("Open ⌘Click"))
+    }
+
+    func test_titleParser_rejectsShortLabel() {
+        // Pure "X" or "F E" (single-letter label) is ambiguous → reject.
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("X"))
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("  E"))
+    }
+
+    func test_titleParser_punctuationKey() {
+        let result = RightClickMenuHarvester.parseShortcutFromTitle("Open quick switcher ⌘/")
+        XCTAssertEqual(result?.keys, ["meta", "/"])
+    }
+
+    func test_titleParser_acceptsAllFourModifiers() {
+        let result = RightClickMenuHarvester.parseShortcutFromTitle("Hyper action ⌃⌥⇧⌘A")
+        XCTAssertEqual(result?.keys, ["ctrl", "alt", "shift", "meta", "a"])
+    }
+
+    func test_titleParser_returnsNilWhenNoShortcut() {
+        // Plain title without trailing shortcut shape → nil (caller falls
+        // through and skips the menu item).
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("Refresh"))
+        XCTAssertNil(RightClickMenuHarvester.parseShortcutFromTitle("Reload Page"))
     }
 
     // MARK: - DiscoveredStore integration: menu-harvested entries
@@ -87,7 +136,7 @@ final class RightClickMenuHarvesterTests: XCTestCase {
         let entry = DiscoveredEntry(
             bundleId: "com.example.app",
             actionName: "Copy",
-            keys: ["cmd", "c"],
+            keys: ["meta", "c"],
             identifier: nil,
             rect: DiscoveredEntry.CGRectCodable(menuRect),
             observedAt: Date(),

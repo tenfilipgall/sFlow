@@ -20,8 +20,9 @@ enum RightClickMenuHarvester {
     static let modifierNoCommand: Int = 1 << 3
 
     /// Translates a (cmdChar, cmdModifiers, cmdVirtualKey) triple into SFlow's
-    /// key array convention (e.g. ["cmd","shift","c"]). Returns nil when the
+    /// key array convention (e.g. ["meta","shift","c"]). Returns nil when the
     /// menu item has no shortcut (cmdChar empty AND virtualKey unset).
+    /// SFlow uses "meta" for Cmd throughout (KeySymbols maps "meta" → "⌘").
     ///
     /// `cmdChar` arrives as a single character ("c", "/", "+"). When the
     /// shortcut is a special key (F-keys, arrows, return) macOS reports
@@ -36,12 +37,83 @@ enum RightClickMenuHarvester {
         guard let key = keyToken else { return nil }
 
         var tokens: [String] = []
-        if (cmdModifiers & modifierNoCommand) == 0 { tokens.append("cmd") }
+        if (cmdModifiers & modifierNoCommand) == 0 { tokens.append("meta") }
         if (cmdModifiers & modifierControl)   != 0 { tokens.append("ctrl") }
         if (cmdModifiers & modifierOption)    != 0 { tokens.append("alt") }
         if (cmdModifiers & modifierShift)     != 0 { tokens.append("shift") }
         tokens.append(key)
         return tokens
+    }
+
+    /// Chromium-rendered context menus (Notion, Comet, Discord, Slack, Linear) don't
+    /// expose `AXMenuItemCmdChar`/`AXMenuItemCmdModifiers` — they emulate AXMenu and
+    /// bake the shortcut directly into the title string. This parser handles two
+    /// shapes observed in real apps:
+    ///
+    ///  1. macOS-symbol suffix: `"Save link ⌘S"` / `"New incognito ⇧⌘N"` →
+    ///     modifier glyphs (⌘⇧⌥⌃) followed by a single letter/digit/punctuation.
+    ///  2. Slack-style access key: `"Edit message E"` — trailing space + single
+    ///     letter, no modifier.
+    ///
+    /// Rejects mouse modifiers (`"⌥Click"` / `"⌘Click"` / `"⌃Drag"`) — those
+    /// describe how to click, not a keyboard shortcut to display.
+    /// Returns nil when no shortcut is detectable. On success, also returns
+    /// the action label with the shortcut suffix stripped — toasts display
+    /// "Edit message" rather than "Edit message E".
+    static func parseShortcutFromTitle(_ title: String) -> (keys: [String], cleanTitle: String)? {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        // Mouse modifier — skip entirely. "⌘Click", "⌥Click", "⌃Drag", "⇧Drop".
+        for suffix in ["Click", "click", "Drag", "drag", "Drop", "drop"] {
+            if trimmed.hasSuffix(suffix) { return nil }
+        }
+
+        // Pattern 1: macOS-symbol suffix. Scan from the end backwards collecting
+        // a contiguous run of modifier glyphs + a single key char.
+        let modSyms: [Character: String] = [
+            "⌘": "meta", "⇧": "shift", "⌥": "alt", "⌃": "ctrl"
+        ]
+        let chars = Array(trimmed)
+        if let last = chars.last,
+           (last.isLetter || last.isNumber
+            || "\\,.;'/[]`-=".contains(last)) {
+            var i = chars.count - 2
+            var mods: [String] = []
+            var sawMod = false
+            while i >= 0 {
+                let c = chars[i]
+                if let m = modSyms[c] {
+                    mods.insert(m, at: 0)
+                    sawMod = true
+                    i -= 1
+                } else if c == " " || c == "+" {
+                    i -= 1
+                } else {
+                    break
+                }
+            }
+            if sawMod {
+                let clean = String(chars[0...i])
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                return (keys: mods + [String(last).lowercased()],
+                        cleanTitle: clean.isEmpty ? trimmed : clean)
+            }
+        }
+
+        // Pattern 2: Slack-style trailing access key. Last char is a single
+        // ASCII letter, preceded by exactly one space, with ≥2 chars before
+        // that. "Edit message E" → ["e"], "Edit message". "X" alone rejected.
+        if chars.count >= 4,
+           let last = chars.last, last.isLetter, last.isASCII,
+           chars[chars.count - 2] == " " {
+            let prefix = String(chars[0..<(chars.count - 2)])
+            if prefix.contains(where: { $0.isLetter }) {
+                return (keys: [String(last).lowercased()], cleanTitle: prefix)
+            }
+        }
+
+        return nil
     }
 
     /// Maps macOS virtual key codes (kVK_*) to SFlow's keyword names. Covers
@@ -122,14 +194,28 @@ enum RightClickMenuHarvester {
             let cmdMod  = (cmdModRef as? Int) ?? (cmdModRef as? NSNumber)?.intValue ?? 0
             let cmdVK: Int? = (cmdVKRef as? Int) ?? (cmdVKRef as? NSNumber)?.intValue
 
-            guard let keys = parseShortcut(cmdChar: cmdChar, cmdModifiers: cmdMod,
-                                            cmdVirtualKey: cmdVK) else { continue }
+            // Native macOS AXMenu items expose shortcut via Cmd-char/Modifiers
+            // attributes (Finder, native AppKit). Chromium-emulated AXMenu
+            // (Notion, Comet, Slack, Discord, Linear) bake the shortcut into
+            // the title — fall back to title parsing when native attrs empty.
+            let keys: [String]
+            let actionLabel: String
+            if let nativeKeys = parseShortcut(cmdChar: cmdChar, cmdModifiers: cmdMod,
+                                               cmdVirtualKey: cmdVK) {
+                keys = nativeKeys
+                actionLabel = title
+            } else if let parsed = parseShortcutFromTitle(title) {
+                keys = parsed.keys
+                actionLabel = parsed.cleanTitle
+            } else {
+                continue
+            }
 
             guard let rect = menuItemRect(item) else { continue }
 
             let entry = DiscoveredEntry(
                 bundleId: bundleId,
-                actionName: title,
+                actionName: actionLabel,
                 keys: keys,
                 identifier: nil,
                 rect: DiscoveredEntry.CGRectCodable(rect),
