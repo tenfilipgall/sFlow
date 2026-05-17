@@ -1187,3 +1187,51 @@ Te decyzje są przedmiotem audytu Fazy 1.
   TERAZ obie ścieżki: context menu (AXMenuItem) + hover-toolbar (AXCheckBox/Button).
   Dodatkowo dodano `"Forward message…"` (Share Message rule) i `"Remove from Later"`
   (Save Message rule) do tablic `titles`. Plik: `SFlow/Resources/bundled.json`.
+
+- **Sesja 2026-05-17 (kontynuacja, ~3h) — Right-click harvester + Layer 0.6 +
+  TooltipObserver Chromium fallback + DiscoveredStore 7-day TTL. ✅ ALL DONE.**
+
+  **U-2 Right-click context menu monitoring** (P-41 ZAMKNIĘTE):
+  - `CGEventTap` mask rozszerzony o `rightMouseDown`
+  - `RightClickMenuHarvester` skanuje AX tree (depth ≤4, retry depth ≤8 po 300ms)
+  - Czyta `kAXMenuItemCmdChar`/`Modifiers`/`VirtualKey` (native macOS)
+  - `parseShortcutFromTitle` fallback dla Chromium (Comet `"Save link ⌘S"`,
+    Slack-style `"Edit message E"`, skip mouse modifiers `"⌘Click"`)
+  - Notion AXMenuItem ma skrót w `kAXValue` (nie `title`) — czytamy oba
+  - Bug fix: konwencja `"cmd"` → `"meta"` (KeySymbols mapping)
+  - Filip UAT 2026-05-17: ✅ Finder ✅ Comet ✅ Notion ✅ Slack
+
+  **Layer 0.6 — Inline shortcut hint extraction (NOWY layer w pipeline)**:
+  - `RecognitionLayer.inlineShortcut = "L0.6"` (między L0.5 a L1)
+  - Path A: dzieci elementu = 2× AXStaticText (name + badge). Notion sidebar
+    `"New chat ⌘O"`. STRICT — wymaga exactly 2 texts (3+ = rodzeństwo, skip
+    false-positive `"/ Daily Journal"`)
+  - Path B: element's own `kAXValue`/`kAXTitle` zawiera shortcut suffix
+    (Notion block menu `"Move to ⌘⇧P"`, `"Duplicate ⌘D"`)
+  - **UNIWERSALNY** — działa we wszystkich apkach, no per-app whitelist
+  - Filtry: TooltipNameFilter + PrivacyFilter + no-newline guard
+
+  **TooltipObserver Chromium tooltip text fallback**:
+  - `collectStaticTexts` czyta value/title z container roles (AXGroup/Link/
+    Image/Button/Unknown) gdy brak AXStaticText children
+  - Pokrywa Notion main hover tooltips (Share, Comment, Copy link itd)
+
+  **DiscoveredStore TTL extend**:
+  - Lookup default 60s → 7 dni (skrót klawiszowy się nie zmienia)
+  - Hover RAZ na button → kolejne kliki przez tydzień, między restartami SFlow,
+    instant toast (entries persistowane na dysk `~/Library/.../discovered/*.jsonl`)
+
+  **Markdown trigger hints** (Notion slash-menu `#`/`##`/`###`) **REJECTED** —
+  Notion nie eksponuje triggerów w AX tree + inna semantyka niż keyboard
+  shortcuts. Decyzja: nie mieszamy w obecnej iteracji.
+
+  **Commits 2026-05-17:** `4c2ec05` P-50 fix, `6ad291a` U-2 harvester, `fe4471e`
+  U-3 single-key, `e8e51b4` U-4 probe script, `01130da` U-2.1 title parser,
+  `43e573e` U-2.2 Notion value fallback, `7c1877e` diag retry, `6927411`
+  TooltipObserver Chromium, `4cdbed5` Layer 0.6 Path A, `a0aef9f` Path B,
+  `70ff8b7` strict 2-text guard, `d8f6224` TTL 7-day, `2d0eb3e` test fix.
+  **307 testów passing. 13 commits.**
+
+  **Pending UAT:** U-4 probe (Filip uruchomi `scripts/sflow-probe-ax-url.swift`
+  z fresh terminal). U-3 single-key — kod OK, brak realnego testu w Notion
+  (Notion nie używa kAXHelp).

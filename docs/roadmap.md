@@ -1315,12 +1315,44 @@ quality gate):
 ## Outstanding issues (do rozwiązania)
 
 - **P-49 (2026-05-16) — Toast Slacka nie renderuje wizualnie mimo emisji**
-  (multi-monitor / fullscreen) — sformalizowane jako P-49 w `audit-phase-0.md`.
-  Reguły `slack-msg-*` poprawnie dopasowane w `ShortcutRules`, `events.jsonl`
-  pokazuje toast, ale `ToastWindow` na 2. monitorze nie pojawia się.
-  **Blocker dla Fazy 1.7 (beta)** — multi-monitor to większość ICP power-userów.
-  Pełna diagnoza + hipotezy + plan testów:
-  [`issues/2026-05-16-slack-toast-not-rendering.md`](./issues/2026-05-16-slack-toast-not-rendering.md)
+  (multi-monitor / fullscreen). ✅ ZAMKNIĘTE 2026-05-17 — crash fix
+  + screen selection + NSWindowLevel/Behavior. Zweryfikowane na Comet/Slack.
+
+- **P-50 (2026-05-17) — Slack hover-toolbar nie wyzwalał toastów.**
+  ✅ ZAMKNIĘTE 2026-05-17. Reguły `slack-msg-*` zmienione `role: AXMenuItem`
+  → `role: AXButton` (roleCompatible permissive). Działa dla obu wariantów
+  (context menu + hover-toolbar).
+
+## Sesja 2026-05-17 (kontynuacja, ~3h)
+
+**Główne deliverables:**
+1. **U-2 Right-click context menu monitoring** (P-41 zamknięte): CGEventTap
+   mask + RightClickMenuHarvester (depth ≤4 + retry depth ≤8). Native macOS
+   `AXMenuItemCmdChar` + Chromium title-based parser (Comet/Slack-style) +
+   Notion `kAXValue` fallback. UAT ✅ 4 apki.
+2. **Layer 0.6 — Inline shortcut hint extraction** (NOWY layer w pipeline):
+   `RecognitionLayer.inlineShortcut = "L0.6"` między L0.5 a L1. Path A (children
+   name+badge, strict 2-text guard po false-positive `/ Daily Journal`) +
+   Path B (element's own value/title z shortcut suffix). UNIWERSALNY layer,
+   no per-app whitelist, działa wszędzie z TooltipNameFilter + PrivacyFilter.
+3. **TooltipObserver Chromium tooltip text fallback**: collectStaticTexts
+   czyta value/title z container roles (AXGroup/Link/Image/Button/Unknown)
+   gdy brak AXStaticText. Pokrywa Notion main hover tooltips.
+4. **DiscoveredStore TTL 60s → 7 dni**: hover-once-then-instant flow. Entries
+   persistowane na dysk (`~/Library/.../discovered/*.jsonl`), działają między
+   sesjami SFlow.
+5. **U-3 Single-key mode** kod gotowy (P-44 zamknięte) — Feature flag
+   `singleKeyMode` w bundled.json, whitelist 5 apek (notion.id, md.obsidian,
+   notion.mail.id, com.linear.LinearMac, com.cron.electron).
+6. **U-4 Pre-flight probe script** gotowy (`scripts/sflow-probe-ax-url.swift`)
+   — pending Filip UAT z fresh terminal.
+
+**Decyzje:**
+- ❌ Markdown trigger hints (Notion slash-menu `#`/`##`/`###`) — REJECTED.
+  Notion nie eksponuje triggerów w AX tree + inna semantyka niż keyboard
+  shortcuts. Out of scope dla obecnej iteracji.
+
+**13 commits, 307 testów passing.** Branch synced z origin/main.
 
 ---
 

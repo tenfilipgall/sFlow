@@ -540,6 +540,16 @@ robimy beta-test (krok 1 z rekomendacji) czy idziemy bezpośrednio w drogę B 1.
 
 ## Outstanding blockers (do rozwiązania)
 
+- **2026-05-17 — Sesja kontynuacji, 13 commits.** ✅ P-49 toast multi-monitor
+  zamknięte. ✅ P-50 Slack hover-toolbar zamknięte. ✅ U-2 right-click context
+  menu (Finder/Comet/Notion/Slack). ✅ **Layer 0.6** — uniwersalny layer
+  inline shortcut extraction (Notion sidebar `"New chat ⌘O"`, block menu
+  `"Move to ⌘⇧P"`). ✅ TooltipObserver Chromium tooltip fallback (Notion
+  main hover). ✅ DiscoveredStore TTL 60s → 7 dni = **hover-once-then-instant**
+  flow (entries persistowane na dysk między sesjami). Faza 1.5 sub-cele
+  1.17, 1.18, 1.21 done. **Droga B (nauka) znacząco wzmocniona** — system
+  zapamiętuje skróty z pierwszego hovera i potem strzela toast natychmiast.
+
 - **2026-05-16 — Toast nie renderuje wizualnie dla Slacka na 2. monitorze.**
   Krytyczne dla wartości produktu: jeśli toast nie jest widoczny, **droga A
   (intro/onboarding) i droga B (nauka) tracą sens** dla użytkowników
