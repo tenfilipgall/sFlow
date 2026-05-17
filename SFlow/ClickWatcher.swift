@@ -354,13 +354,24 @@ final class ClickWatcher {
                     return
                 }
 
-                // Layer 0.6: inline shortcut hint inside the clicked element's
-                // own subtree (Notion sidebar "New chat ⌘O" pattern — button
-                // has 2 AXStaticText children: action name + shortcut badge).
-                // Reuses the tooltip name+badge parser. PrivacyFilter +
-                // TooltipNameFilter applied to guard against false-positive
-                // shortcuts emitted from arbitrary visible text.
+                // Layer 0.6: inline shortcut hint visible on the clicked element.
+                // Two sources observed in Notion:
+                //
+                //  Path A (children pair) — Notion sidebar "New chat ⌘O":
+                //   button has 2 AXStaticText children with name + badge.
+                //
+                //  Path B (own value/title suffix) — Notion context menu items:
+                //   AXMenuItem.value = "Move to ⌘⇧P" or "Duplicate ⌘D" — name and
+                //   shortcut concatenated in a single attribute. Reuses
+                //   RightClickMenuHarvester.parseShortcutFromTitle (handles
+                //   macOS-symbol suffix + slack-style trailing letter, skips
+                //   mouse modifiers like "⌘Click").
+                //
+                // PrivacyFilter + TooltipNameFilter applied on both paths to
+                // guard against false-positive shortcuts emitted from arbitrary
+                // visible text.
                 if runNonInteractive {
+                    // Path A
                     let inlineTexts = TooltipObserver.collectStaticTexts(
                         current, depth: 0, limit: 4
                     )
@@ -371,6 +382,20 @@ final class ClickWatcher {
                         let autoId = "inline:\(bundleId):\(keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
                              keys: keys, hint: parsed.name, loc: nsLoc,
+                             layer: .inlineShortcut)
+                        return
+                    }
+                    // Path B
+                    let rawValue = (valueRef as? String) ?? ""
+                    let rawTitle = (titleRef as? String) ?? ""
+                    let candidate = !rawValue.isEmpty ? rawValue : rawTitle
+                    if !candidate.isEmpty, !candidate.contains("\n"),
+                       let pb = RightClickMenuHarvester.parseShortcutFromTitle(candidate),
+                       TooltipNameFilter.isAcceptableActionName(pb.cleanTitle),
+                       !TooltipObserver.containsSensitiveText(pb.cleanTitle) {
+                        let autoId = "inline:\(bundleId):\(pb.keys.joined(separator: "+"))"
+                        emit(bundleId: bundleId, shortcutId: autoId,
+                             keys: pb.keys, hint: pb.cleanTitle, loc: nsLoc,
                              layer: .inlineShortcut)
                         return
                     }
