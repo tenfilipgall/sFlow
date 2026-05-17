@@ -11,6 +11,24 @@ struct DiscoveredEntry: Codable {
     let identifier: String?
     let rect: CGRectCodable?
     let observedAt: Date
+    /// Provenance — "tooltip" (TooltipObserver hover) or "rightclick_menu"
+    /// (RightClickMenuHarvester). Optional for backward compat with older
+    /// on-disk entries written before this field existed. Drives the rect
+    /// sanity-filter relaxation in `lookup` — menu items are 300×29 which
+    /// the tighter tooltip filter (200) would reject.
+    let source: String?
+
+    init(bundleId: String, actionName: String, keys: [String],
+         identifier: String?, rect: CGRectCodable?, observedAt: Date,
+         source: String? = nil) {
+        self.bundleId = bundleId
+        self.actionName = actionName
+        self.keys = keys
+        self.identifier = identifier
+        self.rect = rect
+        self.observedAt = observedAt
+        self.source = source
+    }
 
     struct CGRectCodable: Codable {
         let x: Double
@@ -94,10 +112,12 @@ final class DiscoveredStore {
 
     /// Look up a discovered entry whose stored button-rect contains the
     /// click position (in AX coords). Returns most recent match within `seconds`.
-    /// Defensive: skips entries with oversized rects (>200×200) — those came
-    /// from buggy hit-tests that returned a container element instead of the
-    /// actual button, and would cause false-positive matches over huge screen
-    /// areas.
+    /// Defensive: skips entries with oversized rects — those came from buggy
+    /// hit-tests that returned a container element instead of the actual
+    /// button, and would cause false-positive matches over huge screen areas.
+    /// Menu-harvested entries use a relaxed threshold (400) since macOS
+    /// AXMenuItem rows are ~300 wide; tooltip entries keep the tighter 200
+    /// limit calibrated against Chromium false-positives.
     func lookup(near point: CGPoint, bundleId: String,
                 within seconds: TimeInterval = 60) -> DiscoveredEntry? {
         return queue.sync {
@@ -105,7 +125,9 @@ final class DiscoveredStore {
             for entry in entries.reversed() where entry.bundleId == bundleId {
                 if entry.observedAt < cutoff { continue }
                 guard let r = entry.rect?.cgRect else { continue }
-                if r.size.width > 200 || r.size.height > 200 { continue }
+                let maxW: Double = entry.source == "rightclick_menu" ? 400 : 200
+                let maxH: Double = entry.source == "rightclick_menu" ? 200 : 200
+                if r.size.width > maxW || r.size.height > maxH { continue }
                 if r.insetBy(dx: -6, dy: -6).contains(point) {
                     return entry
                 }

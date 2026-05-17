@@ -25,7 +25,8 @@ final class ClickWatcher {
     }
 
     private func setup() {
-        let mask = CGEventMask(1 << CGEventType.leftMouseDown.rawValue)
+        let mask = CGEventMask((1 << CGEventType.leftMouseDown.rawValue) |
+                               (1 << CGEventType.rightMouseDown.rawValue))
         tap = CGEvent.tapCreate(
             tap: .cgAnnotatedSessionEventTap,
             place: .headInsertEventTap,
@@ -418,6 +419,26 @@ final class ClickWatcher {
         }
     }
 
+    /// Right-click → schedule a context-menu harvest 300 ms later (typical
+    /// AppKit context-menu render delay). Harvest reads `kAXMenuItemCmdChar`
+    /// from every visible menu item and stores (action, keys, rect) entries
+    /// in `DiscoveredStore`. When the user then left-clicks a menu row, the
+    /// existing L0.3 lookup matches by rect and emits a toast — no per-app
+    /// rules needed. One handler per right-click; macOS allows only one
+    /// context menu open at a time.
+    func handleRightMouseDown() {
+        guard let frontmost = NSWorkspace.shared.frontmostApplication,
+              let bundleId  = frontmost.bundleIdentifier else { return }
+        let pid = frontmost.processIdentifier
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            let axApp = AXUIElementCreateApplication(pid)
+            AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
+            AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
+            guard let menu = RightClickMenuHarvester.findOpenMenu(in: axApp) else { return }
+            RightClickMenuHarvester.harvest(menu: menu, bundleId: bundleId)
+        }
+    }
+
     private func role(_ element: AXUIElement) -> String {
         var ref: AnyObject?
         AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &ref)
@@ -560,6 +581,8 @@ private let tapCallback: CGEventTapCallBack = { proxy, type, event, _ in
     }
     if type == .leftMouseDown {
         sharedWatcher?.handleMouseDown()
+    } else if type == .rightMouseDown {
+        sharedWatcher?.handleRightMouseDown()
     }
     return Unmanaged.passUnretained(event)
 }
