@@ -79,19 +79,22 @@ enum EventLogger {
 
     static func logMiss(event: MissEvent, to url: URL) {
         let formatter = ISO8601DateFormatter()
+        // Redact user-visible string fields at write time. Struct keeps the
+        // original values for in-memory diagnostics; only on-disk and
+        // crowdsource transport paths see the redacted form.
         let entry: [String: Any] = [
             "type":            "miss",
             "timestamp":       formatter.string(from: Date()),
             "bundleId":        event.bundleId,
             "role":            event.role,
-            "title":           event.title,
-            "desc":            event.desc,
-            "help":            event.help,
+            "title":           PrivacyFilter.redact(event.title),
+            "desc":            PrivacyFilter.redact(event.desc),
+            "help":            PrivacyFilter.redact(event.help),
             "identifier":      event.identifier,
-            "value":           event.value,
+            "value":           PrivacyFilter.redact(event.value),
             "roleDescription": event.roleDescription,
-            "customActions":   event.customActions,
-            "subtreeLabel":    event.subtreeLabel,
+            "customActions":   event.customActions.map { PrivacyFilter.redact($0) },
+            "subtreeLabel":    PrivacyFilter.redact(event.subtreeLabel),
         ]
         write(entry, to: url)
     }

@@ -104,6 +104,14 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-17 — U-1 (Sub-cel 1.29 B.1): TooltipNameFilter + PrivacyFilter integration ✅
+
+**Co:** Zamknięcie B.1 — integracja `TooltipNameFilter.isAcceptableActionName` w `TooltipObserver.scanForTooltip` (1 linia guard). Fix bugu w `PrivacyFilter` — wzorzec telefonów nie łapał formatu US `NXX-NXX-XXXX` (3-3-4 cyfry). **280 testów passing** (było 256, +24 z B.1: 11 TooltipNameFilter + 13 PrivacyFilter). BUILD SUCCEEDED bez błędów.
+
+**Statusy:** P-39 🟡→🟢, Sub-cel 1.29 🟡→✅.
+
+**Następny krok:** P-49 (~2h, Slack multi-monitor toast fix) → U-2 (Sub-cel 1.18, right-click monitoring, ~3h).
+
 ### 2026-05-17 — Audyt 4 dokumentów + poprawki sekwencjonowania (meta, bez kodu)
 
 **Co:** Filip wskazał priorytet "rozpoznawanie elementów w oknach + toast display dla wszystkich apek". Pełny audyt `audit-phase-0.md` + `audit-phase-1.md` + `roadmap.md` + `product-vision.md` ujawnił 11 luk dokumentacyjnych. Wykonane 5 poprawek surgicznie:

@@ -101,6 +101,10 @@ final class TooltipObserver {
             NSLog("SFlow[Tooltip]: rejected (privacy filter): \(f.name)")
             return
         }
+        guard TooltipNameFilter.isAcceptableActionName(f.name) else {
+            NSLog("SFlow[Tooltip]: rejected (meta-word filter): \(f.name)")
+            return
+        }
 
         // The tooltip rect itself sits above/beside the actual hover-target button
         // (Notion Mail: tooltip at y=-1354 while cursor on button is at y=-1332).

@@ -56,12 +56,13 @@ większej liczby apek bez per-app pracy), nie głębokości jakości Fazy 1.
 | 1.22 | Modal / sheet / dialog scope | P-45 (G-7) | ~6h |
 | 1.23 | Tool/mode switching w kreatywnych apkach | P-46 (G-8) | ~5h |
 | 1.24-1.28 | Eval 5 niepokrytych typów apek (Office/Adobe/Qt/Catalyst/SwiftUI) | P-47 | ~30h |
-| 1.29 | B.1 finalize — `TooltipNameFilter` + `PrivacyFilter` integracja | P-39 + P-40 | ~30 min |
+| 1.29 | ✅ B.1 finalize — `TooltipNameFilter` + `PrivacyFilter` integracja | P-39 + P-40 | ~30 min |
 
-**Decyzja kolejności:** zacząć od **U-1 (Sub-cel 1.29 B.1)** — kod gotowy
-2026-05-16, czeka tylko 1 linia integracji. Potem **U-2 (Sub-cel 1.18
-right-click)** — największy uniwersalny win za ~3h. Patrz
-`audit-phase-1.5.md` § Execution sequence.
+**Decyzja kolejności:** U-1 (Sub-cel 1.29 B.1) **ZAMKNIĘTE 2026-05-17** —
+`TooltipNameFilter.isAcceptableActionName` zintegrowane w `TooltipObserver.scanForTooltip`.
+280 testów passing (było 256). Fix telefonu `555-NXX-XXXX` format w `PrivacyFilter`.
+**Następne:** U-2 (Sub-cel 1.18 right-click) — największy uniwersalny win za ~3h.
+Patrz `audit-phase-1.5.md` § Execution sequence.
 
 ---
 

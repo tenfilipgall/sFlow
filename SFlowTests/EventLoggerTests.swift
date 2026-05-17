@@ -85,6 +85,51 @@ final class EventLoggerTests: XCTestCase {
         XCTAssertEqual(json["type"] as? String, "toast")
     }
 
+    func test_logMiss_redactsPIIInDescAndValue() throws {
+        let event = MissEvent(
+            bundleId: "net.whatsapp.WhatsApp",
+            role: "AXButton",
+            title: "",
+            desc: "☀️Sade☀️",
+            help: "",
+            identifier: "",
+            value: "Missed video call from filip@example.com",
+            subtreeLabel: ""
+        )
+        EventLogger.logMiss(event: event, to: logFile)
+        EventLogger.flush()
+        let content = try String(contentsOf: logFile, encoding: .utf8)
+        let line = content.trimmingCharacters(in: .newlines)
+        let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]
+        XCTAssertEqual(json["desc"] as? String, "[REDACTED]",
+                       "emoji-containing desc must be redacted")
+        XCTAssertEqual(json["value"] as? String, "[REDACTED]",
+                       "email-containing value must be redacted")
+        XCTAssertEqual(json["bundleId"] as? String, "net.whatsapp.WhatsApp",
+                       "bundleId is metadata, never redacted")
+        XCTAssertEqual(json["role"] as? String, "AXButton",
+                       "role is metadata, never redacted")
+    }
+
+    func test_logMiss_preservesSafeUILabels() throws {
+        let event = MissEvent(
+            bundleId: "com.tinyspeck.slackmacgap",
+            role: "AXButton",
+            title: "Compose",
+            desc: "Reply to thread",
+            help: "",
+            subtreeLabel: "Quick Switcher"
+        )
+        EventLogger.logMiss(event: event, to: logFile)
+        EventLogger.flush()
+        let content = try String(contentsOf: logFile, encoding: .utf8)
+        let line = content.trimmingCharacters(in: .newlines)
+        let json = try JSONSerialization.jsonObject(with: line.data(using: .utf8)!) as! [String: Any]
+        XCTAssertEqual(json["title"] as? String, "Compose")
+        XCTAssertEqual(json["desc"] as? String, "Reply to thread")
+        XCTAssertEqual(json["subtreeLabel"] as? String, "Quick Switcher")
+    }
+
     func test_logMiss_skipsWriteWhenLogMissesDisabled() throws {
         try? FileManager.default.removeItem(at: EventLogger.defaultLogURL)
         UserDefaults.standard.set(false, forKey: "logMisses")
