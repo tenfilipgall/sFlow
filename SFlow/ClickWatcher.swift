@@ -435,11 +435,25 @@ final class ClickWatcher {
         guard let frontmost = NSWorkspace.shared.frontmostApplication,
               let bundleId  = frontmost.bundleIdentifier else { return }
         let pid = frontmost.processIdentifier
+        NSLog("SFlow[RightClick]: detected in \(bundleId), scheduling harvest in 300ms")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             let axApp = AXUIElementCreateApplication(pid)
             AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
             AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
-            guard let menu = RightClickMenuHarvester.findOpenMenu(in: axApp) else { return }
+            guard let menu = RightClickMenuHarvester.findOpenMenu(in: axApp) else {
+                NSLog("SFlow[RightClick]: NO AXMenu found in \(bundleId) tree (depth ≤4). Menu may render slower or be deeper.")
+                // Retry once after another 300ms — Chromium apps render menus
+                // slower than native macOS apps.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    guard let menu2 = RightClickMenuHarvester.findOpenMenu(in: axApp, depth: 0, maxDepth: 8) else {
+                        NSLog("SFlow[RightClick]: still NO AXMenu after retry+deeper walk (depth ≤8). Giving up.")
+                        return
+                    }
+                    NSLog("SFlow[RightClick]: AXMenu found on retry (deep walk), harvesting")
+                    RightClickMenuHarvester.harvest(menu: menu2, bundleId: bundleId)
+                }
+                return
+            }
             RightClickMenuHarvester.harvest(menu: menu, bundleId: bundleId)
         }
     }

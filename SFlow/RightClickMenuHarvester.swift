@@ -148,9 +148,11 @@ enum RightClickMenuHarvester {
 
     /// Walks `axApp` looking for the first open `AXMenu` (typically appears as
     /// a top-level child after right-click). Returns nil if no menu is open.
-    /// Shallow walk (depth ≤ 4) — context menus sit near the app root.
-    static func findOpenMenu(in axApp: AXUIElement, depth: Int = 0) -> AXUIElement? {
-        if depth > 4 { return nil }
+    /// Shallow walk by default (depth ≤ 4) — context menus usually sit near
+    /// the app root. Chromium apps with deeper trees can pass higher maxDepth.
+    static func findOpenMenu(in axApp: AXUIElement, depth: Int = 0,
+                              maxDepth: Int = 4) -> AXUIElement? {
+        if depth > maxDepth { return nil }
         var roleRef: AnyObject?
         AXUIElementCopyAttributeValue(axApp, kAXRoleAttribute as CFString, &roleRef)
         if (roleRef as? String) == "AXMenu" { return axApp }
@@ -159,7 +161,7 @@ enum RightClickMenuHarvester {
         AXUIElementCopyAttributeValue(axApp, kAXChildrenAttribute as CFString, &childrenRef)
         guard let children = childrenRef as? [AXUIElement] else { return nil }
         for c in children {
-            if let m = findOpenMenu(in: c, depth: depth + 1) { return m }
+            if let m = findOpenMenu(in: c, depth: depth + 1, maxDepth: maxDepth) { return m }
         }
         return nil
     }
