@@ -6,6 +6,8 @@ enum RecognitionLayer: String {
     case axKeyShortcuts = "L0"     // AXKeyShortcutsValue attribute
     case tooltipObserver = "L0.3"  // DiscoveredStore — tooltip seen by hovering
     case ruleCache      = "L0.5"   // bundled.json / cache / user overrides
+    case inlineShortcut = "L0.6"   // (name, badge) pair in element's own children
+                                    // (Notion sidebar "New chat ⌘O" pattern)
     case shortcutRules  = "L1"     // hardcoded ShortcutRules.rules
     case axHelp         = "L2"     // kAXHelpAttribute auto-parse
     case menuBarIndex   = "L3"     // MenuBarIndex fuzzy lookup

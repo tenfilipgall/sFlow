@@ -354,6 +354,28 @@ final class ClickWatcher {
                     return
                 }
 
+                // Layer 0.6: inline shortcut hint inside the clicked element's
+                // own subtree (Notion sidebar "New chat ⌘O" pattern — button
+                // has 2 AXStaticText children: action name + shortcut badge).
+                // Reuses the tooltip name+badge parser. PrivacyFilter +
+                // TooltipNameFilter applied to guard against false-positive
+                // shortcuts emitted from arbitrary visible text.
+                if runNonInteractive {
+                    let inlineTexts = TooltipObserver.collectStaticTexts(
+                        current, depth: 0, limit: 4
+                    )
+                    if let parsed = TooltipObserver.parseTooltipTexts(inlineTexts),
+                       let keys = TooltipShortcutParser.parseBadge(parsed.badge),
+                       TooltipNameFilter.isAcceptableActionName(parsed.name),
+                       !TooltipObserver.containsSensitiveText(parsed.name) {
+                        let autoId = "inline:\(bundleId):\(keys.joined(separator: "+"))"
+                        emit(bundleId: bundleId, shortcutId: autoId,
+                             keys: keys, hint: parsed.name, loc: nsLoc,
+                             layer: .inlineShortcut)
+                        return
+                    }
+                }
+
                 // Layer 1: hardcoded per-app rules
                 if runNonInteractive,
                    let (rule, confidence) = ShortcutRules.match(element: current, bundleId: bundleId,
