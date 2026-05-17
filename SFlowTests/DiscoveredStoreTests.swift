@@ -55,15 +55,18 @@ final class DiscoveredStoreTests: XCTestCase {
     }
 
     func test_lookup_respectsTimeWindow() {
-        store.record(makeEntry(ageSeconds: 120))  // 2 minutes old
+        // 2-min-old entry: within default (7d) window, but rejected with
+        // explicit short window. Default extended to 7d in 2026-05-17:
+        // shortcut for a button doesn't change over time, persistent
+        // cross-session means hover-once-then-instant flow.
+        store.record(makeEntry(ageSeconds: 120))
         _ = store.allEntries()
-        // Default 60s window — should NOT find
-        let found = store.lookup(near: CGPoint(x: 210, y: 60), bundleId: "notion.mail.id")
-        XCTAssertNil(found)
-        // Within 180s window — should find
-        let foundLong = store.lookup(near: CGPoint(x: 210, y: 60),
-                                      bundleId: "notion.mail.id", within: 180)
-        XCTAssertNotNil(foundLong)
+        let foundDefault = store.lookup(near: CGPoint(x: 210, y: 60),
+                                         bundleId: "notion.mail.id")
+        XCTAssertNotNil(foundDefault, "default 7d window should include 2-min-old entry")
+        let foundShort = store.lookup(near: CGPoint(x: 210, y: 60),
+                                       bundleId: "notion.mail.id", within: 60)
+        XCTAssertNil(foundShort, "explicit 60s window should exclude 2-min-old entry")
     }
 
     func test_duplicate_within5seconds_isSkipped() {
