@@ -15,6 +15,7 @@ final class ToastWindow: NSPanel {
     private var reportBadge: NSTextField!
     private var keyMonitor: Any?
     private var clickMonitor: Any?
+    private var hostScreen: NSScreen?
 
     private init(event: ShortcutEvent, onFalsePositive: (() -> Void)? = nil) {
         self.onFalsePositive = onFalsePositive
@@ -32,10 +33,10 @@ final class ToastWindow: NSPanel {
         // edge of a secondary monitor (Slack, fullscreen apps) can place the
         // toast in a coordinate space that no monitor can render.
         let cursor = NSPoint(x: event.mouseX, y: event.mouseY)
-        let hostScreen = NSScreen.screens.first(where: { $0.frame.contains(cursor) })
+        let resolvedScreen = NSScreen.screens.first(where: { $0.frame.contains(cursor) })
             ?? NSScreen.main
             ?? NSScreen.screens.first
-        let bounds = hostScreen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
+        let bounds = resolvedScreen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
         var x = cursor.x + 16
         var y = cursor.y + 8
         if x + w > bounds.maxX { x = bounds.maxX - w - 8 }
@@ -49,17 +50,20 @@ final class ToastWindow: NSPanel {
                    backing: .buffered,
                    defer: false)
 
-        // popUpMenu (101) sits above .screenSaver (1000? no — .popUpMenu is
-        // actually higher in practice for overlays above fullscreen apps).
-        // We try popUpMenu first; if that proves insufficient we can bump
-        // further. screenSaver alone failed on Slack-fullscreen-on-secondary.
-        level = .popUpMenu
+        // .screenSaver (1000) + .moveToActiveSpace ensures toast crosses into the
+        // active fullscreen Space (e.g. Slack fullscreen on secondary monitor).
+        // .popUpMenu (101) proved insufficient for fullscreen-on-secondary.
+        // .moveToActiveSpace is required alongside .canJoinAllSpaces — without it
+        // the window stays in the Space it was created in, not the visible one.
+        level = .screenSaver
         isOpaque = false
         backgroundColor = .clear
         hasShadow = true
         ignoresMouseEvents = true
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
-        alphaValue = 1
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary,
+                               .stationary, .moveToActiveSpace]
+        alphaValue = 0
+        hostScreen = resolvedScreen
 
         let vfx = NSVisualEffectView(frame: NSRect(origin: .zero, size: CGSize(width: w, height: h)))
         vfx.blendingMode = .behindWindow
@@ -107,11 +111,15 @@ final class ToastWindow: NSPanel {
     }
 
     func appear() {
-        alphaValue = 0
+        // Set alpha=1 BEFORE orderFrontRegardless so the window is immediately
+        // visible when it enters the Space. Setting alpha=0 first and relying on
+        // Core Animation to fade in fails in fullscreen Spaces — CA may not fire
+        // if SFlow is not the active app, leaving the window permanently invisible.
+        alphaValue = 1
         orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.15
-            animator().alphaValue = 1
+        NSLog("SFlow[Toast]: appear frame=\(frame) level=\(level.rawValue) screen=\(hostScreen?.localizedName ?? "?")")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            NSLog("SFlow[Toast]: +200ms isVisible=\(self?.isVisible ?? false) alpha=\(self?.alphaValue ?? -1)")
         }
 
         keyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
