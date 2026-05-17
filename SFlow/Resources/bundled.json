@@ -3622,7 +3622,8 @@
     ],
     "rulesVersion": "2026-05-14T09:45:21.462Z",
     "appVersion": "7.17.0",
-    "bundleId": "notion.id"
+    "bundleId": "notion.id",
+    "features": { "singleKeyMode": true }
   },
   {
     "bundleId": "com.anthropic.claudefordesktop",
@@ -4149,6 +4150,7 @@
     "fetchedAt": "2026-05-13T19:20:33Z",
     "rulesVersion": "2026-05-13T19:20:33.448Z",
     "source": "cloud",
+    "features": { "singleKeyMode": true },
     "rules": [
       {
         "match": {
@@ -5044,5 +5046,26 @@
       }
     ],
     "appVersion": "1.12.7"
+  },
+  {
+    "bundleId": "notion.mail.id",
+    "fetchedAt": "2026-05-17T00:00:00Z",
+    "source": "bundled",
+    "features": { "singleKeyMode": true },
+    "rules": []
+  },
+  {
+    "bundleId": "com.linear.LinearMac",
+    "fetchedAt": "2026-05-17T00:00:00Z",
+    "source": "bundled",
+    "features": { "singleKeyMode": true },
+    "rules": []
+  },
+  {
+    "bundleId": "com.cron.electron",
+    "fetchedAt": "2026-05-17T00:00:00Z",
+    "source": "bundled",
+    "features": { "singleKeyMode": true },
+    "rules": []
   }
 ]

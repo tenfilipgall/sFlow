@@ -9,6 +9,7 @@ final class RuleCache {
 
     private let rootDir: URL
     private var rulesByBundle: [String: [LoadedRule]] = [:]
+    private var featuresByBundle: [String: Features] = [:]
     private var autoDiscoveredBundleIds: Set<String> = []
     var showExperimental: Bool = false
 
@@ -18,6 +19,7 @@ final class RuleCache {
 
     func load() throws {
         rulesByBundle.removeAll()
+        featuresByBundle.removeAll()
         autoDiscoveredBundleIds.removeAll()
         // Layer 1: bundled (lowest priority)
         loadFile(rootDir.appendingPathComponent("bundled.json"), isAutoDiscovered: false)
@@ -34,20 +36,53 @@ final class RuleCache {
 
     private func loadFile(_ url: URL, isAutoDiscovered: Bool) {
         guard let data = try? Data(contentsOf: url) else { return }
+        // Single-object files (cache/{bundleId}.json, user_overrides.json) OVERWRITE
+        // any previously-loaded rules — that's how cache overrides bundled and user
+        // overrides cache. Array-format (bundled.json) uses first-write-wins within
+        // the file but otherwise behaves like a fresh insert.
         if let set = try? JSONDecoder().decode(StoredRuleSet.self, from: data) {
-            rulesByBundle[set.bundleId] = set.rules
-            if isAutoDiscovered { autoDiscoveredBundleIds.insert(set.bundleId) }
+            registerSet(set, isAutoDiscovered: isAutoDiscovered, overwrite: true)
             return
         }
-        // bundled.json may contain multiple apps wrapped in an array
         if let sets = try? JSONDecoder().decode([StoredRuleSet].self, from: data) {
             for set in sets {
-                if rulesByBundle[set.bundleId] == nil {
-                    rulesByBundle[set.bundleId] = set.rules
-                    if isAutoDiscovered { autoDiscoveredBundleIds.insert(set.bundleId) }
+                registerSet(set, isAutoDiscovered: isAutoDiscovered, overwrite: false)
+            }
+        }
+    }
+
+    /// Registers rules and features from a `StoredRuleSet`. When `overwrite` is
+    /// false (bundled.json array entries) only fills empty slots — preserves
+    /// "cache overrides bundled" semantics by leaving cache-loaded entries
+    /// alone if bundled.json reloads. When `overwrite` is true (single-object
+    /// cache or user_overrides files) replaces existing rules.
+    /// Empty-rules entries with features set register only the features —
+    /// allows bundled.json to declare per-bundle features without blocking
+    /// cache rules from filling the same bundleId.
+    private func registerSet(_ set: StoredRuleSet, isAutoDiscovered: Bool, overwrite: Bool) {
+        if !set.rules.isEmpty {
+            if overwrite || rulesByBundle[set.bundleId] == nil {
+                rulesByBundle[set.bundleId] = set.rules
+                if isAutoDiscovered {
+                    autoDiscoveredBundleIds.insert(set.bundleId)
+                } else {
+                    autoDiscoveredBundleIds.remove(set.bundleId)
                 }
             }
         }
+        if let features = set.features {
+            if overwrite || featuresByBundle[set.bundleId] == nil {
+                featuresByBundle[set.bundleId] = features
+            }
+        }
+    }
+
+    /// Returns true when `bundleId` is whitelisted as a single-key-shortcut app
+    /// (Gmail j/k, Notion Mail C/R/F, Obsidian Vim). ClickWatcher's Layer 2 gate
+    /// uses this to accept single-character `kAXHelp` values that would otherwise
+    /// be rejected as likely false positives.
+    func isSingleKeyApp(bundleId: String) -> Bool {
+        featuresByBundle[bundleId]?.singleKeyMode == true
     }
 
     /// Roles compatible with a rule that asks for AXButton. Chromium/Electron apps wrap

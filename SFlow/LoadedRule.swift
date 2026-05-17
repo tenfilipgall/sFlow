@@ -73,6 +73,19 @@ enum StoredSource: String, Codable {
     case user
 }
 
+/// Per-app capability flags. Sub-cel 1.21 / U-3 introduces `singleKeyMode`
+/// which whitelists apps that legitimately bind single-letter shortcuts
+/// (Gmail j/k, Notion Mail C/R/F, Obsidian Vim). Without the flag, Layer 2
+/// in ClickWatcher rejects single-char `kAXHelp` values to avoid false
+/// positives from incidental single letters in arbitrary text.
+struct Features: Codable {
+    let singleKeyMode: Bool?
+
+    init(singleKeyMode: Bool? = nil) {
+        self.singleKeyMode = singleKeyMode
+    }
+}
+
 /// On-disk format under ~/Library/Application Support/SFlow/rules/.
 struct StoredRuleSet: Codable {
     let bundleId: String
@@ -80,5 +93,29 @@ struct StoredRuleSet: Codable {
     let fetchedAt: String
     let source: StoredSource
     let rulesVersion: String?
+    let features: Features?
     let rules: [LoadedRule]
+
+    init(bundleId: String, appVersion: String? = nil, fetchedAt: String,
+         source: StoredSource, rulesVersion: String? = nil,
+         features: Features? = nil, rules: [LoadedRule]) {
+        self.bundleId = bundleId
+        self.appVersion = appVersion
+        self.fetchedAt = fetchedAt
+        self.source = source
+        self.rulesVersion = rulesVersion
+        self.features = features
+        self.rules = rules
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.bundleId    = try c.decode(String.self,         forKey: .bundleId)
+        self.appVersion  = try c.decodeIfPresent(String.self, forKey: .appVersion)
+        self.fetchedAt   = try c.decode(String.self,          forKey: .fetchedAt)
+        self.source      = try c.decode(StoredSource.self,    forKey: .source)
+        self.rulesVersion = try c.decodeIfPresent(String.self, forKey: .rulesVersion)
+        self.features    = try c.decodeIfPresent(Features.self, forKey: .features)
+        self.rules       = try c.decode([LoadedRule].self,    forKey: .rules)
+    }
 }

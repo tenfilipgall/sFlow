@@ -493,4 +493,78 @@ final class RuleCacheTests: XCTestCase {
                                  roleDescription: "researcher tools")
         XCTAssertNil(result)
     }
+
+    // MARK: - Sub-cel 1.21 / U-3: singleKeyMode feature flag
+
+    func test_isSingleKeyApp_returnsFalse_byDefault() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        try write("bundled.json", [rule("Send", keys: ["meta", "enter"])], source: .bundled)
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertFalse(cache.isSingleKeyApp(bundleId: "com.x"))
+    }
+
+    func test_isSingleKeyApp_returnsTrue_whenFlagSet() throws {
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let set = StoredRuleSet(
+            bundleId: "notion.mail.id", appVersion: nil,
+            fetchedAt: "2026-05-17T00:00:00Z", source: .bundled, rulesVersion: nil,
+            features: Features(singleKeyMode: true),
+            rules: []
+        )
+        let data = try JSONEncoder().encode([set])
+        try data.write(to: tempDir.appendingPathComponent("bundled.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertTrue(cache.isSingleKeyApp(bundleId: "notion.mail.id"))
+    }
+
+    func test_emptyRulesBundledEntry_doesNotBlock_cacheRules() throws {
+        // Bundled.json declares notion.mail.id with empty rules + singleKeyMode flag.
+        // Cache file has actual rules for notion.mail.id. Result: features registered
+        // from bundled AND rules loaded from cache (empty-rules bundled doesn't block).
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let bundledSet = StoredRuleSet(
+            bundleId: "notion.mail.id", appVersion: nil,
+            fetchedAt: "2026-05-17T00:00:00Z", source: .bundled, rulesVersion: nil,
+            features: Features(singleKeyMode: true),
+            rules: []
+        )
+        let bundledData = try JSONEncoder().encode([bundledSet])
+        try bundledData.write(to: tempDir.appendingPathComponent("bundled.json"))
+
+        let cacheSet = StoredRuleSet(
+            bundleId: "notion.mail.id", appVersion: "1.0",
+            fetchedAt: "2026-05-17T00:00:00Z", source: .cloud, rulesVersion: nil,
+            rules: [rule("Compose", keys: ["c"])]
+        )
+        let cacheData = try JSONEncoder().encode(cacheSet)
+        try cacheData.write(to: tempDir.appendingPathComponent("cache/notion.mail.id.json"))
+
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertTrue(cache.isSingleKeyApp(bundleId: "notion.mail.id"))
+        let result = cache.match(bundleId: "notion.mail.id", role: "AXButton",
+                                 title: "Compose", desc: "", help: "")
+        XCTAssertEqual(result?.keys, ["c"], "cache rules not blocked by empty-rules bundled entry")
+    }
+
+    func test_features_areBackwardCompat_legacyBundledLoadsFine() throws {
+        // Bundled.json without features field — older format. Must load and
+        // singleKeyMode returns false.
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("cache"), withIntermediateDirectories: true)
+        let legacyJSON = """
+        [{
+          "bundleId": "com.legacy.app",
+          "fetchedAt": "2026-01-01T00:00:00Z",
+          "source": "bundled",
+          "rules": []
+        }]
+        """
+        try legacyJSON.data(using: .utf8)!
+            .write(to: tempDir.appendingPathComponent("bundled.json"))
+        let cache = RuleCache(rootDir: tempDir)
+        try cache.load()
+        XCTAssertFalse(cache.isSingleKeyApp(bundleId: "com.legacy.app"))
+    }
 }

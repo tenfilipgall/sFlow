@@ -368,9 +368,14 @@ final class ClickWatcher {
                 }
 
                 // Layer 2: kAXHelpAttribute auto-parse.
-                // Single-char safety: only accept raw "e"/"k" on clickable roles.
+                // Single-char safety: only accept raw "e"/"k" on clickable roles,
+                // or when the app is whitelisted as single-key (Gmail j/k, Notion
+                // Mail C/R/F, Obsidian Vim). Whitelist comes from bundled.json
+                // `features.singleKeyMode: true`. Sub-cel 1.21 / U-3.
                 if !currentHelp.isEmpty {
-                    if (currentHelp.count > 1 || isInteractive),
+                    let allowSingleChar = isInteractive
+                        || ruleCache.isSingleKeyApp(bundleId: bundleId)
+                    if (currentHelp.count > 1 || allowSingleChar),
                        let keys = ShortcutRules.parseShortcut(from: currentHelp) {
                         let autoId = "auto:\(bundleId):\(keys.joined(separator: "+"))"
                         emit(bundleId: bundleId, shortcutId: autoId,
