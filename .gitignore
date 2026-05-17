@@ -24,3 +24,6 @@ bundled.json.bak.*
 *.mov
 *.MP4
 *.MOV
+
+# Local tooling caches (superpowers plugin skill cache, not project content)
+.superpowers/
