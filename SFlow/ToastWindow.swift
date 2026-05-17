@@ -60,8 +60,10 @@ final class ToastWindow: NSPanel {
         backgroundColor = .clear
         hasShadow = true
         ignoresMouseEvents = true
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary,
-                               .stationary, .moveToActiveSpace]
+        // .canJoinAllSpaces and .moveToActiveSpace are mutually exclusive (AppKit crash).
+        // .moveToActiveSpace is what we want: toast migrates to whichever Space is
+        // currently active (e.g. Slack fullscreen on secondary), not all Spaces.
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary, .stationary]
         alphaValue = 0
         hostScreen = resolvedScreen
 
