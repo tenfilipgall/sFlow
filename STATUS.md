@@ -85,6 +85,23 @@
 
 **Audyt dzisiejszy (2026-05-18):** Z 11 acceptance criteria Fazy 1 (`audit-phase-1.md`) próg MIN to A-1..A-4, A-7, A-8 (6 z 11). Mamy **5/6 spełnione** (A-1✅ A-2✅ A-3✅ A-4✅ A-7✅ — 10/10 verified z Fazy 1.6), pozostaje A-8 który **DEFINICYJNIE = Faza 1.7 Beta**. **Wniosek:** Faza 1 jest scope-complete dla bety. 4 deferred sub-cele to skalowanie post-Beta, nie blokery.
 
+#### 🤔 Dlaczego 4 sub-cele odroczone do Fazy 2 (wytłumaczenie jak 12-latkowi)
+
+> **Wszystkie 4 mają wspólny mianownik:** wymagają **danych z prawdziwych userów** lub są **zastąpione lepszym rozwiązaniem**. Robienie ich przed Betą = praca w ciemno albo ryzyko zepsucia czegoś co działa.
+
+| # | Po co był pomyślany | Dlaczego nie teraz | Analogia 12-latkowi |
+|---|---|---|---|
+| **1.3** Self-healing | Apka sama prosi backend o nowsze reguły gdy widzi że często się myli w apce X (≥20 missów + ≥3 powt. tytuły) | Filip solo (n=1) generuje 20 missów per apka **w tygodnie**. 5 testerów × 2 tygodnie = realny sygnał w **dni**. Mechanizm bez sygnału nigdy nie odpali. | Pułapka na 100 muszek w lesie gdzie jest 5 muszek — działa, ale nigdy nic nie złapie |
+| **1.11 cz.2** Coverage iteration | Analiza per-warstwa (L0/L0.5/L1...) — gdzie luki, którą warstwę dolepić | Sensowna analiza = ≥200 events per warstwa. Dziś mamy ~150 events Filipa solo (n=1) — **statystycznie szum**. Beta dostarczy ~1000-2000 events w tydzień | Ankieta „która lodowa najlepsza" pytając 1 osobę — odpowiedź niereprezentatywna |
+| **1.13** Synthetic self-eval | Drugi Claude (Haiku) ocenia każdą regułę w skali 1-5 — skalowanie quality eval na 100+ apek bez Filipa-ręcznie | (1) Cel = 100 apek; dziś mamy 10 — **ręcznie wystarczy do Bety**. (2) Bez ground truth (real FP od userów, P-4) Haiku może halucynować eval → **ryzyko zatrucia bundled.json przed Betą** | Kupujesz wagę kuchenną — najpierw ważysz klocek 1kg żeby sprawdzić czy waga nie kłamie. Bez wzorca = nie ufasz |
+| **1.16** Dev seed pre-fetch | Symulowany hover wszystkich AXButton w apce → zbiera tooltipy do bundled.json przed releasem | Wartość **zastąpiona** przez Layer 0.6 + DiscoveredStore TTL 7d (commit `d8f6224`) — hover raz → instant przez 7 dni. Plus sztuczny hover triggeruje analytics/animacje w apkach (Slack/Notion liczą hovery). **Kandydat do dropu**. | Wymyśliłeś specjalny młotek, ale ktoś już pokazał że zwykły młotek + worek na śmieci robi to samo i bezpieczniej |
+
+**Kiedy te 4 wracają:**
+- **Po Becie (1-2 tygodnie):** mamy sygnał z 5 testerów → 1.3 + 1.11 cz.2 + 1.13 mają dane do pracy
+- **Decyzja go/no-go o 1.16:** patrzymy czy L0.6+TTL pokrywa wszystkie case'y; jeśli tak → drop, jeśli są luki → robimy jako internal-only narzędzie
+
+**Pełna techniczna wersja** uzasadnień: [`docs/audit-phase-1.md`](docs/audit-phase-1.md) sekcja „Defer rationale" + [`docs/roadmap.md`](docs/roadmap.md) sekcja 2.0 „Carryover z Fazy 1".
+
 ---
 
 ### 🟡 Faza 1.5 — Universal Coverage  •  **25% (3/12 sub-celi 🟢)**
