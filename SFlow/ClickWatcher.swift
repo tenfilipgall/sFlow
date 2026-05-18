@@ -358,6 +358,28 @@ final class ClickWatcher {
                     return
                 }
 
+                // Layer 0.7: macOS system shortcuts (parallel layer — fires only
+                // when per-app L0.5 misses). Backend A reads the AX subrole at
+                // every depth (traffic lights show up at depth 0). Backend B
+                // does a title match against the curated EN+PL list.
+                let currentSubrole = (subroleRef as? String) ?? ""
+                if let result = ruleCache.matchSystem(
+                    role: currentRole,
+                    subrole: currentSubrole,
+                    title: effectiveTitle,
+                    desc: effectiveDesc,
+                    help: currentHelp.lowercased(),
+                    identifier: currentIdentifier,
+                    roleDescription: currentRoleDescription,
+                    customActions: currentCustomActions,
+                    locale: appLocale
+                ) {
+                    let autoId = "sys:\(result.keys.joined(separator: "+"))"
+                    emit(bundleId: bundleId, shortcutId: autoId,
+                         keys: result.keys, hint: result.hint, loc: nsLoc, layer: .systemShortcuts)
+                    return
+                }
+
                 // Layer 0.6: inline shortcut hint visible on the clicked element.
                 // Two sources observed in Notion:
                 //

@@ -8,6 +8,11 @@ enum RecognitionLayer: String {
     case ruleCache      = "L0.5"   // bundled.json / cache / user overrides
     case inlineShortcut = "L0.6"   // (name, badge) pair in element's own children
                                     // (Notion sidebar "New chat ⌘O" pattern)
+    case systemShortcuts = "L0.7"  // standard macOS shortcuts — AX subrole map
+                                    // (close/minimize/zoom buttons) + curated
+                                    // EN+PL titles (Save/Print/Quit/…). Fires only
+                                    // when no per-app rule matched, so app rules
+                                    // always win — see SystemShortcuts.swift.
     case shortcutRules  = "L1"     // hardcoded ShortcutRules.rules
     case axHelp         = "L2"     // kAXHelpAttribute auto-parse
     case menuBarIndex   = "L3"     // MenuBarIndex fuzzy lookup

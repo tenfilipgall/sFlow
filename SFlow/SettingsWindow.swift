@@ -69,12 +69,16 @@ private struct GeneralTab: View {
 
 private struct PrivacyTab: View {
     @AppStorage("logMisses") private var logMisses: Bool = true
+    @AppStorage("recordKeystrokes") private var recordKeystrokes: Bool = true
     @AppStorage("telemetry") private var telemetry: Bool = false
 
     var body: some View {
         Form {
             Toggle("Log miss events", isOn: $logMisses)
                 .help("Records unrecognised clicks for sflow-analyze. Stored locally only.")
+            Toggle("Record keyboard shortcuts you use (helps SFlow learn)",
+                   isOn: $recordKeystrokes)
+                .help("Records only Cmd / Ctrl / Option combinations. Plain typing, passwords and text are never read. Stored locally in events.jsonl.")
             Toggle("Share aggregated data with backend", isOn: $telemetry)
                 .help("Not implemented yet — no data is sent.")
             Divider()

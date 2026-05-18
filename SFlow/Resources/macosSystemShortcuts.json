@@ -1,0 +1,310 @@
+[
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Minimize", "Minimize Window"],
+      "localizedTitles": {
+        "pl": ["Minimalizuj", "Zminimalizuj", "Minimalizuj okno"]
+      }
+    },
+    "keys": ["meta", "m"],
+    "hint": "Minimize",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Close Window", "Close Tab", "Close"],
+      "localizedTitles": {
+        "pl": ["Zamknij okno", "Zamknij kartę", "Zamknij"]
+      }
+    },
+    "keys": ["meta", "w"],
+    "hint": "Close",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Hide Others"],
+      "localizedTitles": {
+        "pl": ["Ukryj inne"]
+      }
+    },
+    "keys": ["alt", "meta", "h"],
+    "hint": "Hide Others",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Hide", "Hide Application"],
+      "localizedTitles": {
+        "pl": ["Ukryj", "Ukryj aplikację"]
+      }
+    },
+    "keys": ["meta", "h"],
+    "hint": "Hide",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Quit", "Quit Application"],
+      "localizedTitles": {
+        "pl": ["Zakończ", "Wyjdź"]
+      }
+    },
+    "keys": ["meta", "q"],
+    "hint": "Quit",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Preferences", "Preferences…", "Settings", "Settings…"],
+      "localizedTitles": {
+        "pl": ["Preferencje", "Preferencje…", "Ustawienia", "Ustawienia…"]
+      }
+    },
+    "keys": ["meta", ","],
+    "hint": "Preferences",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["New Tab"],
+      "localizedTitles": {
+        "pl": ["Nowa karta"]
+      }
+    },
+    "keys": ["meta", "t"],
+    "hint": "New Tab",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["New Window", "New Document"],
+      "localizedTitles": {
+        "pl": ["Nowe okno", "Nowy dokument"]
+      }
+    },
+    "keys": ["meta", "n"],
+    "hint": "New Window",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Open…", "Open File…", "Open File"],
+      "localizedTitles": {
+        "pl": ["Otwórz…", "Otwórz plik…", "Otwórz plik"]
+      }
+    },
+    "keys": ["meta", "o"],
+    "hint": "Open",
+    "confidence": "medium",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Save As…", "Save As", "Duplicate"],
+      "localizedTitles": {
+        "pl": ["Zapisz jako…", "Zapisz jako", "Duplikuj"]
+      }
+    },
+    "keys": ["shift", "meta", "s"],
+    "hint": "Save As",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Save", "Save Document"],
+      "localizedTitles": {
+        "pl": ["Zapisz", "Zapisz dokument"]
+      }
+    },
+    "keys": ["meta", "s"],
+    "hint": "Save",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Print…", "Print"],
+      "localizedTitles": {
+        "pl": ["Drukuj…", "Drukuj"]
+      }
+    },
+    "keys": ["meta", "p"],
+    "hint": "Print",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Undo"],
+      "localizedTitles": {
+        "pl": ["Cofnij"]
+      }
+    },
+    "keys": ["meta", "z"],
+    "hint": "Undo",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Redo"],
+      "localizedTitles": {
+        "pl": ["Wykonaj ponownie", "Ponów"]
+      }
+    },
+    "keys": ["shift", "meta", "z"],
+    "hint": "Redo",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Cut"],
+      "localizedTitles": {
+        "pl": ["Wytnij"]
+      }
+    },
+    "keys": ["meta", "x"],
+    "hint": "Cut",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Copy"],
+      "localizedTitles": {
+        "pl": ["Kopiuj"]
+      }
+    },
+    "keys": ["meta", "c"],
+    "hint": "Copy",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Paste"],
+      "localizedTitles": {
+        "pl": ["Wklej"]
+      }
+    },
+    "keys": ["meta", "v"],
+    "hint": "Paste",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Select All"],
+      "localizedTitles": {
+        "pl": ["Zaznacz wszystko"]
+      }
+    },
+    "keys": ["meta", "a"],
+    "hint": "Select All",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Find", "Find…"],
+      "localizedTitles": {
+        "pl": ["Znajdź", "Znajdź…", "Szukaj"]
+      }
+    },
+    "keys": ["meta", "f"],
+    "hint": "Find",
+    "confidence": "medium",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Enter Full Screen", "Exit Full Screen", "Toggle Full Screen"],
+      "localizedTitles": {
+        "pl": ["Przejdź na pełny ekran", "Zakończ pełny ekran", "Pełny ekran"]
+      }
+    },
+    "keys": ["ctrl", "meta", "f"],
+    "hint": "Full Screen",
+    "confidence": "high",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Zoom In"],
+      "localizedTitles": {
+        "pl": ["Powiększ"]
+      }
+    },
+    "keys": ["meta", "+"],
+    "hint": "Zoom In",
+    "confidence": "medium",
+    "source": "menu_bar",
+    "version": 1
+  },
+  {
+    "match": {
+      "role": "AXButton",
+      "titles": ["Zoom Out"],
+      "localizedTitles": {
+        "pl": ["Pomniejsz"]
+      }
+    },
+    "keys": ["meta", "-"],
+    "hint": "Zoom Out",
+    "confidence": "medium",
+    "source": "menu_bar",
+    "version": 1
+  }
+]

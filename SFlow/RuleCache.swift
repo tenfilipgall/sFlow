@@ -11,6 +11,11 @@ final class RuleCache {
     private var rulesByBundle: [String: [LoadedRule]] = [:]
     private var featuresByBundle: [String: Features] = [:]
     private var autoDiscoveredBundleIds: Set<String> = []
+    /// L0.7 — macOS standard shortcuts (Minimize/Close/Save/…). Loaded from
+    /// the app bundle's `macosSystemShortcuts.json`. Lives *alongside*
+    /// `rulesByBundle` — `matchSystem(...)` is only consulted when the
+    /// per-app match misses, so app rules always win.
+    private var systemRules: [LoadedRule] = []
     var showExperimental: Bool = false
 
     init(rootDir: URL) {
@@ -21,6 +26,7 @@ final class RuleCache {
         rulesByBundle.removeAll()
         featuresByBundle.removeAll()
         autoDiscoveredBundleIds.removeAll()
+        systemRules.removeAll()
         // Layer 1: bundled (lowest priority)
         loadFile(rootDir.appendingPathComponent("bundled.json"), isAutoDiscovered: false)
         // Layer 2: cache files (auto-discovered, override bundled)
@@ -32,6 +38,23 @@ final class RuleCache {
         }
         // Layer 3: user overrides (highest, always trusted)
         loadFile(rootDir.appendingPathComponent("user_overrides.json"), isAutoDiscovered: false)
+        // L0.7 — macOS system shortcuts (separate side-car file, parallel layer).
+        // Read straight from the app bundle each launch; never written to
+        // Application Support, never mixed with rulesByBundle.
+        loadSystemRules()
+    }
+
+    /// Loads `macosSystemShortcuts.json` from the app bundle into the
+    /// `systemRules` array. Silent no-op when the resource is missing
+    /// (dev builds without xcodegen sync, unit tests, etc.).
+    private func loadSystemRules() {
+        guard let url = Bundle.main.url(forResource: "macosSystemShortcuts",
+                                        withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let rules = try? JSONDecoder().decode([LoadedRule].self, from: data) else {
+            return
+        }
+        systemRules = rules
     }
 
     private func loadFile(_ url: URL, isAutoDiscovered: Bool) {
@@ -155,6 +178,76 @@ final class RuleCache {
             // English title match (fallback for non-EN; primary for EN) —
             // word-boundary for substring to prevent "search" matching inside
             // "research" (BUG #2 in audit).
+            if Self.titleMatches(
+                candidates: rule.match.titles,
+                titleLC: titleLC, descLC: descLC, helpLC: helpLC,
+                roleDescLC: roleDescLC, customActionsLC: customActionsLC,
+                titleStripped: titleStripped) {
+                return MatchResult(rule: rule)
+            }
+        }
+        return nil
+    }
+
+    /// L0.7 — macOS standard shortcuts. Two backends, both app-agnostic:
+    ///
+    /// Backend A — AX subrole map (locale-stable): traffic-light buttons
+    /// (close/minimize/fullscreen) expose `AXCloseButton`/`AXMinimizeButton`/
+    /// `AXFullScreenButton` as `kAXSubrole`. Returned shortcut is hard-coded
+    /// since these are AppKit-fixed.
+    ///
+    /// Backend B — title match against `systemRules` (loaded from
+    /// `macosSystemShortcuts.json`). Uses the same `titleMatches` machinery as
+    /// per-app `match(...)`; honours `localizedTitles[locale]` when present.
+    ///
+    /// Called by ClickWatcher only when `match(bundleId: …)` already returned
+    /// nil — per-app rules always win, this is a fallback.
+    func matchSystem(role: String, subrole: String,
+                     title: String, desc: String, help: String,
+                     identifier: String = "",
+                     roleDescription: String = "",
+                     customActions: [String] = [],
+                     locale: String = "") -> MatchResult? {
+
+        // Backend A — subrole hit (traffic lights).
+        if let hit = SystemShortcuts.matchSubrole(subrole) {
+            let match = LoadedMatch(role: role, titles: [hit.hint])
+            let rule = LoadedRule(match: match, keys: hit.keys, hint: hit.hint,
+                                  confidence: .high, source: .menuBar)
+            return MatchResult(rule: rule)
+        }
+
+        // Backend B — title match against curated EN+PL list. Empty fast-path
+        // avoids per-click work when the JSON failed to load.
+        if systemRules.isEmpty { return nil }
+
+        let titleLC = title.lowercased()
+        let descLC = desc.lowercased()
+        let helpLC = help.lowercased()
+        let identifierLC = identifier.lowercased()
+        let titleStripped = Self.stripHotkeySuffix(title)?.lowercased()
+        let roleDescLC = roleDescription.lowercased()
+        let customActionsLC = customActions.map { $0.lowercased() }
+        let useLocalized = !locale.isEmpty && locale != "en"
+
+        for rule in systemRules {
+            if !showExperimental && rule.confidence == .low { continue }
+            if !roleCompatible(ruleRole: rule.match.role, actualRole: role) { continue }
+            if let ids = rule.match.identifiers, !identifierLC.isEmpty {
+                if ids.contains(where: { $0.lowercased() == identifierLC }) {
+                    return MatchResult(rule: rule)
+                }
+            }
+            if useLocalized,
+               let localized = rule.match.localizedTitles?[locale],
+               !localized.isEmpty,
+               Self.titleMatches(
+                   candidates: localized,
+                   titleLC: titleLC, descLC: descLC, helpLC: helpLC,
+                   roleDescLC: roleDescLC, customActionsLC: customActionsLC,
+                   titleStripped: titleStripped) {
+                return MatchResult(rule: rule)
+            }
             if Self.titleMatches(
                 candidates: rule.match.titles,
                 titleLC: titleLC, descLC: descLC, helpLC: helpLC,

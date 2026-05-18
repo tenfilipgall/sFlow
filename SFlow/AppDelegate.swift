@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var statusItem: NSStatusItem!
     private var clickWatcher: ClickWatcher?
+    private var keystrokeWatcher: KeystrokeWatcher?
     private var tooltipObserver: TooltipObserver?
     private var ruleCache: RuleCache!
     var discoveryService: DiscoveryService?
@@ -30,6 +31,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // without UI noise.
         UserDefaults.standard.register(defaults: [
             "silentMode": true,
+            // Keystroke recording — practice drills (future) need this and
+            // beta-tester analysis benefits today. Default ON, opt-out via
+            // Settings → Privacy. Privacy gate in KeystrokeWatcher drops any
+            // keypress without Cmd/Ctrl/Opt before AX is touched.
+            "recordKeystrokes": true,
         ])
 
         // Create attemptStore EARLY so AppsTab can always read it even before
@@ -90,7 +96,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let item = statusItem.menu?.item(withTag: 1) {
             item.title = isEnabled ? "✓ Enabled" : "Enabled"
         }
-        if isEnabled { startWatcher() } else { clickWatcher = nil }
+        if isEnabled {
+            startWatcher()
+        } else {
+            clickWatcher = nil
+            keystrokeWatcher = nil
+        }
     }
 
     @objc private func quit() { NSApp.terminate(nil) }
@@ -103,6 +114,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ruleCache?.showExperimental = UserDefaults.standard.bool(forKey: "showExperimental")
         // refresh menu bar icon when silentMode flips
         DispatchQueue.main.async { [weak self] in self?.refreshStatusIcon() }
+        // Honour live toggling of keystroke recording in Settings.
+        syncKeystrokeWatcher()
+    }
+
+    /// Starts/stops the keystroke watcher to match the `recordKeystrokes`
+    /// UserDefault. Re-entrant — called on startup and on every settings
+    /// change. When the toggle is off the watcher is fully torn down so no
+    /// keydown events flow through SFlow at all.
+    private func syncKeystrokeWatcher() {
+        let wanted = UserDefaults.standard.bool(forKey: "recordKeystrokes")
+        if wanted && isEnabled && keystrokeWatcher == nil {
+            keystrokeWatcher = KeystrokeWatcher { event in
+                EventLogger.logKeystroke(event: event)
+            }
+        } else if (!wanted || !isEnabled) && keystrokeWatcher != nil {
+            keystrokeWatcher = nil
+        }
     }
 
     @objc private func showTestToast() {
@@ -232,6 +260,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         tooltipObserver = TooltipObserver()
+
+        // Start keystroke recording if the user has it on. Reuses the same
+        // Input Monitoring grant ClickWatcher already requested above — no
+        // extra permission prompt.
+        syncKeystrokeWatcher()
     }
 
     private func showAlert(title: String, message: String, url: String) {

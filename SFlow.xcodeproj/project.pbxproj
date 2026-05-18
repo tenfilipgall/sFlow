@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00CEE9A86FA801E9E16415F0 /* KeystrokeWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AD08F820BC53E05A7539A2 /* KeystrokeWatcher.swift */; };
 		01CE3F25C5EA1D919CF8EDD7 /* LocaleDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A795F4AE77CD396B9A16C62 /* LocaleDetector.swift */; };
 		058B158B1141D850D0DD0C70 /* Analyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC83E96D12C283AE32FE30BF /* Analyzer.swift */; };
 		061463221505D2A6B5533012 /* LoadedRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1717B830384FA16E9B82893 /* LoadedRuleTests.swift */; };
@@ -33,6 +34,7 @@
 		594FCE9C4F9EDDE705305ABB /* KeySymbols.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59E05FD39B26B00B6EE061F /* KeySymbols.swift */; };
 		59BAD264616362DAB2C151FE /* DiscoveryClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C12664567D251A0FBC46F4 /* DiscoveryClientTests.swift */; };
 		60D4BD4F03942A723818EB31 /* ToastWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8EBF6FD9A5AC7536364EAA /* ToastWindow.swift */; };
+		615CFD074A59809C6FC1938C /* macosSystemShortcuts.json in Resources */ = {isa = PBXBuildFile; fileRef = B959C006D7FD2A6D95338505 /* macosSystemShortcuts.json */; };
 		65BD8268C8A0B74DB174A260 /* TextMatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E6F36D9586F52EA3B22365 /* TextMatching.swift */; };
 		66AEDAB8D6B27AC0FB7D50E7 /* ElectronShortcutScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3395093F311A70AC8B902D /* ElectronShortcutScannerTests.swift */; };
 		6701C0EF59832F53B3ACF8F2 /* TooltipNameFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 608376BCE19BE454FA1C3AC5 /* TooltipNameFilterTests.swift */; };
@@ -77,6 +79,7 @@
 		F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */; };
 		F7B4481B311DAA9A67DB13E0 /* DiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C457892CE0283E887EFC503 /* DiscoveryService.swift */; };
 		FBFAD138C297F1EC3CCECE4C /* BundleStringsScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE50D2B6012E737F06028AEC /* BundleStringsScanner.swift */; };
+		FD4D601413EBDD77047D3248 /* SystemShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D7D19935872AA5292AD13F /* SystemShortcuts.swift */; };
 		FDC766C7E5BB25F8261A259F /* BundledUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183C30F1BEAAA04C8E209600 /* BundledUpdater.swift */; };
 /* End PBXBuildFile section */
 
@@ -129,6 +132,7 @@
 		7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FalsePositiveStore.swift; sourceTree = "<group>"; };
 		7DB8E29BBA3342A3FEB5A5F6 /* LoadedRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRule.swift; sourceTree = "<group>"; };
 		847FA2F3B217DBAEF02736DD /* RuleStorageFingerprintTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleStorageFingerprintTests.swift; sourceTree = "<group>"; };
+		84AD08F820BC53E05A7539A2 /* KeystrokeWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeystrokeWatcher.swift; sourceTree = "<group>"; };
 		870FDE4D3CFDD3B481A5285C /* RuleCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleCache.swift; sourceTree = "<group>"; };
 		88CC46DD09A0AC6D448041DC /* AXSkeletonFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXSkeletonFilterTests.swift; sourceTree = "<group>"; };
 		8986F212E0FD86A51B6F5A6C /* RightClickMenuHarvesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightClickMenuHarvesterTests.swift; sourceTree = "<group>"; };
@@ -147,8 +151,10 @@
 		A4927B1309184521DF315A53 /* AsarReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsarReaderTests.swift; sourceTree = "<group>"; };
 		A59C786F73E245FCCD3F1323 /* DiscoveryFailureReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryFailureReason.swift; sourceTree = "<group>"; };
 		A59E05FD39B26B00B6EE061F /* KeySymbols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySymbols.swift; sourceTree = "<group>"; };
+		B959C006D7FD2A6D95338505 /* macosSystemShortcuts.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = macosSystemShortcuts.json; sourceTree = "<group>"; };
 		BC83E96D12C283AE32FE30BF /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
 		BD5DCF1CDF16F786C0D33D14 /* DiscoveryAttemptStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryAttemptStoreTests.swift; sourceTree = "<group>"; };
+		C0D7D19935872AA5292AD13F /* SystemShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemShortcuts.swift; sourceTree = "<group>"; };
 		C4CDAD1337896EC1BF8EED39 /* TextMatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextMatchingTests.swift; sourceTree = "<group>"; };
 		C6003037CDAC22D92763D3EA /* MenuBarIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIndex.swift; sourceTree = "<group>"; };
 		CA2127D7DB5CC20332B016EE /* BundledUpdaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledUpdaterTests.swift; sourceTree = "<group>"; };
@@ -173,6 +179,7 @@
 			isa = PBXGroup;
 			children = (
 				5E6E5307D26B10E528D5A003 /* bundled.json */,
+				B959C006D7FD2A6D95338505 /* macosSystemShortcuts.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -198,6 +205,7 @@
 				4C0F1A84EF2FF9D1283D2C56 /* EventLogger.swift */,
 				7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */,
 				37C5EBD6EAEC6BDDF6FC2426 /* Info.plist */,
+				84AD08F820BC53E05A7539A2 /* KeystrokeWatcher.swift */,
 				A59E05FD39B26B00B6EE061F /* KeySymbols.swift */,
 				7DB8E29BBA3342A3FEB5A5F6 /* LoadedRule.swift */,
 				1A795F4AE77CD396B9A16C62 /* LocaleDetector.swift */,
@@ -215,6 +223,7 @@
 				EC581A82267597B347014DDA /* SettingsWindow.swift */,
 				DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */,
 				D05919D511DAC8124C848B31 /* ShortcutRules.swift */,
+				C0D7D19935872AA5292AD13F /* SystemShortcuts.swift */,
 				97E6F36D9586F52EA3B22365 /* TextMatching.swift */,
 				FB8EBF6FD9A5AC7536364EAA /* ToastWindow.swift */,
 				D0BCE7047A70D6BC80610C42 /* TooltipNameFilter.swift */,
@@ -362,6 +371,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB06AF478F1BCDC762E6820C /* bundled.json in Resources */,
+				615CFD074A59809C6FC1938C /* macosSystemShortcuts.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,6 +438,7 @@
 				F52CC85A83C1FB904C1E53B5 /* EventLogger.swift in Sources */,
 				8BF3A8E2AD112898A7A2829F /* FalsePositiveStore.swift in Sources */,
 				594FCE9C4F9EDDE705305ABB /* KeySymbols.swift in Sources */,
+				00CEE9A86FA801E9E16415F0 /* KeystrokeWatcher.swift in Sources */,
 				759FECD23660EDF74A2F6190 /* LoadedRule.swift in Sources */,
 				01CE3F25C5EA1D919CF8EDD7 /* LocaleDetector.swift in Sources */,
 				F2E728B4C8579C70488B1007 /* MatchConfidence.swift in Sources */,
@@ -443,6 +454,7 @@
 				691AC2B42F32698E46BDD1C8 /* SettingsWindow.swift in Sources */,
 				32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */,
 				B387629ECE75EB4A9EC78312 /* ShortcutRules.swift in Sources */,
+				FD4D601413EBDD77047D3248 /* SystemShortcuts.swift in Sources */,
 				65BD8268C8A0B74DB174A260 /* TextMatching.swift in Sources */,
 				60D4BD4F03942A723818EB31 /* ToastWindow.swift in Sources */,
 				1BFF2DD01783C6388DFC808A /* TooltipNameFilter.swift in Sources */,

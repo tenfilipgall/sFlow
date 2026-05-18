@@ -1,5 +1,22 @@
 import Foundation
 
+/// One press of a Cmd/Ctrl/Opt-modified keyboard combination, captured by
+/// `KeystrokeWatcher` for learning purposes (practice drills, hit-rate
+/// analysis). Plain typing never produces a `KeystrokeEvent` — the watcher
+/// drops it at the privacy gate before this struct is constructed.
+///
+/// `focusedTitle` and `windowTitle` go through `PrivacyFilter.redact` at
+/// the watcher's call site, so this struct already holds the redacted form.
+struct KeystrokeEvent {
+    let bundleId: String
+    let keys: [String]
+    let focusedRole: String
+    let focusedTitle: String
+    let focusedRoleDesc: String
+    let focusedIdentifier: String
+    let windowTitle: String
+}
+
 struct MissEvent {
     let bundleId: String
     let role: String
@@ -101,6 +118,29 @@ enum EventLogger {
             "roleDescription": event.roleDescription,
             "customActions":   event.customActions.map { PrivacyFilter.redact($0) },
             "subtreeLabel":    PrivacyFilter.redact(event.subtreeLabel),
+        ]
+        write(entry, to: url)
+    }
+
+    /// Appends a keystroke (Cmd/Ctrl/Opt + key) the user pressed to the
+    /// events log. Focused-element fields are already redacted by
+    /// `KeystrokeWatcher` via `PrivacyFilter.redact`.
+    static func logKeystroke(event: KeystrokeEvent) {
+        logKeystroke(event: event, to: defaultLogURL)
+    }
+
+    static func logKeystroke(event: KeystrokeEvent, to url: URL) {
+        let formatter = ISO8601DateFormatter()
+        let entry: [String: Any] = [
+            "type":              "keystroke",
+            "timestamp":         formatter.string(from: Date()),
+            "bundleId":          event.bundleId,
+            "keys":              event.keys,
+            "focusedRole":       event.focusedRole,
+            "focusedTitle":      event.focusedTitle,
+            "focusedRoleDesc":   event.focusedRoleDesc,
+            "focusedIdentifier": event.focusedIdentifier,
+            "windowTitle":       event.windowTitle,
         ]
         write(entry, to: url)
     }
