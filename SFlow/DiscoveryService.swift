@@ -107,17 +107,23 @@ final class DiscoveryService {
             return
         }
 
+        // Sub-cel 1.20: best-effort per-app locale. AXLanguage is rarely set
+        // by apps, so we usually fall back to system locale — fine for the
+        // typical case (PL system = PL Slack UI).
+        let axApp = AXUIElementCreateApplication(app.processIdentifier)
+        let appLocale = LocaleDetector.detect(for: axApp)
         Task { [weak self] in
             await self?.callBackendAndStore(
                 bundleId: bundleId, appName: appName, appVersion: appVersion,
-                menuBar: menuBar, skeleton: skeleton
+                menuBar: menuBar, skeleton: skeleton, appLocale: appLocale
             )
         }
     }
 
     private func callBackendAndStore(
         bundleId: String, appName: String, appVersion: String,
-        menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem]
+        menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem],
+        appLocale: String
     ) async {
         defer {
             DispatchQueue.main.async {
@@ -133,7 +139,7 @@ final class DiscoveryService {
         do {
             result = try await self.client.discover(
                 bundleId: bundleId, appName: appName, appVersion: appVersion,
-                menuBar: menuBar, skeleton: skeleton
+                menuBar: menuBar, skeleton: skeleton, appLocale: appLocale
             )
         } catch {
             let reason = DiscoveryFailureReason.from(error: error)

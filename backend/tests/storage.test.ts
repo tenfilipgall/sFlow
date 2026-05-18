@@ -37,4 +37,43 @@ describe("storage", () => {
     const result = await getCachedRules(env.RULES_CACHE, "com.x", "1.0.9");
     expect(result).toEqual(rules);
   });
+
+  describe("cacheKey locale suffix (Sub-cel 1.20)", () => {
+    it("omits suffix for English / null / undefined locale", () => {
+      expect(cacheKey("com.x", "1.2.3")).toBe("rules:com.x:1.2");
+      expect(cacheKey("com.x", "1.2.3", null)).toBe("rules:com.x:1.2");
+      expect(cacheKey("com.x", "1.2.3", undefined)).toBe("rules:com.x:1.2");
+      expect(cacheKey("com.x", "1.2.3", "en")).toBe("rules:com.x:1.2");
+      // case-insensitive EN check
+      expect(cacheKey("com.x", "1.2.3", "EN")).toBe("rules:com.x:1.2");
+    });
+
+    it("appends locale suffix for non-English", () => {
+      expect(cacheKey("com.x", "1.2.3", "pl")).toBe("rules:com.x:1.2:pl");
+      expect(cacheKey("com.x", "1.2.3", "de")).toBe("rules:com.x:1.2:de");
+      expect(cacheKey("com.x", "1.2.3", "zh-Hans")).toBe("rules:com.x:1.2:zh-Hans");
+    });
+
+    it("keeps EN and PL caches separate end-to-end", async () => {
+      const rulesEn = {
+        bundleId: "com.x", rulesVersion: "v1",
+        rules: [{ match: { role: "AXButton", titles: ["Compose"] },
+                  keys: ["meta", "n"], hint: "Compose",
+                  confidence: "high" as const, source: "menu_bar" as const }],
+      };
+      const rulesPl = {
+        bundleId: "com.x", rulesVersion: "v1",
+        rules: [{ match: { role: "AXButton", titles: ["Compose"],
+                          localizedTitles: { pl: ["Skomponuj"] } },
+                  keys: ["meta", "n"], hint: "Compose",
+                  confidence: "high" as const, source: "menu_bar" as const }],
+      };
+      await putCachedRules(env.RULES_CACHE, "com.x", "1.0", rulesEn);
+      await putCachedRules(env.RULES_CACHE, "com.x", "1.0", rulesPl, "pl");
+      const en = await getCachedRules(env.RULES_CACHE, "com.x", "1.0");
+      const pl = await getCachedRules(env.RULES_CACHE, "com.x", "1.0", "pl");
+      expect(en).toEqual(rulesEn);
+      expect(pl).toEqual(rulesPl);
+    });
+  });
 });

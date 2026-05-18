@@ -112,9 +112,15 @@ enum Reseeder {
         let clientVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "reseed"
         let client = DiscoveryClient(baseURL: DiscoveryClient.productionURL, clientVersion: clientVersion)
 
+        // Sub-cel 1.20: tag reseed with system locale so backend generates
+        // localizedTitles for the developer's UI language (PL system → PL
+        // localizedTitles in the resulting bundled.json rules).
+        let appLocale = LocaleDetector.systemLocale()
+        print("Reseeder: \(bundleId) — appLocale=\(appLocale)")
+
         let (result, rawError) = discoverBlocking(
             client: client, bundleId: bundleId, appName: appName, appVersion: appVersion,
-            menuBar: menuBar, skeleton: skeleton
+            menuBar: menuBar, skeleton: skeleton, appLocale: appLocale
         )
 
         guard let result else {
@@ -210,7 +216,8 @@ enum Reseeder {
     private static func discoverBlocking(
         client: DiscoveryClient,
         bundleId: String, appName: String, appVersion: String,
-        menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem]
+        menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem],
+        appLocale: String
     ) -> (BackendRuleSet?, String?) {
         let sem = DispatchSemaphore(value: 0)
         var result: BackendRuleSet?
@@ -220,7 +227,8 @@ enum Reseeder {
             do {
                 result = try await client.discover(
                     bundleId: bundleId, appName: appName, appVersion: appVersion,
-                    menuBar: menuBar, skeleton: skeleton, fresh: true
+                    menuBar: menuBar, skeleton: skeleton, fresh: true,
+                    appLocale: appLocale
                 )
             } catch let DiscoveryClientError.http(code, body) {
                 rawError = "HTTP \(code)\n\(body)"

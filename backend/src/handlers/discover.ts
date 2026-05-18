@@ -58,14 +58,16 @@ export async function handleDiscover(
   const skipCache = url.searchParams.get("fresh") === "1";
 
   // Cache lookup first — does not consume rate limit. Bypassed via ?fresh=1 (re-seed tool).
+  // Sub-cel 1.20: cache key includes locale → non-EN clients get their own bucket.
   if (!skipCache) {
-    const cached = await getCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion);
+    const cached = await getCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion, req.appLocale);
     if (cached) {
       const flaggedKeys = await loadFlaggedKeys(env.FEEDBACK, req.bundleId);
       const filtered = applyFeedbackFilter(cached as any, flaggedKeys);
       const c = filtered as { rules?: unknown[] };
       console.log(JSON.stringify({
         type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
+        appLocale: req.appLocale ?? "en",
         cacheHit: true, fresh: false, rulesGenerated: c.rules?.length ?? 0,
         flaggedFiltered: flaggedKeys.size,
         durationMs: Date.now() - start,
@@ -95,9 +97,10 @@ export async function handleDiscover(
     return jsonError(502, `LLM error: ${(e as Error).message}`);
   }
 
-  await putCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion, rules);
+  await putCachedRules(env.RULES_CACHE, req.bundleId, req.appVersion, rules, req.appLocale);
   console.log(JSON.stringify({
     type: "discover", bundleId: req.bundleId, appVersion: req.appVersion,
+    appLocale: req.appLocale ?? "en",
     cacheHit: false, fresh: skipCache, rulesGenerated: rules.rules.length,
     durationMs: Date.now() - start,
   }));

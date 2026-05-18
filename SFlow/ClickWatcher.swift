@@ -244,6 +244,9 @@ final class ClickWatcher {
         // accessibility tree. Idempotent. No-op on native apps.
         AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
         AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
+        // Sub-cel 1.20: resolve active locale once per click. RuleCache uses it to
+        // consult localizedTitles before falling back to English.
+        let appLocale = LocaleDetector.detect(for: axApp)
         var elemRef: AXUIElement?
         let result = AXUIElementCopyElementAtPosition(axApp, axX, axY, &elemRef)
         if result == .success, let element = elemRef {
@@ -346,7 +349,8 @@ final class ClickWatcher {
                     help: currentHelp.lowercased(),
                     identifier: currentIdentifier,
                     roleDescription: currentRoleDescription,
-                    customActions: currentCustomActions
+                    customActions: currentCustomActions,
+                    locale: appLocale
                 ) {
                     let autoId = "json:\(bundleId):\(result.keys.joined(separator: "+"))"
                     emit(bundleId: bundleId, shortcutId: autoId,

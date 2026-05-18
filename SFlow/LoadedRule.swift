@@ -17,11 +17,19 @@ struct LoadedMatch: Codable {
     let role: String
     let titles: [String]
     let identifiers: [String]?
+    /// Per-locale alternate titles. Keyed by normalized locale code
+    /// ("pl", "de", "zh-Hans"). When set, RuleCache.match tries
+    /// `localizedTitles[activeLocale]` BEFORE the English `titles` array —
+    /// localized AX strings (Slack PL "Skomponuj") win over heuristic EN match.
+    /// Sub-cel 1.20 / P-43. Backward-compat: nil = English-only rule.
+    let localizedTitles: [String: [String]]?
 
-    init(role: String, titles: [String], identifiers: [String]? = nil) {
+    init(role: String, titles: [String], identifiers: [String]? = nil,
+         localizedTitles: [String: [String]]? = nil) {
         self.role = role
         self.titles = titles
         self.identifiers = identifiers
+        self.localizedTitles = localizedTitles
     }
 }
 

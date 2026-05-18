@@ -89,4 +89,58 @@ describe("buildSystemPrompt v1.1 prompt", () => {
     expect(prompt).toMatch(/STEP 2/);
     expect(prompt).toMatch(/STEP 3/);
   });
+
+  it("instructs Claude on localizedTitles for non-EN locales (P-43, Sub-cel 1.20)", () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toMatch(/LOCALIZED TITLES/);
+    expect(prompt).toContain("localizedTitles");
+    expect(prompt).toMatch(/actual AX-exposed strings/);
+    expect(prompt).toMatch(/NOT a literal translation/);
+    // Supported locales mentioned
+    expect(prompt).toContain("pl");
+    expect(prompt).toContain("zh-Hans");
+  });
+});
+
+describe("buildUserPrompt locale hint (Sub-cel 1.20)", () => {
+  it("emits PL hint when appLocale=pl", () => {
+    const result = buildUserPrompt({
+      bundleId: "com.tinyspeck.slackmacgap",
+      appName: "Slack",
+      appVersion: "4.0.0",
+      appLocale: "pl",
+      menuBar: [],
+      uiSkeleton: [],
+      clientVersion: "1.0",
+    });
+    expect(result).toContain("App locale: pl");
+    expect(result).toContain('localizedTitles.pl');
+    expect(result).toMatch(/NOT literal translations/);
+  });
+
+  it("emits default EN hint when appLocale missing", () => {
+    const result = buildUserPrompt({
+      bundleId: "com.x",
+      appName: "X",
+      appVersion: "1.0",
+      menuBar: [],
+      uiSkeleton: [],
+      clientVersion: "1.0",
+    });
+    expect(result).toContain("App locale: en");
+    expect(result).toContain("localizedTitles optional");
+  });
+
+  it("emits default EN hint when appLocale=en", () => {
+    const result = buildUserPrompt({
+      bundleId: "com.x",
+      appName: "X",
+      appVersion: "1.0",
+      appLocale: "en",
+      menuBar: [],
+      uiSkeleton: [],
+      clientVersion: "1.0",
+    });
+    expect(result).toContain("App locale: en");
+  });
 });

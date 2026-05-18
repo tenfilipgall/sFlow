@@ -23,6 +23,7 @@ Rules:
 - DISJOINT TITLES: NEVER produce two rules where any title string (case-insensitive) appears in more than one rule. If you find yourself wanting to generate two rules for the same UI element (e.g. one for "Search current conversation" and one for "Search all of Slack" both with title "Search Slack"), MERGE them into one rule using the keys that ACTUALLY trigger that on-screen button. The on-screen button has exactly one keyboard shortcut — pick it, not both.
 - HOTKEY-SUFFIX VARIANTS (Electron menus only): Slack, Discord, and other Electron apps render their AXMenuItem titles with the access-key letter appended (e.g. "Edit message E", "Mark unread U", "Save message S"). For any rule with role="AXMenuItem" generated from a menu_bar source, include title variants BOTH with and without a trailing space + single uppercase letter — e.g. \`["Edit message", "Edit message E", "edit message"]\`.
 - IDENTIFIERS: When the UI skeleton includes [id=...] for an element, add an "identifiers" field to that rule's match object. Example: { "role": "AXButton", "titles": ["Compose", "New message"], "identifiers": ["compose-button"] }. Identifiers allow the client to match elements by stable DOM id rather than localised title — include them whenever the skeleton provides them.
+- LOCALIZED TITLES (Sub-cel 1.20, P-43): When the request includes a non-English appLocale (e.g. "pl", "de", "fr"), add a "localizedTitles" field to each rule's match object covering the most-used 60-80% of rules. Schema example: "localizedTitles": { "pl": ["skomponuj", "nowa wiadomość"], "de": ["verfassen"] }. CRITICAL: these must be the **actual AX-exposed strings** in that locale (the string the OS reads from the button at runtime), NOT a literal translation. Slack PL Compose button reads "Skomponuj wiadomość" — that is what we need, not "Komponuj" (literal). Use web_search to verify the localized AX strings from official docs, community references, or screenshots in that locale. If you cannot verify a localized string with confidence, OMIT it for that rule rather than guess. For "en" or missing appLocale, you may skip localizedTitles entirely (the titles array is treated as English by default). Supported locales: pl, de, fr, es, it, pt, ja, zh-Hans, zh-Hant, ko.
 - TITLE VARIANTS: every rule's "titles" array MUST include 3-5 variants of the same action, designed to match what an AX element might actually expose. Include:
   1. The verb-led English form (e.g. "Open Quick Switcher").
   2. The noun-only English form (e.g. "Quick Switcher").
@@ -56,7 +57,13 @@ export function buildUserPrompt(req: DiscoverRequest): string {
   const skeletonLines = req.uiSkeleton
     .map((s) => `  ${s.role}: "${s.title}"${s.identifier ? ` [id=${s.identifier}]` : ""}`)
     .join("\n");
+  const locale = (req.appLocale ?? "en").toLowerCase();
+  const localeLine = locale && locale !== "en"
+    ? `App locale: ${req.appLocale} — populate "localizedTitles.${locale}" with the actual AX-exposed strings (NOT literal translations) for the primary 60-80% of rules. Verify localized strings via web_search.`
+    : `App locale: en (default — localizedTitles optional, omit if uncertain).`;
   return `App: ${req.appName} (${req.bundleId} v${req.appVersion})
+
+${localeLine}
 
 Menu bar:
 ${menuLines || "  (empty)"}

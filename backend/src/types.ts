@@ -15,6 +15,11 @@ export const DiscoverRequestSchema = z.object({
   bundleId: z.string().min(1).max(200),
   appName: z.string().min(1).max(100),
   appVersion: z.string().min(1).max(50),
+  // Sub-cel 1.20 / P-43: BCP-47-ish locale code (e.g. "pl", "de", "zh-Hans").
+  // When non-"en", the prompt instructs Claude to populate localizedTitles
+  // for ~60-80% of the rules. nullable+optional so older clients without
+  // the field still pass validation.
+  appLocale: z.string().max(20).nullable().optional(),
   menuBar: z.array(MenuBarItemSchema).max(500),
   uiSkeleton: z.array(UISkeletonItemSchema).max(500),
   clientVersion: z.string().max(20),
@@ -27,6 +32,11 @@ export const RuleSchema = z.object({
     role: z.string(),
     titles: z.array(z.string()).min(1).max(20),
     identifiers: z.array(z.string()).max(5).optional(),
+    // Sub-cel 1.20: per-locale alternate titles. Keyed by normalized locale
+    // code; values are AX-exposed strings in that locale (NOT literal
+    // translations). Optional — rules without this field are treated as
+    // English-only.
+    localizedTitles: z.record(z.string(), z.array(z.string()).max(20)).optional(),
   }),
   keys: z.array(z.string()).min(1).max(5),
   hint: z.string().min(1).max(100),

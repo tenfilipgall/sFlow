@@ -112,7 +112,8 @@ final class RuleCache {
     func match(bundleId: String, role: String, title: String, desc: String, help: String,
                identifier: String = "",
                roleDescription: String = "",
-               customActions: [String] = []) -> MatchResult? {
+               customActions: [String] = [],
+               locale: String = "") -> MatchResult? {
         guard let rules = rulesByBundle[bundleId] else { return nil }
         let isAutoDiscovered = autoDiscoveredBundleIds.contains(bundleId)
         let titleLC = title.lowercased()
@@ -122,6 +123,10 @@ final class RuleCache {
         let titleStripped = Self.stripHotkeySuffix(title)?.lowercased()
         let roleDescLC = roleDescription.lowercased()
         let customActionsLC = customActions.map { $0.lowercased() }
+        // Sub-cel 1.20: when active locale is non-English, consult
+        // localizedTitles[locale] BEFORE the English titles array. English
+        // remains the safety-net fallback (mixed apps: PL system + EN Slack UI).
+        let useLocalized = !locale.isEmpty && locale != "en"
 
         for rule in rules {
             if !showExperimental {
@@ -136,27 +141,54 @@ final class RuleCache {
                     return MatchResult(rule: rule)
                 }
             }
-            // Title match — word-boundary for substring to prevent
-            // "search" matching inside "research" (BUG #2 in audit).
-            let titleMatches = rule.match.titles.contains { candidate in
-                let c = candidate.lowercased()
-                if c.isEmpty { return false }
-                if titleLC == c || descLC == c || helpLC == c || roleDescLC == c { return true }
-                if customActionsLC.contains(c) { return true }
-                if wordBoundaryContains(haystack: titleLC, needle: c) { return true }
-                if wordBoundaryContains(haystack: descLC,  needle: c) { return true }
-                if wordBoundaryContains(haystack: helpLC,  needle: c) { return true }
-                if wordBoundaryContains(haystack: roleDescLC, needle: c) { return true }
-                if customActionsLC.contains(where: { wordBoundaryContains(haystack: $0, needle: c) }) { return true }
-                if let stripped = titleStripped {
-                    if stripped == c { return true }
-                    if wordBoundaryContains(haystack: stripped, needle: c) { return true }
-                }
-                return false
+            // Localized title match — tried first when locale is non-EN.
+            if useLocalized,
+               let localized = rule.match.localizedTitles?[locale],
+               !localized.isEmpty,
+               Self.titleMatches(
+                   candidates: localized,
+                   titleLC: titleLC, descLC: descLC, helpLC: helpLC,
+                   roleDescLC: roleDescLC, customActionsLC: customActionsLC,
+                   titleStripped: titleStripped) {
+                return MatchResult(rule: rule)
             }
-            if titleMatches { return MatchResult(rule: rule) }
+            // English title match (fallback for non-EN; primary for EN) —
+            // word-boundary for substring to prevent "search" matching inside
+            // "research" (BUG #2 in audit).
+            if Self.titleMatches(
+                candidates: rule.match.titles,
+                titleLC: titleLC, descLC: descLC, helpLC: helpLC,
+                roleDescLC: roleDescLC, customActionsLC: customActionsLC,
+                titleStripped: titleStripped) {
+                return MatchResult(rule: rule)
+            }
         }
         return nil
+    }
+
+    /// Shared title-matching logic used by both the localized and English paths.
+    private static func titleMatches(
+        candidates: [String],
+        titleLC: String, descLC: String, helpLC: String,
+        roleDescLC: String, customActionsLC: [String],
+        titleStripped: String?
+    ) -> Bool {
+        candidates.contains { candidate in
+            let c = candidate.lowercased()
+            if c.isEmpty { return false }
+            if titleLC == c || descLC == c || helpLC == c || roleDescLC == c { return true }
+            if customActionsLC.contains(c) { return true }
+            if wordBoundaryContains(haystack: titleLC, needle: c) { return true }
+            if wordBoundaryContains(haystack: descLC,  needle: c) { return true }
+            if wordBoundaryContains(haystack: helpLC,  needle: c) { return true }
+            if wordBoundaryContains(haystack: roleDescLC, needle: c) { return true }
+            if customActionsLC.contains(where: { wordBoundaryContains(haystack: $0, needle: c) }) { return true }
+            if let stripped = titleStripped {
+                if stripped == c { return true }
+                if wordBoundaryContains(haystack: stripped, needle: c) { return true }
+            }
+            return false
+        }
     }
 
     private func roleCompatible(ruleRole: String, actualRole: String) -> Bool {

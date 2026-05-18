@@ -31,7 +31,8 @@ final class DiscoveryClient {
         appVersion: String,
         menuBar: [MenuBarDumpEntry],
         skeleton: [SkeletonItem],
-        fresh: Bool = false
+        fresh: Bool = false,
+        appLocale: String? = nil
     ) async throws -> BackendRuleSet {
         var components = URLComponents(url: baseURL.appendingPathComponent("v1/discover"),
                                        resolvingAgainstBaseURL: false)!
@@ -44,7 +45,8 @@ final class DiscoveryClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = DiscoveryClient.buildRequestBody(
             bundleId: bundleId, appName: appName, appVersion: appVersion,
-            menuBar: menuBar, skeleton: skeleton, clientVersion: clientVersion
+            menuBar: menuBar, skeleton: skeleton, clientVersion: clientVersion,
+            appLocale: appLocale
         )
         // P-35 mitigation (2026-05-18): backend now uses web_search max_uses=8 (Sub-cel 1.12)
         // which can push generation to ~120s for apps with deep cheatsheet searches (observed:
@@ -71,21 +73,26 @@ final class DiscoveryClient {
     static func buildRequestBody(
         bundleId: String, appName: String, appVersion: String,
         menuBar: [MenuBarDumpEntry], skeleton: [SkeletonItem],
-        clientVersion: String
+        clientVersion: String, appLocale: String? = nil
     ) -> Data {
         struct Payload: Encodable {
             let bundleId: String
             let appName: String
             let appVersion: String
+            let appLocale: String?
             let menuBar: [MenuBarDumpEntry]
             let uiSkeleton: [SkeletonItem]
             let clientVersion: String
         }
         let payload = Payload(
             bundleId: bundleId, appName: appName, appVersion: appVersion,
+            appLocale: appLocale,
             menuBar: menuBar, uiSkeleton: skeleton, clientVersion: clientVersion
         )
-        return try! JSONEncoder().encode(payload)
+        let encoder = JSONEncoder()
+        // omit nil appLocale from JSON entirely (backward-compat with backend
+        // that doesn't yet know about the field)
+        return try! encoder.encode(payload)
     }
 
     static func parseResponse(_ data: Data) throws -> BackendRuleSet {
