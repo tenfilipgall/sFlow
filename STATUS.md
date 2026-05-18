@@ -49,7 +49,7 @@
 
 ---
 
-### 🟡 Faza 1 — Jakość pokrycia  •  **scope-Bety 100% po dzisiejszej sesji (10 🟢 + 2 do close + 4 deferred do Fazy 2)**
+### 🟢 Faza 1 — Jakość pokrycia  •  **scope-Bety 100% (12 🟢 done + 4 ⏸️ deferred do Fazy 2)**
 ```
 ████████████████████  100% scope-Bety
 ```
@@ -64,7 +64,7 @@
 | ⏸️ | 1.3 | Self-healing /v1/refresh | Apka sama prosi backend o nowsze reguły, gdy stare nie działają — żeby błędy naprawiały się bez updatu | **DEFERRED → Faza 2** — wymaga real userów do triggerów (≥20 missów/apka) |
 | 🟢 | 1.4 | False-positive feedback | User klika „głupi toast" i to ląduje w logach — żebyśmy uczyli się z błędów bez ręcznego zgłaszania | done 2026-05-13 |
 | 🟢 | 1.5 | MenuBarIndex.lookup fix | Naprawia szukanie poleceń w menu apki (Plik/Edycja na górze ekranu) — żeby znajdować skróty z menu | done 2026-05-14 |
-| 🎯 | 1.8 | Video-based eval | Nagrywamy ekran i porównujemy czy SFlow trafia w dobrych momentach — automatyczna ocena jakości | **TODAY** — Droga C ✅, Droga B `--llm` flag → 2 TODO Filipa: (1) re-run skrypt v2 prompt na Slack klatkach, (2) screencast Notion Mail + full pipeline |
+| 🟢 | 1.8 | Video-based eval | Nagrywamy ekran i porównujemy czy SFlow trafia w dobrych momentach — automatyczna ocena jakości | **done 2026-05-18** — Droga C ✅, Droga B `--llm` prompt v2 verified: 32 frames Slack/Xcode → **0 halucynacji** (v1 miał 4 false-positives z Slack context menu), 1 autentyczny toast (Xcode ⌘K). Pełny audit w `docs/video-eval-test.md` sekcja Verification result. |
 | 🟢 | 1.9 | Window element wins (P-6+P-25) | Lepsze wykrywanie elementów w oknie (przyciski, listy) — żeby nie gubić rzeczy które system widzi | done 2026-05-14 |
 | 🟢 | 1.10 | Matching engine quality (P-26..P-30) | Sprytniejsze dopasowanie „co user kliknął" do „która to reguła" — mniej pomyłek typu kliknął A, dopasowało B | done 2026-05-14 |
 | ⏸️ | 1.11 | Coverage iteration (P-31) | Cykliczna analiza luk: gdzie nie podpowiadamy a powinniśmy — żeby systematycznie zwiększać pokrycie | część 1 ✅, część 2 **DEFERRED → post-Beta** (analiza ≥200 events z 5 testerów daje sensowny sygnał) |
@@ -80,8 +80,8 @@
 **Wyniki sesji 2026-05-18 (Finalize Fazy 1):**
 - **Sub-cel 1.12 zamknięty** — backend prompt v1.1.2 (explicit web_search STEP 1-3 + max_uses 4→8), 5 bundled apek reseedowanych (Slack 58→63, Terminal 69→73, Notion 57→59, Claude Desk 26→24 z +2 web_docs_official, Obsidian 43→46). Każda apka ma ≥1 web_docs reguła (Terminal i Claude Desk poprzednio 0).
 - **P-35 mitigation** — DiscoveryClient timeout 90→180s (Obsidian pierwszy raz timeout >90s, retry zadziałał; po fixie Slack reseed 67s na 1. próbie). Commit `4bf1320`.
+- **Sub-cel 1.8 zamknięty** — `sflow-video-llm.swift` uruchomiony na 32 klatkach Slack/Xcode, **prompt v2 zweryfikowany: 0 halucynacji** (v1 miał 4 false-positives z Slack context menu), 1 autentyczny toast (Xcode Quick Switcher ⌘K). 10.1s analizy przez Claude Haiku 4.5 vision. Raport: `docs/video-eval-test.md`.
 - **4 sub-cele formalnie odroczone do Fazy 2** (1.3, 1.11 część 2, 1.13, 1.16) — uzasadnienie w `audit-phase-1.md` sekcja "Defer rationale" + `roadmap.md` sekcja 2.0 "Carryover z Fazy 1". Commit `249ab24`.
-- **Sub-cel 1.8 czeka na Filipa** — uruchomić `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` lokalnie (kod gotowy w repo, prompt v2 napisany, brakuje tylko lokalnej egzekucji).
 
 **Audyt dzisiejszy (2026-05-18):** Z 11 acceptance criteria Fazy 1 (`audit-phase-1.md`) próg MIN to A-1..A-4, A-7, A-8 (6 z 11). Mamy **5/6 spełnione** (A-1✅ A-2✅ A-3✅ A-4✅ A-7✅ — 10/10 verified z Fazy 1.6), pozostaje A-8 który **DEFINICYJNIE = Faza 1.7 Beta**. **Wniosek:** Faza 1 jest scope-complete dla bety. 4 deferred sub-cele to skalowanie post-Beta, nie blokery.
 
@@ -375,7 +375,7 @@ Update statusów w `audit-phase-0.md` (P-32 ⬜→🟢, P-35 🔵→🟢/🔵) +
 | **P-X zamkniętych** | **~26** (+P-32 done, +P-35 mitigated) |
 | **P-X otwartych** | 9 (+P-51 Electron + P-52 parallel status) |
 | **P-X partial / in-progress** | 4 |
-| **Sub-celi Fazy 1** | 16 — **po sesji 2026-05-18:** 12 🟢 (10 + 1.8 + 1.12) + 4 ⏸️ deferred do Fazy 2 (1.3/1.11/1.13/1.16). *1.6/1.7 wyodrębnione jako Fazy* |
+| **Sub-celi Fazy 1** | 16 — **po sesji 2026-05-18:** **12 🟢 done** (10 wcześniej + 1.8 + 1.12) + **4 ⏸️ deferred do Fazy 2** (1.3/1.11 cz.2/1.13/1.16). *1.6/1.7 wyodrębnione jako Fazy.* **Faza 1 scope-Bety COMPLETE.** |
 | **Sub-celi Fazy 1.5** | 12 (2 done, 1 partial UAT, 9 pending) |
 | **Sub-celi Fazy 1.6** | **10 verified ✅ (gate met 2026-05-18)** |
 | **Sub-celi Fazy 1.7 prereq (1.30, 1.31)** | 2 done (silent mode + DMG export, czekają na build) |

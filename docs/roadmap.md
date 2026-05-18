@@ -141,9 +141,15 @@ Dowód że prompt działa: Slack ⌘/ "Open Keyboard Shortcuts" + Obsidian ⌘P 
 - `audit-phase-1.md` — nowa sekcja „Defer rationale" + status update każdego sub-celu
 - `roadmap.md` — nowa sekcja 2.0 „Carryover z Fazy 1" w Fazie 2 z kolejnością realizacji
 
-**Pending Filip (Sub-cel 1.8 video eval):**
-- `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` — weryfikacja że prompt v2 eliminuje 4 halucynowane toasty (kod gotowy, brakuje lokalnej egzekucji)
-- Po pozytywnej weryfikacji 1.8 🔵→🟢, Faza 1 ostatecznie 13/16 🟢 + 4 ⏸️ deferred
+**Krok 5 — Sub-cel 1.8 video eval verified (later in session, Filip provided API key):**
+- `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` uruchomiony — 32 klatki, model `claude-haiku-4-5-20251001`, concurrency 5, 10.1s total.
+- **0 halucynacji** (v1 miał 4 false-positives z Slack context menu). v2 poprawnie sklasyfikował context menu items "Remind me option"/"Mark unread menu item"/"Copy link menu item" jako menu (Toast: —), nie jako toast SFlow.
+- 1 autentyczny toast hit: Xcode "Quick Switcher" ⌘K (frame 25).
+- Bonus finding: frame 26 — Xcode renderuje natywny tooltip "⌘K Quick Switcher" zaraz po naszym toaście (UX consideration dla Fazy 2 — detect native tooltip i skip nasz toast).
+- Coverage gap finding: Slack Search bar (frames 22/24/27) — brak toasta mimo że Slack ⌘K istnieje w bundled.json. Plus do listy "missy follow-up" post-Beta.
+- Sub-cel 1.8 → 🟢 done.
+
+**Final Faza 1 status: 12/16 🟢 done + 4 ⏸️ deferred do Fazy 2. Scope-Bety COMPLETE.**
 
 **Wnioski:**
 - Faza 1 **scope-complete dla Bety** (5/6 acceptance criteria MIN próg spełnione, A-8 = Faza 1.7 by definition)
