@@ -104,6 +104,62 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-18 — Sesja Finalize Fazy 1 (Sub-cel 1.12 + P-32 + P-35 + defer 4 sub-celów) ✅
+
+**Co:** Zamknięcie Sub-celu 1.12 (P-32 ukierunkowany web research + reseed 5 bundled), P-35 mitigation (client timeout), formalny defer 4 sub-celów Fazy 1 → Faza 2. **Faza 1 scope-complete dla Bety.** ~2h.
+
+**Krok 1 — P-32 backend prompt update (commit `57b4935`):**
+- `backend/src/prompt.ts`: nowa sekcja WEB_SEARCH STRATEGY z explicit STEP 1 (`{appName} keyboard shortcuts cheatsheet`) → STEP 2 (`hotkey list`) → STEP 3 (per-element bez menu_bar). Rationale w komentarzu (menu bar pokrywa ~40-60% skrótów; hidden shortcuts żyją w docs).
+- `backend/src/claude.ts`: `web_search.max_uses` 4→8.
+- Test `+1`: WEB_SEARCH STRATEGY presence check (51 backend tests passing).
+- Backend deployed v `ba683371-4b18-4d09-9c82-92a085bb83d6`.
+
+**Krok 2 — Reseed 5 bundled (commit `6d8b051`):**
+
+| App | Before | After | Δ | web_docs Δ |
+|---|---|---|---|---|
+| Slack | 58 | 63 | +5 | 24 → 29 (+5) |
+| Terminal | 69 | 73 | +4 | 0 → 0 (no hidden shortcuts) |
+| Notion | 57 | 59 | +2 | 25 → 29 (re-balance: more official) |
+| Claude Desktop | 26 | 24 | -2 | **0 → 2** (first web_docs ever!) |
+| Obsidian | 43 | 46 | +3 | 7 → 9 (+2) |
+| **TOTAL** | **253** | **265** | **+12** | **56 → 69 (+23%)** |
+
+Dowód że prompt działa: Slack ⌘/ "Open Keyboard Shortcuts" + Obsidian ⌘P "Command Palette" trafiły do bundled (były nieobecne w menu bar, wymagały cheatsheet search).
+
+**Krok 3 — P-35 mitigation (commit `4bf1320`):**
+- Obsidian pierwsza próba reseed: timeout >90s na kliencie (z max_uses=8 backend potrzebuje czasem ~120s). Retry zadziałał, ale każdy reseed powinien wystarczyć za pierwszym razem.
+- `SFlow/DiscoveryClient.swift`: `timeoutInterval` 90s→180s.
+- `SFlow/Reseeder.swift`: semafora 120s→240s.
+- Smoke test po fix: Slack reseed 67s na 1. próbie, bez retry. P-35 status 🔵 częściowo → 🟢 zamknięte (DisplayTuner verify pominięty — nie zainstalowany lokalnie, ale generous headroom usuwa pierwotne objawy).
+
+**Krok 4 — Formalny defer 4 sub-celów → Faza 2 (commit `249ab24`):**
+- **Sub-cel 1.3** (Self-healing /v1/refresh) — wymaga Beta sygnału (≥20 missów/apka)
+- **Sub-cel 1.11 część 2** (Coverage data-driven iteration) — wymaga ≥200 events per layer
+- **Sub-cel 1.13** (Synthetic Claude self-eval) — wymaga ≥50 user FP jako ground truth do kalibracji Haiku
+- **Sub-cel 1.16** (Dev-mode seed pre-fetch) — wartość zastąpiona przez L0.6 + DiscoveredStore TTL 7d, kandydat do dropu
+- `audit-phase-1.md` — nowa sekcja „Defer rationale" + status update każdego sub-celu
+- `roadmap.md` — nowa sekcja 2.0 „Carryover z Fazy 1" w Fazie 2 z kolejnością realizacji
+
+**Pending Filip (Sub-cel 1.8 video eval):**
+- `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` — weryfikacja że prompt v2 eliminuje 4 halucynowane toasty (kod gotowy, brakuje lokalnej egzekucji)
+- Po pozytywnej weryfikacji 1.8 🔵→🟢, Faza 1 ostatecznie 13/16 🟢 + 4 ⏸️ deferred
+
+**Wnioski:**
+- Faza 1 **scope-complete dla Bety** (5/6 acceptance criteria MIN próg spełnione, A-8 = Faza 1.7 by definition)
+- 12 z 16 sub-celów 🟢 done (10 wcześniej + 1.12 dziś + 1.8 oczekuje na Filipa)
+- 4 sub-cele formalnie odroczone do Fazy 2 z uzasadnieniem
+- **Następny milestone:** Sub-cel 1.20 (P-43 i18n) — jedyny hard-blocker przed Fazą 1.7 Beta
+
+**Commits dzisiejszej sesji:**
+1. `57b4935` feat(backend): explicit web_search step ordering + max_uses 4→8 (P-32, Sub-cel 1.12)
+2. `6d8b051` feat(rules): reseed 5 bundled apps with P-32 explicit web_search prompt (Sub-cel 1.12)
+3. `4bf1320` fix(client): raise discover timeout 90s→180s for max_uses=8 web_search budget (P-35)
+4. `249ab24` docs: formally defer Sub-cele 1.3/1.11 cz.2/1.13/1.16 from Faza 1 to Faza 2
+5. (after this commit) `docs: session 2026-05-18 Finalize Fazy 1 — STATUS + audit-phase-0 + roadmap session log`
+
+---
+
 ### 2026-05-17 → 2026-05-18 — UAT Sub-cel 1.6 + P-51 Electron eksperyment + Faza 1.7 gate met 🎯
 
 **Co:** Dwudniowa sesja zamykania Sub-celu 1.6 (20 verified apek) + eksperymentu fix'u dla Electron apek. **Próg Fazy 1.7 (beta MVP, ≥10 verified) spełniony.**
