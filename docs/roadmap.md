@@ -104,6 +104,63 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-17 → 2026-05-18 — UAT Sub-cel 1.6 + P-51 Electron eksperyment + Faza 1.7 gate met 🎯
+
+**Co:** Dwudniowa sesja zamykania Sub-celu 1.6 (20 verified apek) + eksperymentu fix'u dla Electron apek. **Próg Fazy 1.7 (beta MVP, ≥10 verified) spełniony.**
+
+**Batch 1 UAT (2026-05-17 wieczór):**
+- **Terminal** 🟢 5/5 (⌘T/⌘N/⌘F/⌘K/⌘W) — native AppKit, gwarantowane
+- **Obsidian** 🟡 PARTIAL — menu bar OK, content okna miss (ribbon icons New note/Search/Bookmarks)
+- **Cursor, Linear** 🚫 SKIPPED — nie zainstalowane lokalnie, kandydaci do beta-tester verify
+
+**Eksperyment P-51 (Electron lazy AX tree, 2026-05-17 wieczór, ~1.5h):**
+- 4 reseedy Obsidiana z postępującymi fix'ami:
+  - Reseed 1: 50 reguł (44 AXMenuItem + 6 AXButton z `web_docs_official` — wiedza ogólna LLM)
+  - Reseed 2: timeout (skeleton zalany menu items)
+  - Reseed 3: skeleton=0 (zmiana strategii: walk od AXWindow, pusto)
+  - Reseed 4: skeleton=0 z 3s settle (potwierdzenie: timing nie pomaga)
+- Diagnostyka empiryczna: `visited=12 maxDepth=6 raw=0 byRole [AXGroup=6 AXButton=3 AXMenuBar=1 AXWindow=1 AXApplication=1]`
+- **Wniosek:** Chromium/Electron eksponują tylko SHELL AX tree podczas reseedu. AXGroup/AXButton mają puste title+desc dopóki user nie hoveruje/kliknie. Tymczasem podczas live klikania `desc="Open graph view"` itd. są obecne (widoczne w tooltip diag logs z rana).
+- Zarejestrowane jako P-51 w `audit-phase-0.md`. Wpływ ~7 Electron apek (Notion, Linear, Cursor, Discord, VSCode, Slack desktop, Obsidian).
+- Częściowe mitigacje wdrożone: AXGroup z `kAXDescription` w `AXSkeletonExtractor.allowedRoles`, walk skipuje `AXMenuBar`, settle 3.0s. Działa dla AppKit apek, no-op dla Obsidian.
+- 4 pliki zmienione: `SFlow/AXSkeletonExtractor.swift`, `SFlow/Reseeder.swift`, `SFlowTests/AXSkeletonFilterTests.swift` (+2 testy AXGroup), `docs/audit-phase-0.md` (P-51 entry), `docs/coverage-report.md`. Commit `a924403`.
+
+**Batch 2 UAT (2026-05-18 wieczór, 15 min):**
+- **Mail.app** 🟢 5/5 (⌘N/⌘R/⌘⇧F/⌫/⌘⌥F)
+- **Calendar** 🟢 5/5 (⌘N/⌘T/⌘2/⌘F/⌘,)
+- **Music** 🟡 — Search ⌘F + View ⌘1/⌘2/⌘3 OK, Spacja Play/Pause i ⌘→/⌘← Next/Prev silent (media keys intercepted przed ClickWatcher, design macOS, adresowane przez G-6 Keystroke monitoring w Fazie 2.2)
+
+**P-52 dodane (2026-05-18 inline analiza DiscoveryService.swift):**
+- `DispatchQueue` jest serial dla AX walk ale backend call `Task { await ... }` jest async → 2 apki uczone równolegle
+- `DiscoveryStatus.running(appName: String)` ma jedną zmienną → pokazuje TYLKO ostatnio rozpoczętą w menu bar; pierwsza apka znika ze statusu mimo że jeszcze się pieczy
+- Funkcjonalnie OK (reguły obu w cache), kosmetyczny gap UX
+- Plan: `runningCount` + tooltip z nazwami. Faza 2 UX polish.
+
+**Stan Sub-celu 1.6 na koniec sesji: 10 verified.**
+
+| Status | Apki |
+|---|---|
+| 🟢 GOOD (6) | Slack, Notion Mail, Claude Desktop, Terminal, Mail.app, Calendar |
+| 🟡 PARTIAL (4) | Notion, Notion Calendar, Obsidian, Music |
+| 🚫 SKIPPED | Cursor, Linear (nie zainstalowane lokalnie) |
+
+**🎯 Faza 1.7 (beta MVP) próg ≥10 verified SPEŁNIONY 2026-05-18.**
+
+**Commits:**
+- `a924403` — diag(reseed): probe Electron AX content (P-51 — Obsidian lazy tree)
+- `02040f2` — docs: Sub-cel 1.6 batch 2 — Mail/Calendar/Music verified, beta MVP gate met
+
+**Następne kroki (decyzja na jutro):**
+1. **Faza 1.7 start** — beta-tester program (rekrutacja, bumper invite copy, pre-flight checklist). Prerequisites z 2026-05-17 (silent mode + diagnostic bundle export) gotowe.
+2. **Sub-cel 1.6 → 15 apek** (oryginalny cel 20, margines nad beta) — VSCode/Finder reseed/Spotify/Discord/Photos
+3. **P-51 follow-up** — wybór hipotezy fix'u (runtime collection przy kliku vs mouseover symulacja vs AXVisibleChildren probe vs Accessibility Inspector reverse-engineer)
+4. **U-4 Web-as-app** (P-42, ~6-8h) — odblokuje Gmail/GitHub/Linear web
+
+**Powiązane:**
+- `docs/audit-phase-0.md` (P-51, P-52)
+- `docs/coverage-report.md` (10 verified)
+- Memory: `project_p51_electron_lazy_ax_tree.md`, `project_uat_2026_05_17_sub_cel_1_6.md`
+
 ### 2026-05-17 — Silent mode + Diagnostic Bundle Export (beta prereq) ✅
 
 **Co:** Implementacja dwóch prerequisites dla Fazy 1.7 Beta. Filip chciał móc dać kolegom-testerom SFlow, żeby zbierali dane bez upierdliwych toastów + żeby mogli zwrotnie wysłać dane po 2-3 dniach.
