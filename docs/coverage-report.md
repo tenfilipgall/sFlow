@@ -34,6 +34,9 @@
 | `com.linear.LinearMac` | Linear | 🚫 SKIPPED | UAT 2026-05-17: nie zainstalowany na maszynie Filipa. Bundled rules istnieją ale brak możliwości weryfikacji lokalnie. |
 | `com.todesktop.230313mzl4w4u92` | Cursor | 🚫 SKIPPED | UAT 2026-05-17: nie zainstalowany na maszynie Filipa. Bundled rules istnieją (reseed był) ale brak możliwości weryfikacji lokalnie. |
 | `com.apple.Terminal` | Terminal | 🟢 GOOD | UAT 2026-05-17 (Filip, 5-min eval): 5/5 — ⌘T New tab, ⌘N New window, ⌘F Find, ⌘K Clear, ⌘W Close tab wszystkie pokazały toast. Native macOS app, L3 MenuBarIndex pełne pokrycie. |
+| `com.apple.mail` | Mail.app | 🟢 GOOD | UAT 2026-05-18 (Filip, 5-min eval): 5/5 — ⌘N New message, ⌘R Reply, ⌘⇧F Forward, ⌫/⌘⌫ Delete, ⌘⌥F Search wszystkie pokazały toast. Native AppKit, pełne pokrycie L3 + auto-discovered AXButton w toolbarze. |
+| `com.apple.iCal` | Calendar | 🟢 GOOD | UAT 2026-05-18 (Filip, 5-min eval): 5/5 — ⌘N New event, ⌘T Today, ⌘2 Week view, ⌘F Search, ⌘, Preferences wszystkie pokazały toast. Native AppKit, pełne pokrycie. |
+| `com.apple.Music` | Music | 🟡 PARTIAL | UAT 2026-05-18 (Filip, 5-min eval): ~2-3/5 — ⌘F Search, ⌘1/⌘2/⌘3 View działają. Spacja Play/Pause i ⌘→/⌘← Next/Prev **nie pokazują toastów** bo są to **media keys** — system macOS przechwytuje je na innym poziomie niż ClickWatcher (keyboard event tap zamiast mouse click). Nie nasz bug, design macOS. Adresowane przez G-6 Keystroke monitoring (Faza 2.2). |
 
 ### Auto-discovered (cache) apki widziane w events.jsonl
 
@@ -135,7 +138,14 @@ w popularnych workflow** rozpoznanych.
 | 2026-05-14 (v1.1.1 + sesja 6/7) | 5 | 2 (Slack, Obsidian) | ~75% |
 | 2026-05-15 (Sesja A+B) | 5 | 4 (+ Notion Mail, Cron) | ~75% |
 | 2026-05-16 (B.1 fix offline) | 5 | 4 (false-pos cleanup) | ~78% |
+| 2026-05-17 (UAT 1.6 batch 1) | 5 | 7 (+ Terminal 🟢, Obsidian 🟡 reseed) | ~80% |
+| **2026-05-18 (UAT 1.6 batch 2)** | 5 | **10** (+ Mail.app 🟢, Calendar 🟢, Music 🟡) | **~82%** |
 | Cel po Fazie 1.5 | **20+** | **15+** | **85%+** |
+
+**🎯 2026-05-18 — Faza 1.7 (beta MVP) próg ≥10 verified SPEŁNIONY.** 10 zweryfikowanych
+apek = 6 🟢 GOOD (Slack, Notion Mail, Claude Desktop, Terminal, Mail.app, Calendar) +
+4 🟡 PARTIAL (Notion, Notion Calendar, Obsidian, Music). Cursor i Linear pozostają
+🚫 SKIPPED (nie zainstalowane lokalnie) — kandydaci do beta-tester verify.
 
 ---
 
