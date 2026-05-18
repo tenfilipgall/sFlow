@@ -19,20 +19,20 @@
 | 1.0 Re-seed Terminal/Notion/Claude | 🟢 done | Terminal avg 3.4, Notion avg 4.3, Claude avg 4.4 wariantów per regule (sesja 2026-05-14) |
 | 1.1 Quality gate dla auto-discovered rules | 🟢 done | Backend dedup ✅ (v1.1.1). Settings toggle ✅. Client-side filtr confidence/source w RuleCache ✅ (sesja 2026-05-14) |
 | 1.2 Retry + backoff dla failed discovery | 🟢 done | DiscoveryAttemptStore + Apps tab (beta-only) + display name z Info.plist + menuBar/skeleton cap 500. Manual eval ujawnił 2 nowe backend issues (P-34, P-35) — przeniesione do Sesji 9. Sesja 8 (2026-05-15). 219 testów passing. |
-| 1.3 Self-healing przez miss log → /v1/refresh | 🔵 partial | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje: miss data w body + scheduler client-side |
+| 1.3 Self-healing przez miss log → /v1/refresh | ⏸️ **DEFERRED → Faza 2** (2026-05-18) | `?fresh=1` cache bypass zrobiony (v1.1.1). Brakuje miss data w body + scheduler client-side. **Defer rationale:** trigger threshold (≥20 missów/apka, ≥3 powt. tytuły) wymaga real userów; Filip solo n=1 nie odpali sensownie. Robimy po Becie. |
 | 1.4 False-positive feedback (cmd-klik) | 🟢 done | cmd-klik na toast + false_positives.jsonl + lokalny disable po 3 zgłoszeniach + Settings Recent Shortcuts list + /v1/feedback backend (sesja 5) |
 | 1.5 Naprawa bugu MenuBarIndex.lookup | 🟢 done | Fix key.contains(q) + próg 5 znaków + 4 testy (sesja 2026-05-14) |
 | 1.6 20 zweryfikowanych apek + coverage-report.md | ⬜ pending | Dziś: 2 zweryfikowane w v1.1.1 (Slack, Obsidian) |
 | 1.7 Beta z 3-5 osobami | ⬜ pending | — |
-| 1.8 Video-based eval protocol | 🔵 partial | Droga C ✅ (sesja 2026-05-14). Droga B (`--llm` flag) — **T1 2026-05-16**: `scripts/sflow-video-llm.swift` (~280 LOC, Haiku 4.5 vision, concurrency 5, structured md report) + rozszerzony `scripts/sflow-video-eval` o `--llm/--model/--concurrency/--report/--no-strips`. E2E test na 32 klatkach OK (pipeline works, 0 błędów po fixie klucza API). **Issue znaleziony:** prompt v1 halucynował 4 SFlow toasty z Slack context menu items ("Remind me ?", "Mark unread U", "Copy link L", "Quick Switcher ⌘K") — Claude mylił natywne menu kontekstowe z toastem. **Prompt v2 napisany** — ścisła definicja "standalone overlay outside any menu", 5 jawnych negacji (context menu / command palette / menu bar dropdown / native tooltip / help overlay), golden test, bias false-negative > false-positive. **TODO 2026-05-17:** (1) Filip re-runs `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` — weryfikuje że 4 halucynowane toasty zniknęły. (2) Nagrać krótki screencast Notion Mail (B+C verification target) i puścić full pipeline `./scripts/sflow-video-eval <video> --llm`. (3) Po pozytywnej weryfikacji 🔵→🟢. |
+| 1.8 Video-based eval protocol | 🔵 → 🎯 partial **TODAY** | Droga C ✅. Droga B (`--llm`) — prompt v2 (eliminates 4 halucynowane Slack context menu toasts) **gotowy w repo**. **Pending Filip:** uruchomić `./scripts/sflow-video-llm.swift /tmp/sflow_video_eval_20260515T164056 docs/video-eval-test.md` lokalnie + opcjonalnie nagrać screencast Notion Mail. Po pozytywnej weryfikacji 🔵→🟢. (Reviewed 2026-05-18 — pozostała blokada to wyłącznie lokalna egzekucja skryptu przez Filipa.) |
 | 1.9 Window element improvements (P-6 + P-25) | 🟢 done | AXKeyShortcutsValue Layer 0 + AXIdentifier w całym stosie ✅ (sesja 2026-05-14) |
 | 1.10 Matching engine quality (P-26..P-30) | 🟢 done | Audyt 2026-05-14 wykrył 4 fundamentalne bugi rozpoznawania + brak telemetrii per-layer. Plan: `docs/superpowers/plans/2026-05-14-matching-engine-quality.md` (9 tasków TDD, ~4h) (sesja 6, 2026-05-14) |
-| 1.11 Coverage iteration (P-31) | 🔵 partial | Po analizie `events.jsonl` z 1-2 dni użycia (telemetria z 1.10) — plan rozszerzający źródła rozpoznawania: AXCustomActions, `AXUIElementCopyActionNames`, AppleScript sdef, szerszy Electron regex, AXSkeletonExtractor walk-down. Czeka na dane — bez nich strzelanie w ciemno. Quick wins (sesja 7) ✅ — AXPress probe + walk-down + RoleDescription/CustomActions. Pełna data-driven iteracja czeka na events.jsonl (sesja 8). |
-| 1.12 Backend prompt — ukierunkowany web research (P-32) | 🔵 partial | Część P-34 (streaming + max_tokens 32768) → 🟢 zamknięta w sesji 9a (2026-05-15). Pozostaje: P-32 (web_search queries explicit) + P-35 verification (DisplayTuner) + reseed bundled apek. |
-| 1.13 Synthetic Claude self-eval per regule (P-33) | ⬜ pending | Drugi Claude call po generacji reguł — score 1-5 + alternative shortcut suggestion. Score <3 → experimental flag w schemacie. Honorowane przez quality gate w RuleCache. Skaluje quality eval na 100+ apek bez manual. Sesja 10. |
+| 1.11 Coverage iteration (P-31) | 🔵 część 1 ✅ • ⏸️ część 2 **DEFERRED → post-Beta** (2026-05-18) | Quick wins ✅ (sesja 7 — AXPress probe + walk-down + RoleDescription/CustomActions). **Defer rationale część 2:** sensowna analiza wymaga ≥200 events per layer z populacji userów — dziś mamy ~150 events Filipa (n=1). Po Becie (5 testerów × 2 tygodnie) sygnał będzie reprezentatywny. |
+| 1.12 Backend prompt — ukierunkowany web research (P-32) | 🟢 done 2026-05-18 | P-34 streaming (sesja 9a) ✅. **2026-05-18 sesja Finalize Fazy 1:** P-32 prompt update z explicit STEP 1-3 web_search ordering + max_uses 4→8 (`backend/src/prompt.ts`, commit `57b4935`). Backend deployed v `ba683371-4b18-4d09-9c82-92a085bb83d6`. Reseed 5 bundled (Slack/Terminal/Notion/Claude Desk/Obsidian) → 253→265 reguł (+12), web_docs sources 56→69 (+23%), każda apka ma ≥1 web_docs reguła (Terminal+Claude Desk poprzednio 0). P-35: timeout klienta 90s→180s (commit `4bf1320`) — smoke test Slack 67s na 1. próbie bez retry. DisplayTuner verify pominięty (apka nie zainstalowana lokalnie). |
+| 1.13 Synthetic Claude self-eval per regule (P-33) | ⏸️ **DEFERRED → Faza 2** (2026-05-18) | Drugi Claude call (Haiku) — score 1-5 + alternative + experimental flag. **Defer rationale:** skaluje quality eval na 100+ apek; przed Betą (5 osób, 10 verified apek) ręczna analiza events.jsonl wystarczy. Plus ryzyko: Haiku może halucynować eval → zatruwa bundled.json. Robimy po Becie gdy mamy ground truth z real userów (P-4 false-positive feedback) do kalibracji. |
 | 1.14 Chromium window AX deep fallback (P-36) | 🟢 done | Sesja A (2026-05-15): gate `depth > 0` usunięty, `extractFallbackTitleFromChildren` czyta `kAXValue` + 1-level rekurencja, `kAXValue` czytane na głównym elemencie, `MissEvent` wzbogacony o identifier/value/roleDescription/customActions/subtreeLabel. ~80 LOC. 219 testów passing. Verify-step dla Filipa: Notion Mail click test. |
 | 1.15 Passive tooltip observer + backend ingest (P-37) | 🟢 część 1 done (B verified), część 2 pending (C) | **Sesja B verified 2026-05-15 wieczór** na 2 apkach: Notion Mail (5/5 ikonek) + Notion Calendar. 4 iteracje fix'ów (+ separator, hit-test button rect, sanity-check >200×200, split-badge). 256 testy passing (+37). **Sesja C (backend `/v1/discovered` crowdsource) — odłożona** do potwierdzenia że B generalizuje się na Linear/Discord/Slack/Notion main (test Filipa na następnej sesji). |
-| 1.16 Dev-mode seed pre-fetch (opcjonalne) | ⬜ pending | Sesja D (opcjonalna). Tryb `--seed-app <bundleId>` — symulowany hover wszystkich AXButton w aplikacji, harvest tooltipów do seed JSON. **Internal-only** dla zespołu SFlow przed releasem (NIE w user-facing buildach — sztuczny hover może triggerować analytics/animations u userów). Zasila bundled RuleCache dla zimnego startu. |
+| 1.16 Dev-mode seed pre-fetch (opcjonalne) | ⏸️ **DROPPED / DEFERRED** (2026-05-18) | **Defer rationale:** wartość zastąpiona przez Layer 0.6 + DiscoveredStore TTL 7 dni — hover-once → instant flow daje to samo „pre-fetched feel" bez symulowanego hover. Plus simulated hover w internal builds ryzykuje regresje. Status: kandydat do całkowitego usunięcia z Fazy 2, decyzja po Becie. |
 | 1.17 Menu-as-discovery: `AXMenu`/`AXMenuItem` inline shortcuts (P-38) | 🟢 done 2026-05-17 | **Zrealizowane przez Sub-cel 1.18 (U-2) + Layer 0.6.** Right-click harvester czyta `AXMenuItem` natywnie (kCmdChar/Modifiers) + parser title fallback dla Chromium (Notion `value="Move to ⌘⇧P"`, Slack-style `"Edit message E"`, Comet `"Save link ⌘S"`). Layer 0.6 (nowy w pipeline) wyciąga inline shortcuts at-click-time dla elementów typu Notion sidebar `"New chat ⌘O"`. Pokrycie szersze niż pierwotnie planowane — uniwersalnie dla wszystkich apek bez per-app pracy. Plus DiscoveredStore TTL 60s → 7 dni = hover-once-then-instant flow. **307 testów. 13 commits 2026-05-17.** Filip UAT ✅ Finder/Comet/Notion/Slack. |
 
 ---
@@ -1567,6 +1567,52 @@ podstawie.
 *Status: kompletny audyt Fazy 1. Następny krok: napisać spec dla pierwszego
 sub-celu (quality gate + false-positive feedback) i zacząć implementację.
 Sugerowany plik specu: `docs/superpowers/specs/2026-05-XX-quality-and-feedback-design.md`.*
+
+---
+
+## Defer rationale — 4 sub-cele odroczone do Fazy 2 (2026-05-18)
+
+**Decyzja z sesji Finalize Fazy 1 (2026-05-18):** Faza 1 jest scope-complete dla Bety (5/6 acceptance criteria MIN próg spełnione, ostatnie A-8 to definicyjnie Faza 1.7). Cztery sub-cele wymagałyby pracy która nie ma sensu przed Betą:
+
+### Sub-cel 1.3 — Self-healing /v1/refresh
+
+**Co zostało:** miss data w `?fresh=1` body + scheduler client-side (`NSBackgroundActivityScheduler` co 24h agreguje misses, decyduje czy refresh).
+
+**Defer rationale:** Trigger threshold to ≥20 missów per apka z ≥3 powtarzającymi się tytułami (≥3×). Filip solo (n=1) generuje ~150 events przez kilka dni, ale to mieszanka z 8 apek — pojedyncza apka osiąga próg po tygodniach. Beta (5 testerów × 2 tygodnie = ~10-20× więcej events per apka) **odpala mechanizm naturalnie**. Plus: realistyczne miss patterns w prawdziwym życiu pokażą czy threshold (20/3) jest sensowny.
+
+**Kiedy robimy:** Faza 2.X po debriefingu Bety, używając agregowanego sygnału z testerów.
+
+### Sub-cel 1.11 część 2 — Data-driven coverage iteration (P-31)
+
+**Co zostało:** analiza per-layer `events.jsonl` (Layer 0 / 0.3 / 0.5 / 0.6 / 1 / 2 / 3 / 4) — która warstwa fire'uje najczęściej dla apki X, gdzie luki, jakie nowe źródła rozpoznawania dodać (sdef, GitHub scan, prompt rework).
+
+**Defer rationale:** dziś mamy ~150 events w events.jsonl Filipa, z czego ~30 to per-layer entries (telemetria layer dodana w sesji 6). Sensowny sygnał per-layer per-apka wymaga ≥200 events per layer = ≥1400 events total. Beta to dostarczy w ~tydzień.
+
+**Kiedy robimy:** Faza 2.X po Becie, gdy events.jsonl z 5 testerów ma reprezentatywny sampling.
+
+### Sub-cel 1.13 — Synthetic Claude self-eval per regule
+
+**Co zostało:** drugi Claude call (Haiku 4.5) po generacji reguł — `score: 1-5` + `alternative_keys` + `experimental: bool` w schemacie reguł. Reguły score<3 → ukryte do `showExperimental: true`.
+
+**Defer rationale (dwa powody):**
+1. **Skalowanie**: cel feature'u to ocena 100+ apek bez Filipa. Przed Betą mamy 10 verified apek i 5 testerów. Ręczna analiza events.jsonl + ich false-positive feedback (P-4) wystarcza.
+2. **Ryzyko**: Haiku może halucynować eval. Bez ground truth (real false-positive rate od userów) nie wiemy czy score Haiku koreluje z reality. **Implementacja teraz = ryzyko że zatrujemy bundled.json przed Betą**. Lepiej zebrać beta data → kalibracja Haiku → wdrożenie.
+
+**Kiedy robimy:** Faza 2.Y, gdy mamy ≥50 oznaczonych przez userów false-positives jako ground truth do kalibracji.
+
+### Sub-cel 1.16 — Dev-mode seed pre-fetch
+
+**Co zostało:** `--seed-app <bundleId>` symulujący hover wszystkich AXButton w apce, harvest tooltipów do seed JSON.
+
+**Defer rationale:** wartość zastąpiona przez Layer 0.6 + DiscoveredStore TTL 7 dni (commit `d8f6224`). Hover-once-then-instant-for-7-days daje to samo „pre-fetched feel" bez kruchego symulowanego hover (sztuczny mouseover może triggerować analytics/animations apek). **Status: kandydat do całkowitego dropu z Fazy 2** — decyzja po Becie, jeśli L0.6+TTL pokrywa case'y.
+
+**Kiedy decyzja:** post-Beta — albo drop całkowicie, albo zostawić jako internal-only narzędzie dla zespołu SFlow przed releasem.
+
+---
+
+## Wnioski sesji Finalize Fazy 1 (2026-05-18)
+
+**Faza 1 scope-complete dla Bety.** 12 z 16 sub-celów 🟢 done (10 wcześniej + 1.8 pending Filip + 1.12 dziś), 4 ⏸️ deferred do Fazy 2 z uzasadnieniem. Następny krok: Sub-cel 1.20 (P-43 i18n) — jedyny hard-blocker przed Fazą 1.7 Beta.
 
 ---
 

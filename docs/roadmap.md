@@ -923,6 +923,17 @@ Sesje U-1..U-10 mają priorytety. Sekwencja zalecana (zmiana 2026-05-17):
 - Endpoint `/v1/agg` przyjmuje agregaty + opt-out toggle działa
 - Privacy UI w Settings
 
+### 2.0 Carryover z Fazy 1 (4 sub-cele formalnie odroczone 2026-05-18)
+
+Sesja Finalize Fazy 1 (2026-05-18) odroczyła 4 sub-cele które wymagają real userów lub Beta data do sensownej egzekucji. Pełne uzasadnienie: [`audit-phase-1.md`](audit-phase-1.md) sekcja „Defer rationale".
+
+- **Sub-cel 1.3** Self-healing /v1/refresh — miss data w body + scheduler 24h. *Wymaga Beta sygnału ≥20 missów per apka z ≥3 powt. tytuły.*
+- **Sub-cel 1.11 część 2** Data-driven coverage iteration (P-31). *Wymaga ≥200 events per layer z populacji userów (Beta dostarczy w ~tydzień).*
+- **Sub-cel 1.13** Synthetic Claude self-eval per regule (P-33). *Wymaga ≥50 user false-positives jako ground truth do kalibracji Haiku eval.*
+- **Sub-cel 1.16** Dev-mode seed pre-fetch. *Kandydat do całkowitego dropu — wartość zastąpiona przez Layer 0.6 + DiscoveredStore TTL 7d. Decyzja po Becie.*
+
+**Kolejność realizacji po Becie:** 1.3 → 1.11 część 2 → 1.13 → decyzja o 1.16.
+
 ### 2.1 Anonymous user ID
 
 UUIDv4 generowany przy pierwszym uruchomieniu, zapisany w
