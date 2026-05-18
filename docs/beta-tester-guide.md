@@ -19,25 +19,28 @@ Mała apka która **podpowiada Ci skróty klawiaturowe** w momencie gdy klikasz 
 
 1. Pobierz `.dmg` od Filipa (link na DM)
 2. Otwórz, przeciągnij **SFlow.app** do `/Applications/`
-3. Uruchom z Launchpada lub Spotlight
-4. **System Settings → Privacy & Security:**
-   - **Accessibility** → włącz SFlow ✅
-   - **Input Monitoring** → włącz SFlow ✅
-   - (oba są wymagane, SFlow Ci o nich przypomni)
+3. **Pierwsze uruchomienie:** prawym klikiem na SFlow.app → „Otwórz" → potwierdź („Open"). macOS zapyta o developera (apka jest na razie nie podpisana), ten krok zgody robisz **tylko raz**.
+4. SFlow pokaże ikonę ⌘ w pasku menu na górze ekranu.
+5. **Permissions — SFlow pokaże alert automatycznie:**
+   - Pojawi się okienko „Accessibility Permission Required" → klik **„Open System Settings"** → włącz przełącznik SFlow ✅
+   - Po włączeniu wróć do SFlow (Launchpad lub Spotlight)
+   - Drugie okienko „Input Monitoring Permission Required" → klik **„Open System Settings"** → włącz SFlow ✅
+   - **Trzeba zamknąć SFlow** (ikonka w pasku → Quit) **i uruchomić ponownie** — macOS wymaga restartu po włączeniu permissions
 
-### Krok 2 — Włącz „silent mode" (~30 sek)
+### Krok 2 — Sprawdź silent mode (już domyślnie WŁ.) ✅
 
 To **najważniejszy krok dla testu.** Silent mode oznacza:
 - SFlow **dalej zbiera dane** o Twoich kliknięciach
 - Ale **nie pokazuje toastów** — nie wkurza Cię UI
 
-**Jak:**
+**Jak sprawdzić że jest WŁ.:**
 1. Klik na ikonkę SFlow w pasku menu (na górze ekranu)
-2. **Settings…** → zakładka **Advanced**
-3. Zaznacz **„Hide toasts (collect data only)"** ✅
-4. (Opcjonalnie) zaznacz też „Show developer features" — pokazuje dodatkową zakładkę „Apps" gdzie widać które apki SFlow już zna
+2. Powinieneś zobaczyć **🔇** przy ikonie ⌘ — wizualne potwierdzenie że silent jest WŁ.
+3. Jeśli **nie ma** 🔇: **Settings… → Advanced → zaznacz „Hide toasts (collect data only)"** ✅
 
-Po włączeniu **ikona w menu barze dostaje małe „🔇"** — wizualne potwierdzenie że silent jest WŁ.
+> *Beta domyślnie ma silent mode WŁ. — ten krok to tylko sanity check.*
+
+**(Opcjonalnie)** w Settings → Advanced możesz włączyć „Show developer features" — pokazuje dodatkową zakładkę „Apps" gdzie widać które apki SFlow już zna.
 
 ### Krok 3 — Używaj normalnie 2-3 dni
 
@@ -85,6 +88,31 @@ Plik ZIP zawiera:
 - ❌ Imiona/email adresów z Twoich kontaktów (filtr PrivacyFilter redactuje to przed zapisem do pliku)
 
 Jeśli chcesz mieć pewność, **otwórz `events.jsonl` w TextEditcie przed wysłaniem** — to czysty tekst.
+
+---
+
+## 🔄 Update apki (jeśli Filip Ci przyśle nowy DMG)
+
+Po Twoim wysłaniu diagnostic bundle, Filip może coś poprawić i wysłać Ci **nowy DMG** z fixami. Co wtedy robisz:
+
+1. **Pobierz nowy `.dmg`** (link na DM)
+2. Otwórz, przeciągnij **SFlow.app** do `/Applications/`
+3. macOS zapyta: *„Element o nazwie SFlow już istnieje. Chcesz go zastąpić?"* → klik **„Zastąp"** (Replace)
+4. Uruchom SFlow ponownie (Launchpad/Spotlight)
+5. **Gotowe.** ✅
+
+**Co się dzieje pod spodem (informacyjnie):**
+
+| Co | Stan po update |
+|---|---|
+| Twoje preferencje (silent mode, toggle Enabled) | **zachowane** ✅ |
+| Permissions (Accessibility, Input Monitoring) | **zachowane** ✅ — macOS pamięta |
+| Reguły apek (bundled.json) | **zaktualizowane automatycznie** — fix bugów lub nowe reguły |
+| Twoje dane (events.jsonl, false_positives) | **zachowane** ✅ — możesz dalej zbierać |
+
+Czyli żadnego ponownego konfiguracji — **tylko drag-replace + restart aplikacji**.
+
+> *Jeśli Filip Cię prosi o czysty zbiór danych po update (np. „zacznij od zera"), poprosi explicite — wtedy ręcznie skasujesz `~/Library/Application Support/SFlow/`. Domyślnie zachowujemy dane.*
 
 ---
 

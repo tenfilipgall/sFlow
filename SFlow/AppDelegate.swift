@@ -23,6 +23,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Skip full startup when running unit tests
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
 
+        // Beta default: silentMode ON on first install. UserDefaults.register only
+        // applies when the key has never been explicitly set — devs who toggled it
+        // off keep their preference. Sub-cel 1.30 (silent mode) shipped default-OFF
+        // for dev productivity; Beta wants opt-out, not opt-in, to collect data
+        // without UI noise.
+        UserDefaults.standard.register(defaults: [
+            "silentMode": true,
+        ])
+
         // Create attemptStore EARLY so AppsTab can always read it even before
         // permissions are granted and startWatcher() runs.
         attemptStore = DiscoveryAttemptStore(

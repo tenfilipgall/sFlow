@@ -27,3 +27,5 @@ bundled.json.bak.*
 
 # Local tooling caches (superpowers plugin skill cache, not project content)
 .superpowers/
+SFlow-*.dmg
+build/
