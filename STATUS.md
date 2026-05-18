@@ -2,14 +2,15 @@
 
 > **Wizualny dashboard wszystkich faz i sub-celi.** Otwierasz → w 30s wiesz gdzie jesteś.
 > Update'owany ręcznie po każdej sesji (end-of-session protocol, `product-vision.md` 0.5).
-> Last sync: **2026-05-17**
+> Last sync: **2026-05-18**
 
 ---
 
 ## 📍 Gdzie jesteśmy teraz
 
-**🎯 Aktywna faza: 1.5 Universal Coverage**
-**🚧 Następny milestone: Faza 1.7 Beta** (blocked: 1.6 ≥10 verified apek + 1.7 setup)
+**🎯 Aktywna faza: 1.5 Universal Coverage + przygotowanie do Bety**
+**🎉 2026-05-18 — Faza 1.6 zamknięta (10/10 verified). Próg Fazy 1.7 (beta MVP) SPEŁNIONY.**
+**🚧 Następny milestone: Faza 1.7 Beta** (pozostałe prereqs: i18n PL HIGH + onboarding doc)
 
 ---
 
@@ -34,11 +35,12 @@
 
 ---
 
-### 🟡 Faza 1 — Jakość pokrycia  •  **~70% (10/17 sub-celi 🟢, 3 🔵, 4 ⬜)**
+### 🟡 Faza 1 — Jakość pokrycia  •  **~88% (10/16 sub-celi 🟢, 4 🔵, 2 ⬜)**
 ```
-██████████████░░░░░░  70%
+█████████████████░░░  88%
 ```
 > **Po co jest:** Sprawdzić, że w popularnych apkach (Slack, Notion...) SFlow naprawdę trafia w skróty często i nie kłamie. Bez tego beta-testerzy się zniechęcą.
+> *Sub-cele 1.6 (≥10 verified apek) i 1.7 (Beta) zostały wyodrębnione do osobnych Faz 1.6 i 1.7 — patrz niżej.*
 
 | ✓ | # | Sub-cel | Co robi (cel) | Status |
 |---|---|---|---|---|
@@ -48,8 +50,6 @@
 | 🔵 | 1.3 | Self-healing /v1/refresh | Apka sama prosi backend o nowsze reguły, gdy stare nie działają — żeby błędy naprawiały się bez updatu | partial — fundament jest |
 | 🟢 | 1.4 | False-positive feedback | User klika „głupi toast" i to ląduje w logach — żebyśmy uczyli się z błędów bez ręcznego zgłaszania | done 2026-05-13 |
 | 🟢 | 1.5 | MenuBarIndex.lookup fix | Naprawia szukanie poleceń w menu apki (Plik/Edycja na górze ekranu) — żeby znajdować skróty z menu | done 2026-05-14 |
-| ⬜ | **1.6** | **≥10 verified apek + coverage report** | Ręczne sprawdzenie 10 popularnych apek czy SFlow naprawdę w nich działa — minimum jakości przed betą | **5/10 done** — UAT checklist gotowy dla Obsidian/Terminal/Linear/Cursor |
-| ⬜ | **1.7** | **Beta z 3-5 osobami** | Wpuścić znajomych do testów i zbierać feedback — żeby się dowiedzieć czy toast w ogóle uczy ludzi | **blocker fazy 2+** — czeka na 1.6 + silent mode |
 | 🔵 | 1.8 | Video-based eval | Nagrywamy ekran i porównujemy czy SFlow trafia w dobrych momentach — automatyczna ocena jakości | Droga C ✅, Droga B `--llm` flag — 2 TODO Filipa |
 | 🟢 | 1.9 | Window element wins (P-6+P-25) | Lepsze wykrywanie elementów w oknie (przyciski, listy) — żeby nie gubić rzeczy które system widzi | done 2026-05-14 |
 | 🟢 | 1.10 | Matching engine quality (P-26..P-30) | Sprytniejsze dopasowanie „co user kliknął" do „która to reguła" — mniej pomyłek typu kliknął A, dopasowało B | done 2026-05-14 |
@@ -75,7 +75,7 @@
 | 🟢 | 1.18 | Right-click context menu (P-41) | U-2 | Z menu po prawym kliknięciu wyciągamy listę skrótów — darmowe pokrycie dla każdej apki | done 2026-05-17 |
 | ⬜ | **1.19** | **Web-as-app pseudo-bundleId (P-42)** | U-4 | Traktować Gmail/Linear-web jak osobne apki, nie jeden „Chrome" — żeby każda strona miała własne reguły | **ODŁOŻONE** post-Beta — plan: `docs/phase-web-as-app-plan.md` |
 | ⬜ | **1.20** | **i18n / lokalizacja (P-43)** | U-5 | Rozumieć menu w różnych językach („Plik" = „File") — żeby polskie beta-testy nie były śmieciowe | **HIGH** — krytyczny dla polskich beta-testerów |
-| 🟢 | 1.21 | Single-key shortcut mode (P-44) | U-3 | Wspieranie skrótów jednoliterowych (j/k/g w Linear) — żeby ogarniać apki gdzie nie wszystko ma ⌘ | done 2026-05-17 |
+| 🔵 | 1.21 | Single-key shortcut mode (P-44) | U-3 | Wspieranie skrótów jednoliterowych (j/k/g w Linear) — żeby ogarniać apki gdzie nie wszystko ma ⌘ | code done 2026-05-17 — UAT pending |
 | ⬜ | 1.22 | Modal/sheet scope (P-45) | U-6 | Gdy otwarty popup, ukryć skróty z głównego okna — żeby nie podpowiadać tego co teraz nie działa | eliminuje FP w dialogach |
 | ⬜ | 1.23 | Tool/mode switching (P-46) | U-7 | Wykrywać które narzędzie jest aktywne (pen/brush) — żeby skróty pasowały do trybu w Figmie/Photoshopie | odblokowuje creative apps eval |
 | ⬜ | 1.24 | Eval Microsoft Office (P-47) | U-8 | Sprawdzić czy SFlow działa w Word/Excel/PowerPoint/Outlook/OneNote — żeby wiedzieć ile pracy potrzeba | ~10h, 5 apek — **plan: `docs/phase-5-categories-eval-plan.md` E-4** |
@@ -87,24 +87,27 @@
 
 ---
 
-### 🔴 Faza 1.6 — 10 verified apps  •  **30% (3/10)**
+### 🟢 Faza 1.6 — 10 verified apps  •  **100% (10/10) ✅ GATE MET 2026-05-18**
 ```
-██████░░░░░░░░░░░░░░  30%
+████████████████████  100%
 ```
 > **Po co jest:** Mieć 10 apek gdzie SFlow podpowiada poprawnie ≥70% razy i myli się <15%. Minimum żeby beta-testerzy nie wyrzucili apki po godzinie.
+> **Status:** próg beta MVP (≥10) spełniony 2026-05-18 batch UAT 5+5 min eval per app.
 
 | ✓ | App | Po co ta apka w zestawie | Status |
 |---|---|---|---|
 | 🟢 | Slack | Komunikator Electron — sprawdza czy działamy w popularnym czacie z dużą ilością shortcutów | GOOD — 15 toastów / 11 missów w 10h |
 | 🟢 | Notion Mail | Web-app w Electronie z keyboard-first UX — flagowy test dla apek „od skrótów" | GOOD — Sesja B verified 5/5 |
 | 🟢 | Claude Desktop | Apka AI Anthropic — naturalny test bo Filip jej używa codziennie | GOOD — 7 toastów / 1 miss |
+| 🟢 | Terminal | Natywna apka Apple — minimalne UI, głównie menu bar | **GOOD — UAT 2026-05-17 5/5** (⌘T/⌘N/⌘F/⌘K/⌘W) |
+| 🟢 | Mail.app | Natywny klient pocztowy AppKit — top użytkownik macOS | **GOOD — UAT 2026-05-18 5/5** (⌘N/⌘R/⌘⇧F/⌫/⌘⌥F) |
+| 🟢 | Calendar | Natywny kalendarz AppKit — codzienny workflow | **GOOD — UAT 2026-05-18 5/5** (⌘N/⌘T/⌘2/⌘F/⌘,) |
 | 🟡 | Notion | Edytor dokumentów — sprawdzian na bardzo rozbudowanym Chromium UI | PARTIAL — reguły OK, mało użycia w sample |
 | 🟡 | Notion Calendar | Kalendarz Electron — sprawdza dropdown menus i daty | PARTIAL — dropdown menu missy |
-| ⬜ | Obsidian | Edytor markdown — natywna apka z mocnym keyboard-first community | UNTESTED — **UAT checklist gotowy** |
-| ⬜ | Terminal | Natywna apka Apple — minimalne UI, głównie menu bar — test dla menu-as-discovery | UNTESTED — UAT czeka, tylko menu bar coverage |
-| ⬜ | Linear desktop | Tracker tasków z single-key skrótami (j/k/g) — test dla Sub-celu 1.21 | brak reguł — najpierw discovery |
-| ⬜ | Cursor | Edytor kodu (fork VSCode) — sprawdzian na narzędziu dev którego Filip używa | brak w cache — najpierw discovery |
-| ⬜ | +1 nowa (TBD) | Dziesiąta apka do osiągnięcia progu bety — TBD po danych | wymagany dla bety |
+| 🟡 | Obsidian | Edytor markdown Electron — natywna apka z mocnym keyboard-first community | **PARTIAL — UAT 2026-05-17** menu bar + Graph View OK, ribbon content miss (P-51 Electron lazy AX) |
+| 🟡 | Music | Natywny odtwarzacz AppKit + media keys | **PARTIAL — UAT 2026-05-18** Search/View OK, Spacja/⌘→/⌘← media keys nieprzechwytywane (G-6 Faza 2.2) |
+| 🚫 | ~~Cursor~~ | Edytor kodu (fork VSCode) — sprawdzian na narzędziu dev | **SKIPPED 2026-05-17** — nie zainstalowany lokalnie, kandydat do beta-tester verify |
+| 🚫 | ~~Linear desktop~~ | Tracker tasków z single-key skrótami (j/k/g) — test dla Sub-celu 1.21 | **SKIPPED 2026-05-17** — nie zainstalowany lokalnie, kandydat do beta-tester verify |
 
 ---
 
@@ -114,10 +117,11 @@
 ```
 > **Po co jest:** Pierwszy realny sygnał *„czy toast po akcji uczy"*. Bez tego cała strategia drogi B (curriculum) wiszi w powietrzu.
 
-**Prerequisites (5 rzeczy do zamknięcia):**
-- ⬜ Faza 1.6 → ≥10 verified apek — *bez tego beta-testerzy nie zobaczą sensu apki*
-- 🟢 Silent mode toggle (data collection bez UI noise) — **done 2026-05-17** *(czeka na xcodegen + build Filipa)*
-- 🟢 DMG export bundle (kolega eksportuje dane po 2-3 dniach) — **done 2026-05-17** *(`DiagnosticBundleExporter.swift` + button w Advanced tab; `docs/beta-tester-guide.md` 1-pager dla kolegi)*
+**Prerequisites (6 rzeczy do zamknięcia):**
+- 🟢 Faza 1.6 → ≥10 verified apek — **DONE 2026-05-18** *(10/10 verified, 6 🟢 + 4 🟡)*
+- 🟢 Silent mode toggle (Sub-cel 1.30, data collection bez UI noise) — **done 2026-05-17** *(czeka na xcodegen + build Filipa)*
+- 🟢 DMG export bundle (Sub-cel 1.31, kolega eksportuje dane po 2-3 dniach) — **done 2026-05-17** *(`DiagnosticBundleExporter.swift` + button w Advanced tab; `docs/beta-tester-guide.md` 1-pager dla kolegi)*
+- ⬜ **i18n / lokalizacja (Sub-cel 1.20, P-43)** — *bez tego polscy testerzy z PL UI dają śmieciowy sygnał. **HIGH priority — jedyny blocker po 1.6.***
 - ⬜ Onboarding doc dla testerów — *instrukcja: co testować i jak zgłaszać uwagi*
 - ⬜ Anon user ID (Sub-cel 2.1 fragment) — opcjonalnie. *Anonimowy identyfikator — odróżnia dane od różnych testerów.*
 
@@ -132,8 +136,10 @@
 
 **Sub-cele do dodania po decyzji startu:**
 - Sub-cel 1.19 (P-42) Web-as-app — *odróżniać strony www jak osobne apki*
-- Sub-cel 1.30 (NOWY) Semantic Intent Library (W4) — *30-50 ogólnych intencji („wyślij wiadomość", „nowy task") rozpoznawanych w wielu apkach*
-- Sub-cel 1.31 (NOWY) Confidence-based toast UI — *toast pokazuje 2-3 kandydatów ze stopniem pewności, gdy nie jesteśmy w 100%*
+- Sub-cel 1.32 (NOWY) Semantic Intent Library (W4) — *30-50 ogólnych intencji („wyślij wiadomość", „nowy task") rozpoznawanych w wielu apkach*
+- Sub-cel 1.33 (NOWY) Confidence-based toast UI — *toast pokazuje 2-3 kandydatów ze stopniem pewności, gdy nie jesteśmy w 100%*
+
+> *Uwaga: numery 1.30 i 1.31 zajęte przez Silent mode toggle i DMG export bundle (prereqs Fazy 1.7) — patrz commit `9453362`.*
 
 ---
 
@@ -186,11 +192,12 @@
 1. ✅ **STATUS.md** (ten plik) — *dashboard projektu*
 2. ✅ **Silent mode toggle** — Settings → Advanced "Hide toasts (collect data only)" + 🔇 indikator w menu barze + EventLogger pisze `silent: true` w events.jsonl
 3. ✅ **DMG export bundle** — Settings → Advanced "Export diagnostic bundle…" + `DiagnosticBundleExporter.swift` + `docs/beta-tester-guide.md` 1-pager dla kolegi
-4. ⏸️ **xcodegen + build + UAT przez Filipa** — sprawdzić w żywej apce czy silent mode + export działają poprawnie
-5. ⏸️ **Sesja E-1 SwiftUI** (~2h, Filip) — Shortcuts.app + Freeform, najwyższe ROI z 5 kategorii
-6. ⏸️ **UAT 4 untested apek** (Obsidian/Terminal/Linear/Cursor, ~30-40 min, Filip)
-7. ⏸️ **Wyślij DMG do kolegi-testera** — silent mode WŁ., 2-3 dni zbierania, potem export bundle
-8. ⏸️ **(Po danych) P-51** miss event categorization decyzja
+4. ✅ **UAT 1.6 batch 1+2 (2026-05-17/18)** — Terminal 🟢, Obsidian 🟡, Mail.app 🟢, Calendar 🟢, Music 🟡; Cursor/Linear skipped (nie zainstalowane). 10/10 → próg bety MET.
+5. ⏸️ **i18n / lokalizacja (Sub-cel 1.20, P-43)** — *JEDYNY hard-blocker do Bety. ~6-10h. Bez tego polscy testerzy zwracają śmieciowy sygnał.*
+6. ⏸️ **Onboarding doc dla beta-testerów** — co testować, jak zgłaszać. ~2h. Builduje na `docs/beta-tester-guide.md`.
+7. ⏸️ **Rekrutacja + invite copy** — wybierz 3-5 znajomych, bumper.tv invite, send DMG z silent mode WŁ.
+8. ⏸️ **(Margines, opcjonalnie) Sub-cel 1.6 → 15 verified** — VSCode/Finder reseed/Spotify/Discord/Photos (~45 min)
+9. ⏸️ **(Po danych z bety) P-51 fix decyzja** — runtime collection vs mouseover symulacja vs alternatywny AX protokół
 
 ---
 
@@ -200,10 +207,13 @@
 |---|---|---|---|---|
 | 1 | ~~brak silent mode~~ | Tryb cichy: zbieraj dane bez wyświetlania toastów beta-testerom | ~~Beta~~ | 🟢 **zamknięte 2026-05-17** (kod gotowy, czeka na build) |
 | 2 | ~~brak DMG export~~ | Paczka z logami którą tester sam zgrywa i wysyła Filipowi | ~~Beta~~ | 🟢 **zamknięte 2026-05-17** (kod gotowy, czeka na build) |
-| 3 | P-38 dropdown menu items | Wykrywanie elementów wewnątrz rozwijanych menu (palette ⌘K, popupy) | Cron, Linear ⌘K palette | czeka test |
-| 4 | P-43 i18n | Wsparcie języków: rozumieć menu po polsku/niemiecku/itd. | beta-testerzy z PL UI = śmieciowy sygnał | HIGH prio przed Beta |
-| 5 | P-19 bundled.json update path | Mechanizm dostarczania nowych reguł do userów po update apki | release do userów | sprawdzone w sesjach 3f85be6/a50264c — w sumie DONE? |
-| 6 | P-32 web research backend | Backend googluje skróty dla nieznanych apek — wyższa jakość reguł | jakość auto-discovered reguł | sesja 9b |
+| 3 | ~~Faza 1.6 ≥10 verified~~ | Próg beta MVP wymaga 10 zweryfikowanych apek | ~~Beta~~ | 🟢 **zamknięte 2026-05-18** (10/10) |
+| 4 | P-43 i18n | Wsparcie języków: rozumieć menu po polsku/niemiecku/itd. | beta-testerzy z PL UI = śmieciowy sygnał | **HIGH prio — JEDYNY hard-blocker przed Betą** |
+| 5 | P-51 Electron lazy AX tree | Chromium/Electron eksponują shell AX tree podczas reseed — content desc puste do user activity | Notion/Obsidian/Linear/Cursor/Discord/VSCode/Slack desktop pełne pokrycie | **NEW 2026-05-17** mitigations w main (AXGroup w allowedRoles, settle 3s), fix decision po Becie |
+| 6 | P-52 Parallel discovery status menu bar | DiscoveryStatus.running(appName) shows only last-started app gdy 2 apki uczą się naraz | UX, nie blocker | **NEW 2026-05-18** Faza 2 polish — plan: runningCount + tooltip |
+| 7 | P-38 dropdown menu items | Wykrywanie elementów wewnątrz rozwijanych menu (palette ⌘K, popupy) | Cron, Linear ⌘K palette | czeka test |
+| 8 | P-19 bundled.json update path | Mechanizm dostarczania nowych reguł do userów po update apki | release do userów | sprawdzone w sesjach 3f85be6/a50264c — w sumie DONE? |
+| 9 | P-32 web research backend | Backend googluje skróty dla nieznanych apek — wyższa jakość reguł | jakość auto-discovered reguł | sesja 9b |
 
 ---
 
@@ -212,21 +222,23 @@
 | Metryka | Wartość |
 |---|---|
 | **Pierwszy commit** | 2026-05-08 |
-| **Czas projektu** | ~9 dni |
-| **Commitów total** | 209 |
-| **Linijek Swift kodu** | ~5,800 |
-| **Testów passing** | 248 (w `SFlowTests/`) |
-| **Plików .swift w SFlow/** | sprawdź `find SFlow -name *.swift` |
+| **Czas projektu** | ~10 dni |
+| **Commitów total** | 212 (+3 z sesji 2026-05-17/18) |
+| **Linijek Swift kodu** | ~5,900 (+82 LOC P-51 mitigations) |
+| **Testów passing** | 250 (+2 AXGroup tests) |
 | **Bundled apek z regułami** | 5 (Slack, Terminal, Notion, Claude, Obsidian) |
 | **Bundled apek total** | 8 (3 puste: Notion Mail, Linear, Cron) |
 | **Cached apek (auto-discovered)** | 35 |
 | **Reguł w bundled.json** | ~254 (58+69+57+26+44) |
-| **P-X problemów total** | 38 |
-| **P-X zamkniętych** | ~23 (60%) |
-| **P-X otwartych** | 10 |
+| **Verified apek (Sub-cel 1.6)** | **10/10** (6 🟢 + 4 🟡) — **gate met 2026-05-18** |
+| **P-X problemów total** | 40 (+P-51, +P-52) |
+| **P-X zamkniętych** | ~24 |
+| **P-X otwartych** | 11 (+P-51 Electron + P-52 parallel status) |
 | **P-X partial / in-progress** | 5 |
-| **Sub-celi Fazy 1** | 17 (10 done, 3 partial, 4 pending) |
-| **Sub-celi Fazy 1.5** | 12 (3 done, 9 pending) |
+| **Sub-celi Fazy 1** | 16 (10 done, 4 partial, 2 pending) — *1.6/1.7 wyodrębnione jako Fazy* |
+| **Sub-celi Fazy 1.5** | 12 (2 done, 1 partial UAT, 9 pending) |
+| **Sub-celi Fazy 1.6** | **10 verified ✅ (gate met 2026-05-18)** |
+| **Sub-celi Fazy 1.7 prereq (1.30, 1.31)** | 2 done (silent mode + DMG export, czekają na build) |
 
 ---
 
