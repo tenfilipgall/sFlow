@@ -46,7 +46,12 @@ final class DiscoveryClient {
             bundleId: bundleId, appName: appName, appVersion: appVersion,
             menuBar: menuBar, skeleton: skeleton, clientVersion: clientVersion
         )
-        req.timeoutInterval = 90  // backend may spend up to ~45s talking to Claude
+        // P-35 mitigation (2026-05-18): backend now uses web_search max_uses=8 (Sub-cel 1.12)
+        // which can push generation to ~120s for apps with deep cheatsheet searches (observed:
+        // Obsidian first attempt timed out at 90s; retry succeeded in ~90s). Raised to 180s so
+        // typical reseed/discover finishes on first try. Backend itself has CF Workers safety
+        // limits; 180s is a generous client-side ceiling.
+        req.timeoutInterval = 180
 
         let (data, response) = try await session.data(for: req)
         guard let http = response as? HTTPURLResponse else {

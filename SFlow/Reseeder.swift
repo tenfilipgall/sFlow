@@ -234,8 +234,9 @@ enum Reseeder {
             sem.signal()
         }
 
-        // Backend may spend up to ~45s; client timeout is 90s. Give it 120s.
-        if sem.wait(timeout: .now() + 120) == .timedOut {
+        // P-35 (2026-05-18): client timeout raised to 180s for max_uses=8 web_search budget.
+        // Reseed semaphore needs to outlast it.
+        if sem.wait(timeout: .now() + 240) == .timedOut {
             return (nil, "timed out waiting for backend")
         }
         return (result, rawError)
