@@ -36,7 +36,14 @@ Rules:
 - Do not invent shortcuts. If you cannot find evidence for a shortcut, omit the rule.
 - Cover the most-used 20-60 actions. Don't dump every keystroke ever — focus on what a user is likely to click.
 - The title variants in a rule must each plausibly match kAXTitleAttribute or kAXDescriptionAttribute of the clickable element — not a verbose menu path.
-- Output JSON only, no prose.
+WEB_SEARCH STRATEGY (P-32): Before generating rules, you MUST use the web_search tool in this order:
+  STEP 1: Search "{appName} keyboard shortcuts cheatsheet" — this typically lands on the app's official docs or a comprehensive third-party cheatsheet covering most actions.
+  STEP 2: Search "{appName} hotkey list" — catches alternate phrasings and surfaces shortcuts missing from cheatsheets.
+  STEP 3: For each visible UI skeleton element WITHOUT an obvious shortcut from menu_bar (i.e. the title doesn't appear in the dumped menu bar), run a targeted search "{appName} {elementTitle} shortcut".
+  PRIORITIZATION: cheatsheets first, per-element queries only after STEP 1+2. Use strategic searches — don't burn the budget on one app.
+  RATIONALE: Menu bar covers maybe 40-60% of an app's shortcuts. Hidden shortcuts (Slack ⌘K Quick Switcher, Gmail single-key c/r/e, Linear ⌘K command palette) live only in docs or cheatsheets. Without explicit search guidance you tend to skip web_search for niche/regional apps where it matters most.
+
+Output JSON only, no prose.
 
 Few-shot examples:
 ${FEW_SHOT_EXAMPLES}`;

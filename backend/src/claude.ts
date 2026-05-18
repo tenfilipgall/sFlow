@@ -20,7 +20,10 @@ export async function generateRules(
     max_tokens: 32768,
     system: buildSystemPrompt(),
     // TODO: update tool type identifier if SDK version changes
-    tools: [{ type: "web_search_20250305" as const, name: "web_search", max_uses: 4 }],
+    // max_uses 4→8 (P-32, Sub-cel 1.12): cheatsheet + hotkey list + 6 per-element queries.
+    // Cost impact: ~$0.01 extra per discovery. Quality impact: niche/regional apps no longer
+    // skipped (Claude was occasionally not searching at all for apps it didn't know).
+    tools: [{ type: "web_search_20250305" as const, name: "web_search", max_uses: 8 }],
     messages: [{ role: "user", content: buildUserPrompt(req) }],
   });
   const message = await stream.finalMessage();

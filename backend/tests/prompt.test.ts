@@ -79,4 +79,14 @@ describe("buildSystemPrompt v1.1 prompt", () => {
     expect(prompt).toMatch(/HOTKEY[- ]SUFFIX/i);
     expect(prompt).toContain("Edit message E");
   });
+
+  it("instructs Claude on explicit web_search step order (P-32)", () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toMatch(/WEB_SEARCH STRATEGY/);
+    expect(prompt).toContain("keyboard shortcuts cheatsheet");
+    expect(prompt).toContain("hotkey list");
+    expect(prompt).toMatch(/STEP 1/);
+    expect(prompt).toMatch(/STEP 2/);
+    expect(prompt).toMatch(/STEP 3/);
+  });
 });
