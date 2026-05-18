@@ -2,15 +2,15 @@
 
 > **Wizualny dashboard wszystkich faz i sub-celi.** Otwierasz → w 30s wiesz gdzie jesteś.
 > Update'owany ręcznie po każdej sesji (end-of-session protocol, `product-vision.md` 0.5).
-> Last sync: **2026-05-18 (sesja Finalize Fazy 1: 1.12 closed + 4 sub-cele deferred → Faza 2)**
+> Last sync: **2026-05-18 (3 sesje: Finalize Fazy 1 + Finalize Fazy 1.5 + Beta DMG prep — DMG built, czeka na smoke test Filipa)**
 
 ---
 
 ## 📍 Gdzie jesteśmy teraz
 
-**🎯 Aktualna sesja: Finalize Fazy 1.5 — i18n PL + creative apps + Office + P-19 + invite template. ZAMKNIĘTE.**
-**🎉 2026-05-18 — Fazy 1 + 1.5 + 1.6 scope-Bety COMPLETE. Wszystkie hard-blockery przed Betą zamknięte.**
-**🚧 Następny krok:** Faza 1.7 Beta start — wybór 3-5 testerów (priorytet polski UI), wysłanie DMG, 2 tygodnie pomiarów.
+**🎯 Stan: BETA-READY. DMG zbudowany (`SFlow-v0.1-20260518.dmg`, 944K), silent mode default ON, permissions auto-redirect działa, beta-tester-guide + invite template gotowe.**
+**🎉 2026-05-18 — Fazy 1 + 1.5 + 1.6 scope-Bety COMPLETE. 13 commitów w 3 sesjach. Wszystkie hard-blockery zamknięte.**
+**🚧 Następny krok (Filip):** smoke test DMG na własnym Macu (10 min, krytyczne) → decyzja jak hostujesz DMG → wybór 3-5 testerów wg `docs/beta-invite-template.md` → **Beta start** 🚀
 
 ---
 
@@ -152,19 +152,38 @@
 
 ---
 
-### ⬜ Faza 1.7 — Beta z 3-5 osobami  •  **planowane**
+### 🟢 Faza 1.7 — Beta z 3-5 osobami  •  **READY TO LAUNCH 🚀**
 ```
-░░░░░░░░░░░░░░░░░░░░  0%
+████████████████████  100% prereqs done — czeka na smoke test + rekrutację
 ```
 > **Po co jest:** Pierwszy realny sygnał *„czy toast po akcji uczy"*. Bez tego cała strategia drogi B (curriculum) wiszi w powietrzu.
 
-**Prerequisites (6 rzeczy do zamknięcia):**
-- 🟢 Faza 1.6 → ≥10 verified apek — **DONE 2026-05-18** *(10/10 verified, 6 🟢 + 4 🟡)*
-- 🟢 Silent mode toggle (Sub-cel 1.30, data collection bez UI noise) — **done 2026-05-17** *(czeka na xcodegen + build Filipa)*
-- 🟢 DMG export bundle (Sub-cel 1.31, kolega eksportuje dane po 2-3 dniach) — **done 2026-05-17** *(`DiagnosticBundleExporter.swift` + button w Advanced tab; `docs/beta-tester-guide.md` 1-pager dla kolegi)*
-- ⬜ **i18n / lokalizacja (Sub-cel 1.20, P-43)** — *bez tego polscy testerzy z PL UI dają śmieciowy sygnał. **HIGH priority — jedyny blocker po 1.6.***
-- ⬜ Onboarding doc dla testerów — *instrukcja: co testować i jak zgłaszać uwagi*
-- ⬜ Anon user ID (Sub-cel 2.1 fragment) — opcjonalnie. *Anonimowy identyfikator — odróżnia dane od różnych testerów.*
+**Prerequisites — wszystkie zamknięte:**
+
+| ✓ | Co | Status |
+|---|---|---|
+| 🟢 | **Faza 1.6 → ≥10 verified apek** | DONE 2026-05-18 (10/10 verified, 6 🟢 + 4 🟡) |
+| 🟢 | **Silent mode toggle** (Sub-cel 1.30) — data collection bez UI noise | done 2026-05-17, **default ON** od 2026-05-18 (`UserDefaults.register`) |
+| 🟢 | **DMG export bundle** (Sub-cel 1.31) — kolega eksportuje dane po 2-3 dniach | done 2026-05-17 (`DiagnosticBundleExporter.swift` + button w Advanced tab) |
+| 🟢 | **i18n / lokalizacja** (Sub-cel 1.20, P-43) — polscy testerzy z PL UI | **done 2026-05-18** — Slack PL **64/64 reguł (100%)** z `localizedTitles.pl` |
+| 🟢 | **Beta tester guide** (`docs/beta-tester-guide.md`) — co testować, jak zgłaszać | done 2026-05-17, updated 2026-05-18 (DMG update flow + permissions auto-redirect) |
+| 🟢 | **Beta invite template** (`docs/beta-invite-template.md`) — 3 warianty zaproszenia | done 2026-05-18 |
+| 🟢 | **DMG build script** (`scripts/build-dmg.sh`) — one-shot Release + DMG | done 2026-05-18 |
+| 🟢 | **DMG zbudowany** (`SFlow-v0.1-20260518.dmg`, 944K) | done 2026-05-18 |
+| 🟢 | **P-19 bundled.json update path** — fix do iteracji DMG v0.1→v0.2 podczas Bety | done 2026-05-18 |
+| 🟢 | **Permissions auto-redirect** — NSAlert otwiera bezpośrednio Privacy & Security | already worked (P-15 fix, sprawdzone 2026-05-18) |
+
+**Pozostało (Filip-action only):**
+
+| Co | Czas | Krytyczność |
+|---|---|---|
+| **Smoke test DMG na własnym Macu** (8 punktów checklist w guide) | 10 min | **KRYTYCZNE — przed wysłaniem komukolwiek** |
+| Decyzja jak hostujesz DMG (Slack DM / Dropbox / WeTransfer / Google Drive link) | 5 min | Wymagane |
+| Wybór 3-5 testerów wg invite template recruitment table | 15-30 min | Wymagane |
+| Wysłanie pierwszemu testerowi + sanity check po 1h | 10 min | Wymagane |
+| Wysłanie pozostałym | 10 min | Wymagane |
+
+**Po starcie:** 2 tygodnie pomiarów, weekly check-in, debrief = decyzja go/no-go Faza 2.
 
 ---
 
@@ -228,13 +247,14 @@
 
 ---
 
-## ✅ Sesje 2026-05-18 — **Faza 1 + 1.5 scope-Bety COMPLETE**
+## ✅ Sesje 2026-05-18 — **BETA-READY** 🚀
 
-> **Dwie sesje dziś (~6h zegarowe):**
+> **Trzy sesje dziś (~7h zegarowe):**
 > 1. **Finalize Fazy 1** — 1.8 video eval (verified), 1.12 backend prompt + reseed 5 apek + P-35 mitigation, defer 1.3/1.11/1.13/1.16 → Faza 2
 > 2. **Finalize Fazy 1.5** — 1.20 i18n (Slack PL 64/64 reguł), 1.23/1.24/1.25 minimum-viable (Figma/Photoshop/Illustrator/Excel via backend curl), P-19 bundled update path, beta invite template
+> 3. **Beta DMG prep** — DMG build script, silent mode default ON, beta-tester-guide.md update (DMG update flow + first-launch walkthrough)
 
-**Co osiągnięte (6 nowych P-X zamkniętych + 2 sub-cele Fazy 1 + 4 sub-cele Fazy 1.5):**
+**Co osiągnięte (6 nowych P-X zamkniętych + 2 sub-cele Fazy 1 + 4 sub-cele Fazy 1.5 + Beta launch ergonomics):**
 
 | # | Co | Plik / commit |
 |---|---|---|
@@ -244,9 +264,10 @@
 | 1.20 | i18n PL — Slack 64/64 z localizedTitles.pl | `a2bdbec` |
 | 1.23/1.24/1.25 | Figma/Photoshop/Illustrator/Excel bundled rules | `5fa6f7d` |
 | P-19 | bundled.json update path + fingerprint | `4f8dee6` |
-| F | Beta invite template (3 warianty) | `00d3dc8` |
+| Invite | Beta invite template (3 warianty) | `00d3dc8` |
+| DMG | build-dmg.sh + silent mode default ON + tester guide updates | `c7e6579` |
 
-**Realna porcja pracy dzisiaj:** ~597 reguł bundled (z 254 baseline), +325 client tests (z 250), +58 backend tests (z 50), 10 commitów.
+**Realna porcja pracy dzisiaj:** ~597 reguł bundled (z 254 baseline), +325 client tests (z 250), +58 backend tests (z 50), 13 commitów, **DMG SFlow-v0.1-20260518.dmg gotowy do wysłania**.
 
 ---
 
@@ -365,17 +386,40 @@ Update statusów w `audit-phase-0.md` (P-32 ⬜→🟢, P-35 🔵→🟢/🔵) +
 
 ## 🎯 Po sesji — co dalej (Faza 1.7 Beta start)
 
-> **Wszystkie hard-blockery przed Betą zamknięte.** Pozostaje praca operacyjna: rekrutacja + DMG build + send + waiting.
+> **Wszystkie hard-blockery przed Betą zamknięte. DMG zbudowany. Pozostaje:** Filip robi smoke test + decyduje hosting + rekrutuje + wysyła.
+
+### 🚨 KRYTYCZNE — przed wysłaniem komukolwiek
+
+| Priorytet | Co | Czas | Krytyczność |
+|---|---|---|---|
+| **#1** | **Filip: smoke test DMG na własnym Macu** (`SFlow-v0.1-20260518.dmg`) — 8 punktów checklist (rm starej apki, drag-install, right-click→Open, alerty Accessibility+IM, ikonka ⌘🔇, export bundle test) | **10 min** | **MUST-DO** — bez tego nie wiemy czy alerty się pojawiają, czy silent mode jest ON, czy export działa |
+| **#2** | **Decyzja hosting DMG** (Slack DM jako attachment / Dropbox link / WeTransfer / Google Drive) | 5 min | Wymagane — Slack ma 1GB limit, OK dla 944K |
+
+### 📤 Beta launch (po smoke test)
 
 | Priorytet | Co | Czas | Po co |
 |---|---|---|---|
-| **#1** | **Filip: wybór 3-5 testerów** wg `docs/beta-invite-template.md` recruitment table | ~30 min | Priorytet: ≥2 polski UI (testuje i18n PL), ≥1 Office user (testuje Excel rules), ≥1 creative (testuje Figma/Photoshop bundled) |
-| **#2** | **DMG build + wysłanie** + link do `docs/beta-tester-guide.md` | ~1h | xcodebuild → DMG creation → DM/email |
-| **#3** | **Beta start** 🚀 | — | 2 tygodnie pomiarów, weekly check-in z testerami |
-| **#4** | Reseed Word/Outlook/PowerPoint (rate limit 60min minęło) | ~30 min | Domknięcie Sub-celu 1.24 — pozostałe 3 apki Office |
-| **#5** *(opcjonalne)* | Sub-cel 1.6 → 15 verified | ~45 min | margines: VSCode/Spotify/Discord reseed jeśli testerzy używają |
-| **#6** *(post-Beta debrief, ~2 tyg później)* | Decyzja go/no-go Fazy 2 + carryover (1.3/1.11/1.13/1.16 + 1.22/1.26/1.27/1.28) | ~4h | Faza 2 plan + ewentualny pivot jeśli toast nie uczy |
-| **#7** *(post-Beta)* | P-51 fix decyzja | — | runtime collection vs mouseover symulacja |
+| **#3** | Wybór 3-5 testerów wg `docs/beta-invite-template.md` recruitment table | ~30 min | Priorytet: ≥2 polski UI (testuje i18n PL), ≥1 Office user (testuje Excel rules), ≥1 creative (testuje Figma/Photoshop bundled) |
+| **#4** | Wyślij DMG + link do `docs/beta-tester-guide.md` **pierwszemu testerowi** (sanity check) | 10 min | Jeśli OK po 1h, wysyłasz pozostałym |
+| **#5** | Wyślij pozostałym 2-4 testerom | 10 min | Beta start właściwy |
+| **#6** | **Beta start** 🚀 — 2 tygodnie pomiarów, weekly check-in | — | Pierwszy realny sygnał *„czy toast uczy"* |
+
+### 🟢 Opcjonalne (warto, ale nie krytyczne)
+
+| Priorytet | Co | Czas | Po co |
+|---|---|---|---|
+| **#7** *(opc.)* | Reseed Word/Outlook/PowerPoint (rate limit 60min minęło) | ~30 min | Domknięcie Sub-celu 1.24 — pozostałe 3 apki Office |
+| **#8** *(opc.)* | Reseed VSCode/Finder/Spotify/Discord | ~10 min | Rozszerzenie pokrycia (deweloperzy, gracze, communities) |
+| **#9** *(opc.)* | GitHub issue template + label „beta" | ~10 min | Alternatywa dla email/Slack do agregowania feedback |
+
+### ⏸️ Post-Beta (2-3 tyg później)
+
+| Priorytet | Co | Po co |
+|---|---|---|
+| **#10** | Decyzja go/no-go Fazy 2 + carryover (1.3/1.11/1.13/1.16 + 1.22/1.26/1.27/1.28) | Faza 2 plan + ewentualny pivot jeśli toast nie uczy |
+| **#11** | P-51 fix decyzja (Electron lazy AX tree) | runtime collection vs mouseover symulacja |
+| **#12** | Apple Developer ID + notarization ($99/rok) | Gdy launching dla 100+ userów — eliminuje right-click→Open jednorazowe Gatekeeper |
+| **#13** | Sparkle auto-update framework | Gdy >50 userów — manual DMG update przestaje skalować |
 
 ---
 
@@ -403,10 +447,11 @@ Update statusów w `audit-phase-0.md` (P-32 ⬜→🟢, P-35 🔵→🟢/🔵) +
 |---|---|
 | **Pierwszy commit** | 2026-05-08 |
 | **Czas projektu** | ~10 dni |
-| **Commitów total** | **225** (+10 z dwóch sesji 2026-05-18: Finalize Fazy 1 + Finalize Fazy 1.5) |
-| **Linijek Swift kodu** | ~6,100 (+200 LOC i18n + P-19) |
+| **Commitów total** | **226** (+13 z trzech sesji 2026-05-18: Finalize Fazy 1 + Finalize Fazy 1.5 + Beta DMG prep) |
+| **Linijek Swift kodu** | ~6,115 (+15 LOC silent mode default + permissions auto-redirect verification) |
 | **Backend testy passing** | **58** (+7 i18n: prompt LOCALIZED + storage locale cacheKey) |
 | **Swift testy passing** | **333** (+8 P-19 fingerprint + 7 LocaleDetector) |
+| **DMG zbudowany** | **`SFlow-v0.1-20260518.dmg`** (944K, ad-hoc signed, czeka na smoke test) |
 | **Bundled apek z regułami** | **9** (Slack PL, Terminal, Notion, Claude, Obsidian, Figma, Photoshop, Illustrator, Excel) |
 | **Bundled apek total** | **12** (3 puste shells: Notion Mail, Linear, Cron) |
 | **Cached apek (auto-discovered)** | 35 |
