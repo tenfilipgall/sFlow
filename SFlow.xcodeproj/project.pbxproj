@@ -17,6 +17,7 @@
 		1C7E85D6C9FD8054D7E33187 /* TextMatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CDAD1337896EC1BF8EED39 /* TextMatchingTests.swift */; };
 		1DC447D4F71D443146DC827A /* RuleStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37CF650D5C1DB248F201DD54 /* RuleStorage.swift */; };
 		2479518086484350008DF634 /* Reseeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E827CC83353D7DD65D3F8D /* Reseeder.swift */; };
+		291BC52E47B6D435D9DE3581 /* RuleStorageFingerprintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847FA2F3B217DBAEF02736DD /* RuleStorageFingerprintTests.swift */; };
 		2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */; };
 		32D9DA7F08F347B38F100DFB /* ShortcutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCC6B9CE8FFF905D3CB4BCA0 /* ShortcutEvent.swift */; };
 		33C15EFE30CDA1235583A6CF /* TooltipShortcutParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FA900B72429253121D17A3 /* TooltipShortcutParserTests.swift */; };
@@ -127,6 +128,7 @@
 		7BC1D960E7818EB263CA8B47 /* DiagnosticBundleExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticBundleExporterTests.swift; sourceTree = "<group>"; };
 		7CA92F177104532F5A276ED2 /* FalsePositiveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FalsePositiveStore.swift; sourceTree = "<group>"; };
 		7DB8E29BBA3342A3FEB5A5F6 /* LoadedRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadedRule.swift; sourceTree = "<group>"; };
+		847FA2F3B217DBAEF02736DD /* RuleStorageFingerprintTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleStorageFingerprintTests.swift; sourceTree = "<group>"; };
 		870FDE4D3CFDD3B481A5285C /* RuleCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleCache.swift; sourceTree = "<group>"; };
 		88CC46DD09A0AC6D448041DC /* AXSkeletonFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXSkeletonFilterTests.swift; sourceTree = "<group>"; };
 		8986F212E0FD86A51B6F5A6C /* RightClickMenuHarvesterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightClickMenuHarvesterTests.swift; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 				6EAD9DBF9E8E04A37FACD793 /* PrivacyFilterTests.swift */,
 				8986F212E0FD86A51B6F5A6C /* RightClickMenuHarvesterTests.swift */,
 				645E21ED214998AEA9964EDB /* RuleCacheTests.swift */,
+				847FA2F3B217DBAEF02736DD /* RuleStorageFingerprintTests.swift */,
 				483E9D4D0122E38523CC7B93 /* RuleStorageTests.swift */,
 				CF4CC4087366DE902330CA6F /* ShortcutRulesTests.swift */,
 				C4CDAD1337896EC1BF8EED39 /* TextMatchingTests.swift */,
@@ -394,6 +397,7 @@
 				AEFA918A608098CE3BB007E2 /* PrivacyFilterTests.swift in Sources */,
 				B94D5160AB62B7E76CB10AF0 /* RightClickMenuHarvesterTests.swift in Sources */,
 				E910E61D020FA43F0B4EFF6B /* RuleCacheTests.swift in Sources */,
+				291BC52E47B6D435D9DE3581 /* RuleStorageFingerprintTests.swift in Sources */,
 				CF0908420B8CE4115AB1C378 /* RuleStorageTests.swift in Sources */,
 				2C1534CFB385A74AA9511133 /* ShortcutRulesTests.swift in Sources */,
 				1C7E85D6C9FD8054D7E33187 /* TextMatchingTests.swift in Sources */,
