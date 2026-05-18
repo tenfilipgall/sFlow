@@ -112,10 +112,19 @@ enum Reseeder {
         let clientVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "reseed"
         let client = DiscoveryClient(baseURL: DiscoveryClient.productionURL, clientVersion: clientVersion)
 
-        // Sub-cel 1.20: tag reseed with system locale so backend generates
-        // localizedTitles for the developer's UI language (PL system → PL
-        // localizedTitles in the resulting bundled.json rules).
-        let appLocale = LocaleDetector.systemLocale()
+        // Sub-cel 1.20: tag reseed with locale so backend generates
+        // localizedTitles for that language. Priority:
+        //   1. SFLOW_RESEED_LOCALE env var (explicit dev override, e.g. "pl")
+        //   2. System locale (preferredLanguages.first)
+        // Filip's machine ships en-US even though PL beta-testers need PL
+        // localizedTitles in bundled.json — that's what the env var unlocks.
+        let appLocale: String = {
+            if let envOverride = ProcessInfo.processInfo.environment["SFLOW_RESEED_LOCALE"],
+               !envOverride.isEmpty {
+                return LocaleDetector.normalize(envOverride)
+            }
+            return LocaleDetector.systemLocale()
+        }()
         print("Reseeder: \(bundleId) — appLocale=\(appLocale)")
 
         let (result, rawError) = discoverBlocking(
