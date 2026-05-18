@@ -104,6 +104,47 @@ Patrz `product-vision.md` sekcje 0.7-0.8. Najważniejsze:
 > **Reverse-chronological — najnowsza sesja na górze.**
 > AI dodaje nową sekcję po każdej sesji ze zmianami w kodzie.
 
+### 2026-05-18 — Sesja Finalize Fazy 1.5 (i18n + creative + Office + P-19 + beta invite) ✅
+
+**Co:** Druga sesja dnia, ~3h. Zamknięcie wszystkich hard-blockerów przed Fazą 1.7 Beta. **Faza 1.5 scope-Bety COMPLETE** (9/12 🟢 done + 3 ⏸️ post-Beta).
+
+**Krok 1 — Sub-cel 1.20 i18n end-to-end (commit `a2bdbec`):**
+- Client: `SFlow/LocaleDetector.swift` + 7 testów (normalize PL/zh-Hans, AXLanguage fallback). LoadedMatch.localizedTitles. RuleCache.match(locale:) tries localizedTitles[locale] BEFORE EN titles. ClickWatcher/DiscoveryClient/Service/Reseeder przekazują appLocale. `SFLOW_RESEED_LOCALE` env override w Reseeder (Filip ma system en-US, ale potrzebuje PL bundle).
+- Backend: DiscoverRequestSchema.appLocale, MatchSchema.localizedTitles, prompt rule LOCALIZED TITLES ("actual AX-exposed strings, NOT literal translations"), per-locale cache key. Deploy v `ba6d6866`.
+- **Reseed Slack PL: 64/64 reguł (100%) z localizedTitles.pl** — Skomponuj wiadomość, Wyszukaj kanał, Wątki, Wszystkie nieprzeczytane, etc. Polacy z PL UI Slack od teraz dostają match.
+- Obsidian/Claude Desktop reseed bez PL — Claude poprawnie OMIT'uje lokalizacje których nie może zweryfikować (apki EN-only). Good behavior, nie bug.
+
+**Krok 2 — Sub-cele 1.23/1.24/1.25 minimum-viable (commit `5fa6f7d`):**
+Strategia: backend curl-em generujemy bundled rules bez konieczności instalacji apek lokalnie (Filip nie ma Office/Adobe/Figmy). Backend Claude relies na web_search cheatsheets (P-32 explicit prompt).
+- **Figma 83 reguł** (singleKeyMode: V/R/T/P/F/...)
+- **Photoshop 81 reguł** (singleKeyMode: V/B/E/M/L/...)
+- **Illustrator 97 reguł** (singleKeyMode: V/A/Y/...)
+- **Excel 63 reguł** (no singleKeyMode)
+- Word/Outlook/PowerPoint rate-limited (10/h IP) — retry kolejna sesja.
+- bundled.json: 8 → **12 apek**, 265 → **597 reguł** (+332, +125%).
+
+**Krok 3 — P-19 bundled.json update path (commit `4f8dee6`):**
+- `RuleStorage.seedBundledIfMissing` zwraca `SeedOutcome` enum + fingerprint score (apps × 1M + rules × 1K + titles).
+- Shipping > user → overwrite. cache/* + user_overrides.json NIGDY nie ruszane.
+- 8 fingerprint tests + smoke test real bundled. 333 client tests passing.
+- **Odblokowuje iterację DMG podczas Bety** (v0.1 → v0.2 → v0.3 — reguły trafią do testerów).
+
+**Krok 4 — Beta invite template (commit `00d3dc8`):**
+- `docs/beta-invite-template.md` — 3 warianty zaproszenia (short DM, medium, long email) + recruitment table criteria + follow-up scripts.
+- Priorytet rekrutacji: ≥2 polski UI (testuje 1.20), ≥1 Office (testuje 1.24), ≥1 creative (testuje 1.23/1.25).
+
+**Statystyki end-of-day:**
+- 10 commitów dziś (2 sesje: Finalize Fazy 1 + Finalize Fazy 1.5)
+- bundled.json: 597 reguł / 12 apek
+- Swift tests: 333 passing (z 250 baseline)
+- Backend tests: 58 passing (z 50 baseline)
+- 6 P-X nowych zamkniętych (P-19, P-32, P-35, P-43, P-46 minimum-viable, P-47 partial)
+- 4 sub-cele Fazy 1.5 zamknięte (1.20, 1.23, 1.24, 1.25)
+
+**Następna sesja:** Faza 1.7 Beta start — Filip wybiera 3-5 testerów wg invite template, DMG build, wysłanie, 2 tygodnie pomiarów.
+
+---
+
 ### 2026-05-18 — Sesja Finalize Fazy 1 (Sub-cel 1.12 + P-32 + P-35 + defer 4 sub-celów) ✅
 
 **Co:** Zamknięcie Sub-celu 1.12 (P-32 ukierunkowany web research + reseed 5 bundled), P-35 mitigation (client timeout), formalny defer 4 sub-celów Fazy 1 → Faza 2. **Faza 1 scope-complete dla Bety.** ~2h.

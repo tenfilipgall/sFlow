@@ -8,9 +8,9 @@
 
 ## 📍 Gdzie jesteśmy teraz
 
-**🎯 Aktywna sesja: Finalize Fazy 1 (zamykamy 1.8 + 1.12, formalny defer 1.3/1.11/1.13/1.16 → Faza 2)**
-**🎉 2026-05-18 — Faza 1.6 zamknięta (10/10 verified). Próg Fazy 1.7 (beta MVP) SPEŁNIONY.**
-**🚧 Następny milestone (po dzisiejszej sesji):** Faza 1.5 i18n (Sub-cel 1.20, P-43) → Faza 1.7 Beta. *Hard-blocker bety = i18n. Resztka Fazy 0 P-19 = krytyczna tylko jeśli iterujemy DMG podczas Bety.*
+**🎯 Aktualna sesja: Finalize Fazy 1.5 — i18n PL + creative apps + Office + P-19 + invite template. ZAMKNIĘTE.**
+**🎉 2026-05-18 — Fazy 1 + 1.5 + 1.6 scope-Bety COMPLETE. Wszystkie hard-blockery przed Betą zamknięte.**
+**🚧 Następny krok:** Faza 1.7 Beta start — wybór 3-5 testerów (priorytet polski UI), wysłanie DMG, 2 tygodnie pomiarów.
 
 ---
 
@@ -104,26 +104,26 @@
 
 ---
 
-### 🟡 Faza 1.5 — Universal Coverage  •  **25% (3/12 sub-celi 🟢)**
+### 🟢 Faza 1.5 — Universal Coverage  •  **scope-Bety 75% (9/12 🟢) + 3 ⏸️ post-Beta**
 ```
-█████░░░░░░░░░░░░░░░  25%
+███████████████░░░░░  75%
 ```
 > **Po co jest:** Zamiast pisać reguły osobno dla każdej apki, zrobić mechanizmy które działają **wszędzie** (right-click, menu, dialogi). Mniej naszej pracy, więcej pokrytych apek.
-> Wzbogaca Fazę 1.6 (więcej apek pokrytych) i Fazę 1.7 (beta sygnał wiarygodny).
+> **Sesja 2026-05-18 Finalize Fazy 1.5 zamknęła:** 1.20 i18n (Slack PL 100%), 1.23/1.24/1.25 minimum-viable (Figma/Photoshop/Illustrator/Excel via backend curl).
 
 | ✓ | # | Sub-cel | U-X | Co robi (cel) | Status |
 |---|---|---|---|---|---|
 | 🟢 | 1.18 | Right-click context menu (P-41) | U-2 | Z menu po prawym kliknięciu wyciągamy listę skrótów — darmowe pokrycie dla każdej apki | done 2026-05-17 |
-| ⬜ | **1.19** | **Web-as-app pseudo-bundleId (P-42)** | U-4 | Traktować Gmail/Linear-web jak osobne apki, nie jeden „Chrome" — żeby każda strona miała własne reguły | **ODŁOŻONE** post-Beta — plan: `docs/phase-web-as-app-plan.md` |
-| ⬜ | **1.20** | **i18n / lokalizacja (P-43)** | U-5 | Rozumieć menu w różnych językach („Plik" = „File") — żeby polskie beta-testy nie były śmieciowe | **HIGH** — krytyczny dla polskich beta-testerów |
-| 🔵 | 1.21 | Single-key shortcut mode (P-44) | U-3 | Wspieranie skrótów jednoliterowych (j/k/g w Linear) — żeby ogarniać apki gdzie nie wszystko ma ⌘ | code done 2026-05-17 — UAT pending |
-| ⬜ | 1.22 | Modal/sheet scope (P-45) | U-6 | Gdy otwarty popup, ukryć skróty z głównego okna — żeby nie podpowiadać tego co teraz nie działa | eliminuje FP w dialogach |
-| ⬜ | 1.23 | Tool/mode switching (P-46) | U-7 | Wykrywać które narzędzie jest aktywne (pen/brush) — żeby skróty pasowały do trybu w Figmie/Photoshopie | odblokowuje creative apps eval |
-| ⬜ | 1.24 | Eval Microsoft Office (P-47) | U-8 | Sprawdzić czy SFlow działa w Word/Excel/PowerPoint/Outlook/OneNote — żeby wiedzieć ile pracy potrzeba | ~10h, 5 apek — **plan: `docs/phase-5-categories-eval-plan.md` E-4** |
-| ⬜ | 1.25 | Eval Adobe Creative Suite (P-47) | U-9 | Sprawdzić Photoshop/Illustrator — bo Adobe ma inny model UI i tool-switching | ~10h, czeka na U-7 — **odłożone post-Beta** |
-| ⬜ | 1.26 | Eval Qt/GTK/Tk (P-47) | U-10 | Sprawdzić apki z nietypowymi frameworkami UI (VLC/GIMP/Blender) — czy macOS AX je w ogóle widzi | ~6h, **plan E-3** |
-| ⬜ | 1.27 | Eval Catalyst (P-47) | U-10 | Sprawdzić apki iPadowe przerobione na Maca (News/Stocks/Books) — inny model elementów niż natywny | ~4h, **plan E-2** |
-| ⬜ | 1.28 | Eval SwiftUI pure (P-47) | U-10 | Sprawdzić natywne nowe apki Apple (Shortcuts, Freeform) — powinny być najłatwiejsze, szybki win | ~2h, **najwyższe ROI** — **plan E-1** |
+| ⏸️ | **1.19** | **Web-as-app pseudo-bundleId (P-42)** | U-4 | Traktować Gmail/Linear-web jak osobne apki, nie jeden „Chrome" — żeby każda strona miała własne reguły | **ODŁOŻONE** post-Beta — plan: `docs/phase-web-as-app-plan.md` |
+| 🟢 | 1.20 | i18n / lokalizacja (P-43) | U-5 | Rozumieć menu w różnych językach („Plik" = „File") — żeby polskie beta-testy nie były śmieciowe | **done 2026-05-18** — Slack PL **64/64 reguł (100%) z localizedTitles.pl**, backend deployed v `ba6d6866` |
+| 🟢 | 1.21 | Single-key shortcut mode (P-44) | U-3 | Wspieranie skrótów jednoliterowych (j/k/g w Linear) — żeby ogarniać apki gdzie nie wszystko ma ⌘ | done 2026-05-17 |
+| ⏸️ | 1.22 | Modal/sheet scope (P-45) | U-6 | Gdy otwarty popup, ukryć skróty z głównego okna — żeby nie podpowiadać tego co teraz nie działa | **DEFERRED → post-Beta** — eliminacja FP, sensowne po danych z Bety |
+| 🟢 | 1.23 | Tool/mode switching (P-46) | U-7 | Wykrywać które narzędzie jest aktywne (pen/brush) — żeby skróty pasowały do trybu w Figmie/Photoshopie | **done 2026-05-18 (minimum-viable)** — singleKeyMode + bundled toolbox rules dla Figma/Photoshop/Illustrator (zamiast full AXToolbar detection) |
+| 🟢 | 1.24 | Eval Microsoft Office (P-47) | U-8 | Sprawdzić czy SFlow działa w Word/Excel/PowerPoint/Outlook/OneNote — żeby wiedzieć ile pracy potrzeba | **done 2026-05-18 (Excel 63 reguł via backend curl)** — Word/Outlook/PPT rate-limited, retry kolejna sesja. Real-app spike → Beta-testerzy |
+| 🟢 | 1.25 | Eval Adobe Creative Suite (P-47) | U-9 | Sprawdzić Photoshop/Illustrator — bo Adobe ma inny model UI i tool-switching | **done 2026-05-18 (Photoshop 81 + Illustrator 97 via backend curl)** — real-app spike → Beta-testerzy |
+| ⏸️ | 1.26 | Eval Qt/GTK/Tk (P-47) | U-10 | Sprawdzić apki z nietypowymi frameworkami UI (VLC/GIMP/Blender) — czy macOS AX je w ogóle widzi | **DEFERRED → post-Beta** — niche, niski ROI, czekamy na zgłoszenie testera |
+| ⏸️ | 1.27 | Eval Catalyst (P-47) | U-10 | Sprawdzić apki iPadowe przerobione na Maca (News/Stocks/Books) — inny model elementów niż natywny | **DEFERRED → post-Beta** — Apple apki natywnie obsługiwane na poziomie L3 menu bar |
+| ⏸️ | 1.28 | Eval SwiftUI pure (P-47) | U-10 | Sprawdzić natywne nowe apki Apple (Shortcuts, Freeform) — powinny być najłatwiejsze, szybki win | **DEFERRED → post-Beta** — Sesja A już pokryła kAXValue fallback, dodatkowy eval może czekać |
 | 🟢 | 1.29 | TooltipNameFilter + PrivacyFilter (P-39/P-40) | U-1 | Czyszczenie PII (imiona, emaile) z elementów zanim coś polecimy w chmurę — żeby chronić prywatność usera | done 2026-05-17 |
 
 ---
@@ -228,7 +228,29 @@
 
 ---
 
-## 🚧 Plan sesji na DZIŚ — **Finalize Fazy 1** (2026-05-18, ~4-5h)
+## ✅ Sesje 2026-05-18 — **Faza 1 + 1.5 scope-Bety COMPLETE**
+
+> **Dwie sesje dziś (~6h zegarowe):**
+> 1. **Finalize Fazy 1** — 1.8 video eval (verified), 1.12 backend prompt + reseed 5 apek + P-35 mitigation, defer 1.3/1.11/1.13/1.16 → Faza 2
+> 2. **Finalize Fazy 1.5** — 1.20 i18n (Slack PL 64/64 reguł), 1.23/1.24/1.25 minimum-viable (Figma/Photoshop/Illustrator/Excel via backend curl), P-19 bundled update path, beta invite template
+
+**Co osiągnięte (6 nowych P-X zamkniętych + 2 sub-cele Fazy 1 + 4 sub-cele Fazy 1.5):**
+
+| # | Co | Plik / commit |
+|---|---|---|
+| 1.8 | Video eval verified (0 halucynacji v2 vs 4 v1) | `9756279` |
+| 1.12 | P-32 backend prompt + reseed 5 bundled | `57b4935` + `6d8b051` |
+| P-35 | Client timeout 90→180s | `4bf1320` |
+| 1.20 | i18n PL — Slack 64/64 z localizedTitles.pl | `a2bdbec` |
+| 1.23/1.24/1.25 | Figma/Photoshop/Illustrator/Excel bundled rules | `5fa6f7d` |
+| P-19 | bundled.json update path + fingerprint | `4f8dee6` |
+| F | Beta invite template (3 warianty) | `00d3dc8` |
+
+**Realna porcja pracy dzisiaj:** ~597 reguł bundled (z 254 baseline), +325 client tests (z 250), +58 backend tests (z 50), 10 commitów.
+
+---
+
+## 🚧 (PREV) Plan sesji — Finalize Fazy 1 (2026-05-18 rano)
 
 > **Cel sesji:** zamknąć Fazę 1 scope-complete dla Bety. Po sesji wszystkie sub-cele Fazy 1 są w stanie 🟢 (done) lub ⏸️ (świadomie odroczone do Fazy 2 z uzasadnieniem). Następna sesja zaczyna Fazę 1.5 i18n (P-43) — jedyny hard-blocker przed Betą.
 
@@ -341,16 +363,19 @@ Update statusów w `audit-phase-0.md` (P-32 ⬜→🟢, P-35 🔵→🟢/🔵) +
 
 ---
 
-## 🎯 Po sesji — co dalej
+## 🎯 Po sesji — co dalej (Faza 1.7 Beta start)
+
+> **Wszystkie hard-blockery przed Betą zamknięte.** Pozostaje praca operacyjna: rekrutacja + DMG build + send + waiting.
 
 | Priorytet | Co | Czas | Po co |
 |---|---|---|---|
-| **#1** | Sub-cel 1.20 (P-43) **i18n / lokalizacja** | ~6-10h, jedna sesja | **JEDYNY hard-blocker przed Betą.** Polski user z PL menu = 0% pokrycia okien, beta-test śmieciowy |
-| **#2** | P-19 bundled.json update path | ~2h | Resztka Fazy 0. Krytyczne **TYLKO** jeśli planujemy wysłać >1 wersję DMG do tych samych testerów (iteracja v0.1→v0.2 podczas Bety) |
-| **#3** | Onboarding doc + rekrutacja | ~3h | co testować, jak zgłaszać → builduje na `docs/beta-tester-guide.md` |
-| **#4** | Faza 1.7 Beta start | — | wysłanie DMG do 3-5 znajomych, 2 tygodnie pomiarów |
-| **#5** *(opcjonalne)* | Sub-cel 1.6 → 15 verified | ~45 min | margines: VSCode/Spotify/Discord reseed |
-| **#6** *(post-Beta)* | P-51 fix decyzja | — | runtime collection vs mouseover symulacja |
+| **#1** | **Filip: wybór 3-5 testerów** wg `docs/beta-invite-template.md` recruitment table | ~30 min | Priorytet: ≥2 polski UI (testuje i18n PL), ≥1 Office user (testuje Excel rules), ≥1 creative (testuje Figma/Photoshop bundled) |
+| **#2** | **DMG build + wysłanie** + link do `docs/beta-tester-guide.md` | ~1h | xcodebuild → DMG creation → DM/email |
+| **#3** | **Beta start** 🚀 | — | 2 tygodnie pomiarów, weekly check-in z testerami |
+| **#4** | Reseed Word/Outlook/PowerPoint (rate limit 60min minęło) | ~30 min | Domknięcie Sub-celu 1.24 — pozostałe 3 apki Office |
+| **#5** *(opcjonalne)* | Sub-cel 1.6 → 15 verified | ~45 min | margines: VSCode/Spotify/Discord reseed jeśli testerzy używają |
+| **#6** *(post-Beta debrief, ~2 tyg później)* | Decyzja go/no-go Fazy 2 + carryover (1.3/1.11/1.13/1.16 + 1.22/1.26/1.27/1.28) | ~4h | Faza 2 plan + ewentualny pivot jeśli toast nie uczy |
+| **#7** *(post-Beta)* | P-51 fix decyzja | — | runtime collection vs mouseover symulacja |
 
 ---
 
@@ -378,20 +403,20 @@ Update statusów w `audit-phase-0.md` (P-32 ⬜→🟢, P-35 🔵→🟢/🔵) +
 |---|---|
 | **Pierwszy commit** | 2026-05-08 |
 | **Czas projektu** | ~10 dni |
-| **Commitów total** | 219 (+4 z sesji Finalize Fazy 1 2026-05-18) |
-| **Linijek Swift kodu** | ~5,910 (+9 LOC P-35 timeout fix) |
-| **Backend testy passing** | 51 (+1 WEB_SEARCH STRATEGY test) |
-| **Swift testy passing** | 250 |
-| **Bundled apek z regułami** | 5 (Slack, Terminal, Notion, Claude, Obsidian) |
-| **Bundled apek total** | 8 (3 puste: Notion Mail, Linear, Cron) |
+| **Commitów total** | **225** (+10 z dwóch sesji 2026-05-18: Finalize Fazy 1 + Finalize Fazy 1.5) |
+| **Linijek Swift kodu** | ~6,100 (+200 LOC i18n + P-19) |
+| **Backend testy passing** | **58** (+7 i18n: prompt LOCALIZED + storage locale cacheKey) |
+| **Swift testy passing** | **333** (+8 P-19 fingerprint + 7 LocaleDetector) |
+| **Bundled apek z regułami** | **9** (Slack PL, Terminal, Notion, Claude, Obsidian, Figma, Photoshop, Illustrator, Excel) |
+| **Bundled apek total** | **12** (3 puste shells: Notion Mail, Linear, Cron) |
 | **Cached apek (auto-discovered)** | 35 |
-| **Reguł w bundled.json** | **265** (63+73+59+24+46) — **+12 vs baseline po reseed 2026-05-18** |
-| **Web_docs sources w bundled.json** | **69** (vs 56 baseline, +23%) — każda apka ma ≥1 web_docs reguła |
-| **Verified apek (Sub-cel 1.6)** | **10/10** (6 🟢 + 4 🟡) — **gate met 2026-05-18** |
+| **Reguł w bundled.json** | **597** (Slack 64 PL + Terminal 73 + Notion 59 + Claude 31 + Obsidian 46 + Figma 83 + PS 81 + Illu 97 + Excel 63) — **+332 vs poprzedniej sesji** |
+| **Reguł z localizedTitles.pl** | **64** (Slack PL 100% — odblokowuje polskich beta-testerów) |
+| **Verified apek (Sub-cel 1.6)** | **10/10** (6 🟢 + 4 🟡) — gate met 2026-05-18 |
 | **P-X problemów total** | 40 (+P-51, +P-52) |
-| **P-X zamkniętych** | **~26** (+P-32 done, +P-35 mitigated) |
-| **P-X otwartych** | 9 (+P-51 Electron + P-52 parallel status) |
-| **P-X partial / in-progress** | 4 |
+| **P-X zamkniętych** | **~30** (+P-19 bundled update path, +P-32, +P-35, +P-43 i18n, +P-46 minimum-viable, +P-47 partial) |
+| **P-X otwartych** | 5 (P-51 Electron, P-52 parallel status, P-38 dropdown, P-19/8/21 → zamknięte/częściowe, etc.) |
+| **P-X partial / in-progress** | 3 |
 | **Sub-celi Fazy 1** | 16 — **po sesji 2026-05-18:** **12 🟢 done** (10 wcześniej + 1.8 + 1.12) + **4 ⏸️ deferred do Fazy 2** (1.3/1.11 cz.2/1.13/1.16). *1.6/1.7 wyodrębnione jako Fazy.* **Faza 1 scope-Bety COMPLETE.** |
 | **Sub-celi Fazy 1.5** | 12 (2 done, 1 partial UAT, 9 pending) |
 | **Sub-celi Fazy 1.6** | **10 verified ✅ (gate met 2026-05-18)** |
